@@ -14,5 +14,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public Task<Employee> CheckLogin(LoginEmployee loginEmployee);
 
         public Task<bool> CheckDuplicateUsername(string username);
+        // public Task<bool> CheckDuplicateEmail(string email);
     }
 }
