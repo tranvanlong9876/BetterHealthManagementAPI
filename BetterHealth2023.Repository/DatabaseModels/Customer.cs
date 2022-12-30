@@ -26,13 +26,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Required]
         [StringLength(30)]
         public string PhoneNo { get; set; }
+        public int Status { get; set; }
         [StringLength(50)]
         public string Email { get; set; }
         [StringLength(200)]
         public string Password { get; set; }
         [StringLength(200)]
         public string PasswordSalt { get; set; }
-        public int Status { get; set; }
+        public int? Gender { get; set; }
+        [Column("DOB", TypeName = "date")]
+        public DateTime? Dob { get; set; }
+        [Required]
+        [Column("imageURL")]
+        [StringLength(250)]
+        public string ImageUrl { get; set; }
 
         [InverseProperty(nameof(Comment.User))]
         public virtual ICollection<Comment> Comments { get; set; }

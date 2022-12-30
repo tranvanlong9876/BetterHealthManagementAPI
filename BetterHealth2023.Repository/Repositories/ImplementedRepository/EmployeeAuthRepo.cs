@@ -27,6 +27,26 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return false;
         }
 
+        public async Task<bool> CheckDuplicateEmail(string email, bool isUpdate)
+        {
+            var query = from x in context.Employees
+                        where x.Email.ToLower().Trim().Equals(email.ToLower().Trim())
+                        select new { x };
+            var employee = await query.Select(selector => new Employee()).FirstOrDefaultAsync();
+            if (employee != null) return true;
+            return false;
+        }
+
+        public async Task<bool> CheckDuplicatePhoneNo(string phoneNo, bool isUpdate)
+        {
+            var query = from x in context.Employees
+                        where x.PhoneNo.ToLower().Trim().Equals(phoneNo.ToLower().Trim())
+                        select new { x };
+            var employee = await query.Select(selector => new Employee()).FirstOrDefaultAsync();
+            if (employee != null) return true;
+            return false;
+        }
+
         public async Task<Employee> CheckLogin(LoginEmployee loginEmployee)
         {
             var query = from x in context.Employees
@@ -37,23 +57,25 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             {
                 Id = selector.x.Id,
                 Username = selector.x.Username,
+                Fullname = selector.x.Fullname,
+                ImageUrl = selector.x.ImageUrl,
                 Password = selector.x.Password,
                 PasswordSalt = selector.x.PasswordSalt,
                 Role = selector.x.Role,
                 SiteId = selector.x.SiteId,
                 RoleId = selector.x.RoleId,
-                Status = selector.x.Status
+                Status = selector.x.Status,
+                Email = selector.x.Email
             }).FirstOrDefaultAsync();
 
             return employee;
         }
 
-        public async Task<string> RegisterEmployee(Employee employee)
+        public async Task<bool> RegisterEmployee(Employee employee)
         {
-            //await context.AddAsync(employee);
-            //await Update();
-            var id = await Insert(employee);
-            return id;
+            await context.AddAsync(employee);
+            await Update();
+            return true;
         }
     }
 }

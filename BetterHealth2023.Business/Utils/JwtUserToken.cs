@@ -20,15 +20,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
         }
 
 
-        public static string CreateEmployeeToken(Employee employee, EmployeeInfo employeeInfo)
+        public static string CreateEmployeeToken(Employee employee)
         {
             List<Claim> claims = new List<Claim>
             {
                 //employeeID
                 new Claim(ClaimTypes.NameIdentifier, employee.Id),
                 new Claim(ClaimTypes.Role, employee.Role.RoleName),
-                new Claim(ClaimTypes.Name, employeeInfo.Fullname),
-                new Claim("Image", employeeInfo.ImageUrl)
+                new Claim(ClaimTypes.Name, employee.Fullname),
+                new Claim("Image", employee.ImageUrl)
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("JwtStorage:Token").Value));

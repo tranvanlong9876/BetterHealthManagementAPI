@@ -16,8 +16,6 @@ namespace BetterHealthManagementAPI.Controllers
     public class EmployeeAuthController : ControllerBase
     {
         private IEmployeeAuthService _employeeAuthService;
-        private readonly IConfiguration _configuration;
-
         public EmployeeAuthController(IEmployeeAuthService employeeAuthService)
         {
             _employeeAuthService = employeeAuthService;

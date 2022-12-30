@@ -13,13 +13,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
     public class EmployeeAuthService : IEmployeeAuthService
     {
         private readonly IEmployeeAuthRepo _employeeAuthRepo;
-        private readonly IEmployeeInfoRepo _employeeInfoRepo;
         private readonly IDynamicAddressRepo _dynamicAddressRepo;
 
-        public EmployeeAuthService(IEmployeeAuthRepo employeeAuthRepo, IEmployeeInfoRepo employeeInfoRepo, IDynamicAddressRepo dynamicAddressRepo)
+        public EmployeeAuthService(IEmployeeAuthRepo employeeAuthRepo, IDynamicAddressRepo dynamicAddressRepo)
         {
             _employeeAuthRepo = employeeAuthRepo;
-            _employeeInfoRepo = employeeInfoRepo;
             _dynamicAddressRepo = dynamicAddressRepo;
         }
 
@@ -37,16 +35,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
 
             if (!check) throw new ArgumentException("Mật khẩu đăng nhập không đúng.");
 
-            Repository.DatabaseModels.EmployeeInfo employeeInfo = await _employeeInfoRepo.GetEmployeeInfo(employee.Id);
-
-            string token = JwtUserToken.CreateEmployeeToken(employee, employeeInfo);
+            string token = JwtUserToken.CreateEmployeeToken(employee);
 
             EmployeeTokenModel employeeTokenModel = new()
             {
                 Id = employee.Id,
-                Name = employeeInfo.Fullname,
-                Email = employeeInfo.Email,
-                ImageURL = employeeInfo.ImageUrl,
+                Name = employee.Fullname,
+                Email = employee.Email,
+                ImageURL = employee.ImageUrl,
                 Status = employee.Status,
                 RoleId = employee.RoleId,
                 RoleName = employee.Role.RoleName,
@@ -59,7 +55,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
         public async Task<RegisterEmployeeStatus> Register(RegisterEmployee employee)
         {
             var check = false;
-            var employeeID = string.Empty;
             var checkError = new RegisterEmployeeStatus();
             var isMatches = employee.Password.Trim().Equals(employee.ConfirmPassword.Trim());
             if (!isMatches)
@@ -72,36 +67,23 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
                 checkError.isError = true;
                 checkError.DuplicateUsername = "Tài khoản nhân viên đã tồn tại, vui lòng nhập tài khoản khác.";
             }
-            if (await _employeeInfoRepo.CheckDuplicateEmail(employee.Email, false))
+            if (await _employeeAuthRepo.CheckDuplicateEmail(employee.Email, false))
             {
                 checkError.isError = true;
                 checkError.DuplicateEmail = "Email nhân viên đã tồn tại.";
             }
-            if (await _employeeInfoRepo.CheckDuplicatePhoneNo(employee.PhoneNo, false))
+            if (await _employeeAuthRepo.CheckDuplicatePhoneNo(employee.PhoneNo, false))
             {
                 checkError.isError = true;
-                checkError.DuplicatePhoneNo = "Email nhân viên đã tồn tại.";
+                checkError.DuplicatePhoneNo = "Số điện thoại nhân viên đã tồn tại.";
             }
 
             if (checkError.isError) return checkError;
 
             PasswordHash.CreatePasswordHash(employee.Password, out byte[] passwordHash, out byte[] passwordSalt);
-            var id = Guid.NewGuid().ToString();
+            var empID = Guid.NewGuid().ToString();
             var addressID = Guid.NewGuid().ToString();
             var insertAddress = false;
-            Repository.DatabaseModels.Employee employeeModel = new ()
-            {
-                Id = id,
-                Username = employee.Username,
-                Password = Convert.ToBase64String(passwordHash).Trim(),
-                PasswordSalt = Convert.ToBase64String(passwordSalt).Trim(),
-                RoleId = employee.RoleId,
-                SiteId = employee.SiteId,
-                Status = employee.Status
-            };
-
-            employeeID = await _employeeAuthRepo.RegisterEmployee(employeeModel);
-            //done Insert Employee.
 
             //check if need to insert Employee's Address?
             if(employee.CityID != null && employee.DistrictID != null && employee.WardID != null && employee.HomeNumber != null) {
@@ -117,18 +99,26 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
                 insertAddress = true;
             } //done insert employee's address.
 
-            Repository.DatabaseModels.EmployeeInfo employeeInfoModel = new()
+            Repository.DatabaseModels.Employee employeeModel = new()
             {
-                EmployeeId = employeeID,
+                Id = empID,
+                Code = employee.EmpCode,
+                Username = employee.Username,
                 Fullname = employee.Fullname,
                 PhoneNo = employee.PhoneNo,
                 Email = employee.Email,
                 AddressId = insertAddress ? addressID : null,
                 ImageUrl = employee.ImageUrl,
-                Dob = employee.DOB
+                Dob = employee.DOB,
+                Password = Convert.ToBase64String(passwordHash).Trim(),
+                PasswordSalt = Convert.ToBase64String(passwordSalt).Trim(),
+                RoleId = employee.RoleId,
+                SiteId = employee.SiteId,
+                Status = employee.Status,
+                Gender = employee.Gender  
             };
 
-            check = await _employeeInfoRepo.InsertEmployeeInfo(employeeInfoModel);
+            check = await _employeeAuthRepo.RegisterEmployee(employeeModel);
 
             if (check) {
                 checkError.isError = false;
