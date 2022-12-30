@@ -58,12 +58,14 @@ namespace BetterHealthManagementAPI
                         };
                     });
             JwtUserToken.Initialize(Configuration);
+
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddDbContext<BetterHealthManagementContext>();
 
+            //them tang service
             services.AddScoped<IEmployeeAuthService, EmployeeAuthService>();
 
-
+            //them tang repo
             services.AddTransient<IEmployeeAuthRepo, EmployeeAuthRepo>();
             services.AddTransient<IEmployeeInfoRepo, EmployeeInfoRepo>();
             services.AddTransient<IDynamicAddressRepo, DynamicAddressRepo>();
