@@ -57,9 +57,7 @@ namespace BetterHealthManagementAPI
                             ValidateAudience = false
                         };
                     });
-            //tao thêm cái này
             JwtUserToken.Initialize(Configuration);
-
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddDbContext<BetterHealthManagementContext>();
 
