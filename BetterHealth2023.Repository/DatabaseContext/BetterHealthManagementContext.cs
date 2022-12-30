@@ -26,11 +26,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<Customer> Customers { get; set; }
         public virtual DbSet<CustomerAddress> CustomerAddresses { get; set; }
         public virtual DbSet<CustomerCard> CustomerCards { get; set; }
-        public virtual DbSet<CustomerInformation> CustomerInformations { get; set; }
         public virtual DbSet<District> Districts { get; set; }
         public virtual DbSet<DynamicAddress> DynamicAddresses { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
-        public virtual DbSet<EmployeeInfo> EmployeeInfos { get; set; }
         public virtual DbSet<Manufacturer> Manufacturers { get; set; }
         public virtual DbSet<OrderDetail> OrderDetails { get; set; }
         public virtual DbSet<OrderExecution> OrderExecutions { get; set; }
@@ -66,8 +64,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server= 127.0.0.1; Database= BetterHealthManagement; User Id=sa; Password=123456Long;");
+                optionsBuilder.UseSqlServer("Name=ConnectionStrings:BetterHealthDatabase");
             }
         }
 
@@ -132,15 +129,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasConstraintName("FK_Customer_Card_Customer");
             });
 
-            modelBuilder.Entity<CustomerInformation>(entity =>
-            {
-                entity.HasOne(d => d.Customer)
-                    .WithMany()
-                    .HasForeignKey(d => d.CustomerId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Customer_Information_Customer");
-            });
-
             modelBuilder.Entity<District>(entity =>
             {
                 entity.HasOne(d => d.City)
@@ -174,6 +162,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
 
                 entity.Property(e => e.PasswordSalt).IsUnicode(false);
 
+                entity.HasOne(d => d.Address)
+                    .WithMany(p => p.Employees)
+                    .HasForeignKey(d => d.AddressId)
+                    .HasConstraintName("FK_Employee_Dynamic_Address");
+
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.Employees)
                     .HasForeignKey(d => d.RoleId)
@@ -185,20 +178,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasForeignKey(d => d.SiteId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Internal_User_Site_Information");
-            });
-
-            modelBuilder.Entity<EmployeeInfo>(entity =>
-            {
-                entity.HasOne(d => d.Address)
-                    .WithMany()
-                    .HasForeignKey(d => d.AddressId)
-                    .HasConstraintName("FK_Employee_Info_Dynamic_Address");
-
-                entity.HasOne(d => d.Employee)
-                    .WithMany()
-                    .HasForeignKey(d => d.EmployeeId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Employee_Info_Employee");
             });
 
             modelBuilder.Entity<OrderDetail>(entity =>

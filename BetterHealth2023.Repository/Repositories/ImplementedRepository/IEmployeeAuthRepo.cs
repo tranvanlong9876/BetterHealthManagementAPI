@@ -10,9 +10,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 {
     public interface IEmployeeAuthRepo : IRepository<Employee>
     {
-        public Task<string> RegisterEmployee(Employee employee);
+        public Task<bool> RegisterEmployee(Employee employee);
         public Task<Employee> CheckLogin(LoginEmployee loginEmployee);
 
         public Task<bool> CheckDuplicateUsername(string username);
+
+        public Task<bool> CheckDuplicatePhoneNo(string phoneNo, bool isUpdate);
+
+        public Task<bool> CheckDuplicateEmail(string email, bool isUpdate);
     }
 }

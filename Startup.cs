@@ -67,7 +67,6 @@ namespace BetterHealthManagementAPI
 
             //them tang repo
             services.AddTransient<IEmployeeAuthRepo, EmployeeAuthRepo>();
-            services.AddTransient<IEmployeeInfoRepo, EmployeeInfoRepo>();
             services.AddTransient<IDynamicAddressRepo, DynamicAddressRepo>();
         }
 
