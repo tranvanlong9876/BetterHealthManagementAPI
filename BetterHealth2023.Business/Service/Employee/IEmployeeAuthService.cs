@@ -10,6 +10,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
 {
     public interface IEmployeeAuthService
     {
+        //Tạo nhân viên
         Task<RegisterEmployeeStatus> Register(RegisterEmployee employee);
         Task<EmployeeTokenModel> Login(LoginEmployee loginEmployee);
     }
