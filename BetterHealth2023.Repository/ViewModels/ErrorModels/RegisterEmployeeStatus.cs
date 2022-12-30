@@ -7,6 +7,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Error
 {
     public class RegisterEmployeeStatus
     {
+        //check employee password
         public string ConfirmPasswordFailed { get; set; }
         public string DuplicateEmail { get; set; }
         public string DuplicatePhoneNo { get; set; }
