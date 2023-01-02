@@ -15,7 +15,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         public async Task<SiteInformation> InsertNewSite(SiteInformation siteInformation)
         {
-             context.AddAsync(siteInformation);
+            await context.AddAsync(siteInformation);
             await Update();
             return siteInformation;
         }  
