@@ -36,7 +36,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(2),
+                expires: DateTime.Now.AddMinutes(120),
                 signingCredentials: creds
                 );
 
