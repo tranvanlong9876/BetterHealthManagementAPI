@@ -24,6 +24,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [StringLength(50)]
         public string Id { get; set; }
         [Required]
+        [StringLength(100)]
+        public string Fullname { get; set; }
+        [Required]
         [StringLength(30)]
         public string PhoneNo { get; set; }
         public int Status { get; set; }

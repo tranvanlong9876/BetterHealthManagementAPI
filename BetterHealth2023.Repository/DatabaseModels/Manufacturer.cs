@@ -13,7 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
     {
         public Manufacturer()
         {
-            Products = new HashSet<Product>();
+            ProductParents = new HashSet<ProductParent>();
         }
 
         [Key]
@@ -23,8 +23,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Column("Manufacturer_Name")]
         [StringLength(500)]
         public string ManufacturerName { get; set; }
+        [StringLength(50)]
+        public string Country { get; set; }
 
-        [InverseProperty(nameof(Product.Manufacturer))]
-        public virtual ICollection<Product> Products { get; set; }
+        [InverseProperty(nameof(ProductParent.Manufacturer))]
+        public virtual ICollection<ProductParent> ProductParents { get; set; }
     }
 }
