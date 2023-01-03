@@ -10,5 +10,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
         Task<T?> Get(string id);
         Task<string> Insert(T entity);
         Task Update();
+        Task<List<T>?> GetAll();
+
     }
 }

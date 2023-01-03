@@ -7,8 +7,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 {
     public interface ISiteRepo: IRepository<SiteInformation>
     {
-        public Task<SiteInformation> InsertNewSite(SiteInformation siteInformation);
-        public Task<SiteInformation> UpdateSite(SiteInformation siteInformation);
+        public Task<bool> UpdateSite(SiteInformation siteInformation);
         public Task DeleteSite(SiteInformation siteInformation);
         public Task<SiteInformation> GetSiteById(string id);
     }
