@@ -23,14 +23,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string UserId { get; set; }
         [Column("Comment_Role")]
         public int? CommentRole { get; set; }
-        [Required]
-        [StringLength(50)]
-        public string CreateDate { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime CreateDate { get; set; }
         public int Leverage { get; set; }
         [Required]
         [Column("ParentID")]
         [StringLength(50)]
         public string ParentId { get; set; }
+        [Column("isAnonymous")]
+        public bool IsAnonymous { get; set; }
         [Column("Comment_Information_ID")]
         [StringLength(50)]
         public string CommentInformationId { get; set; }

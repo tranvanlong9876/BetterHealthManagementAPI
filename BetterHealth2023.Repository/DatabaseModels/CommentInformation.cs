@@ -27,7 +27,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string Email { get; set; }
         [StringLength(50)]
         public string PhoneNo { get; set; }
-        public bool Anonymous { get; set; }
 
         [InverseProperty(nameof(Comment.CommentInformation))]
         public virtual ICollection<Comment> Comments { get; set; }

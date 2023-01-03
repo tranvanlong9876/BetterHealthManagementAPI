@@ -13,7 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
     {
         public SubCategory()
         {
-            Products = new HashSet<Product>();
+            ProductParents = new HashSet<ProductParent>();
         }
 
         [Key]
@@ -30,7 +30,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [ForeignKey(nameof(MainCategoryId))]
         [InverseProperty(nameof(CategoryMain.SubCategories))]
         public virtual CategoryMain MainCategory { get; set; }
-        [InverseProperty(nameof(Product.SubCategory))]
-        public virtual ICollection<Product> Products { get; set; }
+        [InverseProperty(nameof(ProductParent.SubCategory))]
+        public virtual ICollection<ProductParent> ProductParents { get; set; }
     }
 }

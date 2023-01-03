@@ -36,7 +36,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<OrderStatus> OrderStatuses { get; set; }
         public virtual DbSet<OrderType> OrderTypes { get; set; }
         public virtual DbSet<PhoneOtp> PhoneOtps { get; set; }
-        public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<ProductBatchShelf> ProductBatchShelves { get; set; }
         public virtual DbSet<ProductBatchWarehouse> ProductBatchWarehouses { get; set; }
         public virtual DbSet<ProductDescription> ProductDescriptions { get; set; }
@@ -44,6 +43,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<ProductDiscount> ProductDiscounts { get; set; }
         public virtual DbSet<ProductIngredient> ProductIngredients { get; set; }
         public virtual DbSet<ProductIngredientDescription> ProductIngredientDescriptions { get; set; }
+        public virtual DbSet<ProductParent> ProductParents { get; set; }
         public virtual DbSet<PurchaseVoucherHistory> PurchaseVoucherHistories { get; set; }
         public virtual DbSet<RoleInternal> RoleInternals { get; set; }
         public virtual DbSet<ShelvesManagement> ShelvesManagements { get; set; }
@@ -280,25 +280,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .IsFixedLength(true);
             });
 
-            modelBuilder.Entity<Product>(entity =>
-            {
-                entity.HasOne(d => d.DrugDescription)
-                    .WithMany(p => p.Products)
-                    .HasForeignKey(d => d.DrugDescriptionId)
-                    .HasConstraintName("FK_Drug_Drug_Description");
-
-                entity.HasOne(d => d.Manufacturer)
-                    .WithMany(p => p.Products)
-                    .HasForeignKey(d => d.ManufacturerId)
-                    .HasConstraintName("FK_Drug_Manufacturer");
-
-                entity.HasOne(d => d.SubCategory)
-                    .WithMany(p => p.Products)
-                    .HasForeignKey(d => d.SubCategoryId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Drug_Sub_Category");
-            });
-
             modelBuilder.Entity<ProductBatchShelf>(entity =>
             {
                 entity.HasOne(d => d.Batch)
@@ -362,6 +343,25 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasForeignKey(d => d.IngredientId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Product_Ingredient_Description_Product_Ingredient");
+            });
+
+            modelBuilder.Entity<ProductParent>(entity =>
+            {
+                entity.HasOne(d => d.DrugDescription)
+                    .WithMany(p => p.ProductParents)
+                    .HasForeignKey(d => d.DrugDescriptionId)
+                    .HasConstraintName("FK_Drug_Drug_Description");
+
+                entity.HasOne(d => d.Manufacturer)
+                    .WithMany(p => p.ProductParents)
+                    .HasForeignKey(d => d.ManufacturerId)
+                    .HasConstraintName("FK_Drug_Manufacturer");
+
+                entity.HasOne(d => d.SubCategory)
+                    .WithMany(p => p.ProductParents)
+                    .HasForeignKey(d => d.SubCategoryId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Drug_Sub_Category");
             });
 
             modelBuilder.Entity<PurchaseVoucherHistory>(entity =>

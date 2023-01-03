@@ -31,15 +31,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string UnitId { get; set; }
         [Column("Unit_Level")]
         public int UnitLevel { get; set; }
-        public double? Quantitative { get; set; }
+        public int Quantitative { get; set; }
         [Required]
         [Column("ImageURL")]
         [StringLength(500)]
         public string ImageUrl { get; set; }
         [Column("sellQuantity")]
         public int SellQuantity { get; set; }
-        [Column(TypeName = "money")]
-        public decimal Price { get; set; }
+        public double Price { get; set; }
         [Column("isSell")]
         public bool IsSell { get; set; }
         [Column("Discount_ID")]
@@ -50,8 +49,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [InverseProperty(nameof(ProductDiscount.ProductDetails))]
         public virtual ProductDiscount Discount { get; set; }
         [ForeignKey(nameof(ProductIdParent))]
-        [InverseProperty(nameof(Product.ProductDetails))]
-        public virtual Product ProductIdParentNavigation { get; set; }
+        [InverseProperty(nameof(ProductParent.ProductDetails))]
+        public virtual ProductParent ProductIdParentNavigation { get; set; }
         [ForeignKey(nameof(UnitId))]
         [InverseProperty("ProductDetails")]
         public virtual Unit Unit { get; set; }

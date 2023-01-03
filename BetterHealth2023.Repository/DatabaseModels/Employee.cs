@@ -22,7 +22,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [StringLength(50)]
         public string Id { get; set; }
         [Required]
-        [StringLength(10)]
+        [StringLength(20)]
         public string Code { get; set; }
         [Required]
         [StringLength(50)]

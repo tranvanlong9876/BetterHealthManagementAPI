@@ -37,9 +37,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Required]
         public string ContactInfo { get; set; }
         [Column("isActivate")]
-        public bool? IsActivate { get; set; }
+        public bool IsActivate { get; set; }
         [Column("isDelivery")]
-        public bool? IsDelivery { get; set; }
+        public bool IsDelivery { get; set; }
 
         [ForeignKey(nameof(AddressId))]
         [InverseProperty(nameof(DynamicAddress.SiteInformations))]
