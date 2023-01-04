@@ -88,6 +88,25 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
 
             if (checkError.isError) return checkError;
 
+            //create empCode.
+            var lastestEmpCode = await _employeeAuthRepo.GetLatestEmployeeCode(); //PM0100002
+            int lastestCode = Convert.ToInt32(lastestEmpCode.Substring(4, 5)); //00002 -> 2
+            int newCode = lastestCode + 1; //-> 3
+
+            var currentLength = (lastestCode).ToString().Length; // length = 1
+            string newEmployeeCode = String.Empty;
+            if (employee.RoleId == "1") newEmployeeCode += "MN01";
+            if (employee.RoleId == "2") newEmployeeCode += "PM01";
+            if (currentLength < 5)
+            {
+                for(int i = currentLength; i < 5; i++)
+                {
+                    newEmployeeCode += "0";
+                }
+            }
+            newEmployeeCode += newCode.ToString();
+
+            //create encrypted Password for Employee.
             PasswordHash.CreatePasswordHash(employee.Password, out byte[] passwordHash, out byte[] passwordSalt);
             var empID = Guid.NewGuid().ToString();
             var addressID = Guid.NewGuid().ToString();
@@ -110,7 +129,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
             Repository.DatabaseModels.Employee employeeModel = new()
             {
                 Id = empID,
-                Code = employee.EmpCode,
+                Code = newEmployeeCode,
                 Username = employee.Username,
                 Fullname = employee.Fullname,
                 PhoneNo = employee.PhoneNo,
@@ -135,6 +154,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
                 checkError.isError = true;
                 checkError.OtherError = "Hệ thống đang bị lỗi, vui lòng thử lại sau.";
             }
+
+            await EmailService.SendWelcomeEmail(employee, $"Chào mừng {employee.Fullname} về đội của chúng tôi.", true);
+
             return checkError;
         }
     }

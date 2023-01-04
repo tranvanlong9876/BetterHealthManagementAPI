@@ -10,9 +10,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Emplo
     {
         [Required]
         [StringLength(50)]
-        public string EmpCode { get; set; } //import tạm, đúng business mã nhân viên được generate ngẫu nhiên.
-        [Required]
-        [StringLength(50)]
         public string Username { get; set; }
 
         [Required]
@@ -36,7 +33,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Emplo
         [StringLength(300)]
         public string HomeNumber { get; set; }
 
-        [StringLength(50)]
+        [StringLength(500)]
         public string ImageUrl { get; set; }
 
         [DataType(DataType.DateTime)]
