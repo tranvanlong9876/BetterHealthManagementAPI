@@ -52,6 +52,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
             return employeeTokenModel;
         }
 
+        public async Task<List<Repository.DatabaseModels.Employee>> GetEmployeeById(string id)
+        {
+            //để return thử
+            List<Repository.DatabaseModels.Employee> list = new List<Repository.DatabaseModels.Employee>();
+            return list;// ko mà nãy t sử lý qua repo 
+            //hạn chế đổi tên folder, mốt thêm file thôi.
+        }
+
         public async Task<RegisterEmployeeStatus> Register(RegisterEmployee employee)
         {
             var check = false;

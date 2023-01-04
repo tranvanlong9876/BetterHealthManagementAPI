@@ -13,24 +13,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
         }
 
-        public async Task<SiteInformation> InsertNewSite(SiteInformation siteInformation)
-        {
-            await context.AddAsync(siteInformation);
-            await Update();
-            return siteInformation;
-        }  
-       
 
-      
-        
-        public async Task<SiteInformation> UpdateSite(SiteInformation siteInformation)
+        public async Task<bool> UpdateSite(SiteInformation siteInformation)
         {
             context.Update(siteInformation);
             await Update();
-            return siteInformation;
+            return true;
         }
 
-      
         public async Task DeleteSite(SiteInformation siteInformation)
         {
             context.Remove(siteInformation);

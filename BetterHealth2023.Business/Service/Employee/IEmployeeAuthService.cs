@@ -12,8 +12,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
     {
         //Tạo nhân viên
         Task<RegisterEmployeeStatus> Register(RegisterEmployee employee);
-
-        //thằng Nguyên edit
+        
+        //Đăng nhập nội bộ
         Task<EmployeeTokenModel> Login(LoginEmployee loginEmployee);
+
+        Task<List<Repository.DatabaseModels.Employee>> GetEmployeeById(string id);
     }
 }
