@@ -44,9 +44,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
         }
 
 
+            public Task<SiteInformation> InsertSite(SiteInformation siteInformation)
+            {
+                throw new NotImplementedException();
+            }
 
-
-        public Task<bool> UpdateSite(SiteInformation siteInformation)
+            public Task<bool> UpdateSite(SiteInformation siteInformation)
         {
             return _siteRepo.UpdateSite(siteInformation);
         }
