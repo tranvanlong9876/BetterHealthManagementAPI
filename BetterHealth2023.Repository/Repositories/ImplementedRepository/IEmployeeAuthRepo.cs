@@ -19,6 +19,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         public Task<bool> CheckDuplicateEmail(string email, bool isUpdate);
 
+        public Task<List<Employee>> GetEmployeeBySiteID(string SiteID);
+        
         public Task<string> GetLatestEmployeeCode();
     }
 }

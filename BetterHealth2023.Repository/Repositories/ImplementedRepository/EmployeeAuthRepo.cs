@@ -37,6 +37,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return false;
         }
 
+        public async Task<List<Employee>> GetEmployeeBySiteID(string SiteID)
+        {
+            var query = from x in context.Employees
+                        where x.SiteId.ToLower().Trim().Equals(SiteID.ToLower().Trim())
+                        select new { x };
+            var employee = await query.Select(selector => new Employee()).ToListAsync();
+            return employee;
+        }
+
         public async Task<bool> CheckDuplicatePhoneNo(string phoneNo, bool isUpdate)
         {
             var query = from x in context.Employees
