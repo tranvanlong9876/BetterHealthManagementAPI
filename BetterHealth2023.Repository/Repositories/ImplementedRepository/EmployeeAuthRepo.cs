@@ -77,5 +77,21 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             await Update();
             return true;
         }
+
+        public async Task<string> GetLatestEmployeeCode()
+        {
+            var empCode = String.Empty;
+            var query = from x in context.Employees
+                        orderby x.Code.Substring(5,5) descending
+                        select new { x };
+            var employee = await query.Select(selector => new Employee()
+            {
+                Code = selector.x.Code
+            }).FirstOrDefaultAsync();
+
+            empCode = (employee != null) ? employee.Code : String.Empty;
+
+            return empCode;
+        }
     }
 }
