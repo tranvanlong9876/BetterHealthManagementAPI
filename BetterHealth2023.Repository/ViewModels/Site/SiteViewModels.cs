@@ -17,7 +17,5 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site
 
         public string AddressID { get; set; }
 
-
-
     }
 }
