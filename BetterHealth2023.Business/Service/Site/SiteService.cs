@@ -84,7 +84,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
 
             if (IsActive == true)
             {
-                List<InternalUser> employees = await _employeeAuthRepo.GetEmployeeBySiteID(SiteId);
+                List<Repository.DatabaseModels.InternalUser> employees = await _employeeAuthRepo.GetEmployeeBySiteID(SiteId);
                 if (employees.Count < 1)
                 {
                     return await Task.FromResult(false);

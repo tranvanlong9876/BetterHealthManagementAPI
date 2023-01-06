@@ -9,6 +9,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 {
     public interface IUserWorkingSiteRepo : IRepository<InternalUserWorkingSite>
     {
-        public Task<List<string>> getInternalUserIDOfWorkingSite(string siteID);
+        public Task<bool> InsertWorkingSite(InternalUserWorkingSite internalUserWorkingSite);
     }
 }

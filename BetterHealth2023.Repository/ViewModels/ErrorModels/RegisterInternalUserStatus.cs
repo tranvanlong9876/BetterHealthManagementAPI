@@ -12,6 +12,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Error
         public string DuplicatePhoneNo { get; set; }
         public string DuplicateUsername { get; set; }
         public string OtherError { get; set; }
+        public string missingSiteID { get; set; }
         public bool isError { get; set; } = false;
     }
 }

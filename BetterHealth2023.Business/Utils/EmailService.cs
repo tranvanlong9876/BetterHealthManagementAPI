@@ -61,11 +61,18 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             MemoryStream ms = new MemoryStream(imageBytes);
             if (registerEmployee.RoleId == "1")
             {
-                roleName = "Quản Lý";
+                roleName = "Quản Lý chi nhánh";
             } else if(registerEmployee.RoleId == "2")
             {
                 roleName = "Dược sĩ";
-            } else
+            } else if (registerEmployee.RoleId == "3")
+            {
+                roleName = "Chủ sở hữu";
+            } else if (registerEmployee.RoleId == "4")
+            {
+                roleName = "Quản lý tài khoản";
+            }
+            else
             {
                 return false;
             }

@@ -1,9 +1,12 @@
-using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUser;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.InternalUserAuthRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UserWorkingSiteRepos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -65,11 +68,14 @@ namespace BetterHealthManagementAPI
             services.AddDbContext<BetterHealthManagementContext>();
 
             //them tang service
-            services.AddScoped<IEmployeeAuthService, EmployeeAuthService>();
+            services.AddScoped<IInternalUserAuthService, InternalUserAuthService>();
+            services.AddScoped<ISiteService, SiteService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();
             services.AddTransient<IDynamicAddressRepo, DynamicAddressRepo>();
+            services.AddTransient<IUserWorkingSiteRepo, UserWorkingSiteRepo>();
+            services.AddTransient<ISiteRepo, SiteRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

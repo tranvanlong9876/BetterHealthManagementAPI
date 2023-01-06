@@ -16,10 +16,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         }
 
-        public async Task<List<string>> getInternalUserIDOfWorkingSite(string siteID)
+        public async Task<bool> InsertWorkingSite(InternalUserWorkingSite internalUserWorkingSite)
         {
-            List<string> alo = new List<string>();
-            return alo;
+            await context.AddAsync(internalUserWorkingSite);
+            await Update();
+            return true;
         }
     }
 }

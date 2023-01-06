@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
+namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUser
 {
-    public interface IEmployeeAuthService
+    public interface IInternalUserAuthService
     {
         //Tạo nhân viên
         Task<RegisterInternalUserStatus> Register(RegisterInternalUser employee);

@@ -8,18 +8,22 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UserWorkingSiteRepos;
 
-namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
+namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUser
 {
-    public class EmployeeAuthService : IEmployeeAuthService
+    public class InternalUserAuthService : IInternalUserAuthService
     {
         private readonly IInternalUserAuthRepo _employeeAuthRepo;
         private readonly IDynamicAddressRepo _dynamicAddressRepo;
+        private readonly IUserWorkingSiteRepo _userWorkingSiteRepo;
 
-        public EmployeeAuthService(IInternalUserAuthRepo employeeAuthRepo, IDynamicAddressRepo dynamicAddressRepo)
+        public InternalUserAuthService(IInternalUserAuthRepo employeeAuthRepo, IDynamicAddressRepo dynamicAddressRepo, IUserWorkingSiteRepo userWorkingSiteRepo)
         {
             _employeeAuthRepo = employeeAuthRepo;
             _dynamicAddressRepo = dynamicAddressRepo;
+            _userWorkingSiteRepo = userWorkingSiteRepo;
         }
 
         public async Task<InternalUserTokenModel> Login(LoginInternalUser loginEmployee)
@@ -55,10 +59,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
 
         public async Task<List<Repository.DatabaseModels.InternalUser>> GetEmployeeById(string id)
         {
-            //để return thử
             List<Repository.DatabaseModels.InternalUser> list = new List<Repository.DatabaseModels.InternalUser>();
-            return list;// ko mà nãy t sử lý qua repo 
-            //hạn chế đổi tên folder, mốt thêm file thôi.
+            return list;
         }
 
         public async Task<RegisterInternalUserStatus> Register(RegisterInternalUser internalUser)
@@ -74,30 +76,41 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
 
             if (await _employeeAuthRepo.CheckDuplicateUsername(internalUser.Username)) {
                 checkError.isError = true;
-                checkError.DuplicateUsername = "Tài khoản nhân viên đã tồn tại, vui lòng nhập tài khoản khác.";
+                checkError.DuplicateUsername = "Tài khoản đã tồn tại, vui lòng nhập tài khoản khác.";
             }
             if (await _employeeAuthRepo.CheckDuplicateEmail(internalUser.Email, false))
             {
                 checkError.isError = true;
-                checkError.DuplicateEmail = "Email nhân viên đã tồn tại.";
+                checkError.DuplicateEmail = "Email đã tồn tại.";
             }
             if (await _employeeAuthRepo.CheckDuplicatePhoneNo(internalUser.PhoneNo, false))
             {
                 checkError.isError = true;
-                checkError.DuplicatePhoneNo = "Số điện thoại nhân viên đã tồn tại.";
+                checkError.DuplicatePhoneNo = "Số điện thoại đã tồn tại.";
+            }
+            if (internalUser.RoleId == "1" || internalUser.RoleId == "2")
+            {
+                if(internalUser.SiteId == null)
+                {
+                    checkError.isError = true;
+                    checkError.missingSiteID = "Khi đăng ký cho tài khoản Manager hoặc Employee, bắt buộc phải có Mã chi nhánh làm việc hợp lệ.";
+                }
             }
 
             if (checkError.isError) return checkError;
 
             //create empCode.
             var lastestEmpCode = await _employeeAuthRepo.GetLatestEmployeeCode(); //PM0100002
-            int lastestCode = Convert.ToInt32(lastestEmpCode.Substring(4, 5)); //00002 -> 2
-            int newCode = lastestCode + 1; //-> 3
+            int lastestCode = 0;
+            if (lastestEmpCode != String.Empty) lastestCode = Convert.ToInt32(lastestEmpCode.Substring(4, 5)); //00002 -> 2
 
-            var currentLength = (lastestCode).ToString().Length; // length = 1
+            int newCode = lastestCode + 1; //-> 3
+            var currentLength = newCode.ToString().Length; // length = 1
             string newEmployeeCode = String.Empty;
             if (internalUser.RoleId == "1") newEmployeeCode += "MN01";
             if (internalUser.RoleId == "2") newEmployeeCode += "PM01";
+            if (internalUser.RoleId == "3") newEmployeeCode += "OW01";
+            if (internalUser.RoleId == "4") newEmployeeCode += "AD01";
             if (currentLength < 5)
             {
                 for(int i = currentLength; i < 5; i++)
@@ -141,23 +154,42 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
                 Password = Convert.ToBase64String(passwordHash).Trim(),
                 PasswordSalt = Convert.ToBase64String(passwordSalt).Trim(),
                 RoleId = internalUser.RoleId,
-                //SiteId = employee.SiteId, hàm này cần sửa lại
                 Status = internalUser.Status,
                 Gender = internalUser.Gender  
             };
 
             check = await _employeeAuthRepo.RegisterInternalUser(internalUserModel);
 
+            //check if is internal user role Employee or role Manager, run this function to insert working place.
+            if (internalUser.RoleId == "1" || internalUser.RoleId == "2")
+            {
+                if (check)
+                {
+                    var workingSiteID = Guid.NewGuid().ToString();
+                    InternalUserWorkingSite internalUserWorkingSiteModel = new()
+                    {
+                        Id = workingSiteID,
+                        SiteId = internalUser.SiteId,
+                        UserId = empID,
+                        CreatedDate = DateTime.Now,
+                        UpdatedDate = DateTime.Now
+                    };
+
+                    check = await _userWorkingSiteRepo.InsertWorkingSite(internalUserWorkingSiteModel);
+
+                }
+            } //insert working site done.
+
             if (check) {
                 checkError.isError = false;
-            } else
+                await EmailService.SendWelcomeEmail(internalUser, $"Chào mừng {internalUser.Fullname} về đội của chúng tôi.", true);
+                //send account information via email for new internal user.
+            }
+            else
             {
                 checkError.isError = true;
                 checkError.OtherError = "Hệ thống đang bị lỗi, vui lòng thử lại sau.";
             }
-
-            await EmailService.SendWelcomeEmail(internalUser, $"Chào mừng {internalUser.Fullname} về đội của chúng tôi.", true);
-
             return checkError;
         }
     }

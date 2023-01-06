@@ -1,4 +1,4 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUser;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
 using Microsoft.AspNetCore.Authorization;
@@ -15,8 +15,8 @@ namespace BetterHealthManagementAPI.Controllers
     [ApiController]
     public class InternalUserAuthController : ControllerBase
     {
-        private IEmployeeAuthService _employeeAuthService;
-        public InternalUserAuthController(IEmployeeAuthService employeeAuthService)
+        private IInternalUserAuthService _employeeAuthService;
+        public InternalUserAuthController(IInternalUserAuthService employeeAuthService)
         {
             _employeeAuthService = employeeAuthService;
         }
@@ -35,7 +35,7 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
-        [HttpPut, Authorize(Roles = "Manager")]
+        [HttpPut, Authorize(Roles = "Admin")]
         public async Task<IActionResult> RegisterNewEmployee(RegisterInternalUser employee) 
         {
             try

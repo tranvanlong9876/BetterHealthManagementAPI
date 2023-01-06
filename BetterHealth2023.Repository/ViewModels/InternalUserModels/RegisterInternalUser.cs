@@ -48,7 +48,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Inter
         [StringLength(50)]
         public string RoleId { get; set; }
         [StringLength(50)]
-        [Required]
         public string SiteId { get; set; }
         [Required]
         [Range(0, 1, ErrorMessage = "Dữ liệu Status phải là 0 hoặc 1. 1 là Nhân viên hoạt động, 0 là ngưng hoạt động")]
