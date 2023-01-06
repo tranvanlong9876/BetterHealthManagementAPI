@@ -8,12 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 {
-    [Table("WarehouseEntry_Receipt")]
-    public partial class WarehouseEntryReceipt
+    [Table("ProductImport_Receipt")]
+    public partial class ProductImportReceipt
     {
-        public WarehouseEntryReceipt()
+        public ProductImportReceipt()
         {
-            WarehouseEntryReceiptProductBatches = new HashSet<WarehouseEntryReceiptProductBatch>();
+            ProductImportBatches = new HashSet<ProductImportBatch>();
         }
 
         [Key]
@@ -24,9 +24,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [StringLength(50)]
         public string SiteId { get; set; }
         [Required]
-        [Column("Employee_ID")]
+        [Column("Manager_ID")]
         [StringLength(50)]
-        public string EmployeeId { get; set; }
+        public string ManagerId { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime ImportDate { get; set; }
         [Required]
@@ -36,13 +36,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Column("isReleased")]
         public bool IsReleased { get; set; }
 
-        [ForeignKey(nameof(EmployeeId))]
-        [InverseProperty("WarehouseEntryReceipts")]
-        public virtual Employee Employee { get; set; }
+        [ForeignKey(nameof(ManagerId))]
+        [InverseProperty(nameof(InternalUser.ProductImportReceipts))]
+        public virtual InternalUser Manager { get; set; }
         [ForeignKey(nameof(SiteId))]
-        [InverseProperty(nameof(SiteInformation.WarehouseEntryReceipts))]
+        [InverseProperty(nameof(SiteInformation.ProductImportReceipts))]
         public virtual SiteInformation Site { get; set; }
-        [InverseProperty(nameof(WarehouseEntryReceiptProductBatch.Receipt))]
-        public virtual ICollection<WarehouseEntryReceiptProductBatch> WarehouseEntryReceiptProductBatches { get; set; }
+        [InverseProperty(nameof(ProductImportBatch.Receipt))]
+        public virtual ICollection<ProductImportBatch> ProductImportBatches { get; set; }
     }
 }

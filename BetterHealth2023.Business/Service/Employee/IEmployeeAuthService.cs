@@ -1,4 +1,4 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Employee;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -11,11 +11,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
     public interface IEmployeeAuthService
     {
         //Tạo nhân viên
-        Task<RegisterEmployeeStatus> Register(RegisterEmployee employee);
+        Task<RegisterInternalUserStatus> Register(RegisterInternalUser employee);
         
         //Đăng nhập nội bộ
-        Task<EmployeeTokenModel> Login(LoginEmployee loginEmployee);
+        Task<InternalUserTokenModel> Login(LoginInternalUser loginEmployee);
 
-        Task<List<Repository.DatabaseModels.Employee>> GetEmployeeById(string id);
+        Task<List<Repository.DatabaseModels.InternalUser>> GetEmployeeById(string id);
+        
     }
 }

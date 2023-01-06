@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.InternalUserAuthRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site;
 using Microsoft.AspNetCore.Mvc;
@@ -13,9 +14,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
     {
         private readonly ISiteRepo _siteRepo;
         private readonly IDynamicAddressRepo _dynamicAddressRepo;
-        private readonly IEmployeeAuthRepo _employeeAuthRepo;
+        private readonly IInternalUserAuthRepo _employeeAuthRepo;
 
-        public SiteService(ISiteRepo siteRepo, IDynamicAddressRepo dynamicAddressRepo, IEmployeeAuthRepo employeeAuthRepo )
+        public SiteService(ISiteRepo siteRepo, IDynamicAddressRepo dynamicAddressRepo, IInternalUserAuthRepo employeeAuthRepo )
         {
             _siteRepo = siteRepo;
             _dynamicAddressRepo = dynamicAddressRepo;
@@ -83,7 +84,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
 
             if (IsActive == true)
             {
-                List<Repository.DatabaseModels.Employee> employees = await _employeeAuthRepo.GetEmployeeBySiteID(SiteId);
+                List<InternalUser> employees = await _employeeAuthRepo.GetEmployeeBySiteID(SiteId);
                 if (employees.Count < 1)
                 {
                     return await Task.FromResult(false);
@@ -106,7 +107,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
 
             if (IsDelivery == true)
             {
-                List<Repository.DatabaseModels.Employee> employees = await _employeeAuthRepo.GetEmployeeBySiteID(SiteId);
+                List<Repository.DatabaseModels.InternalUser> employees = await _employeeAuthRepo.GetEmployeeBySiteID(SiteId);
                 if (employees.Count < 2)
                 {
                     return await Task.FromResult(false);

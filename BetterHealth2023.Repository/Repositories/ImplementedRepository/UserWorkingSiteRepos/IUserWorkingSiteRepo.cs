@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository
+namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UserWorkingSiteRepos
 {
-    public interface IDynamicAddressRepo : IRepository<DynamicAddress>
+    public interface IUserWorkingSiteRepo : IRepository<InternalUserWorkingSite>
     {
-        public Task<bool> InsertNewAddress(DynamicAddress dynamicAddress);
+        public Task<List<string>> getInternalUserIDOfWorkingSite(string siteID);
     }
 }

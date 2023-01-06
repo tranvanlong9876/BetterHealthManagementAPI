@@ -13,11 +13,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
     {
         public SiteInformation()
         {
-            Employees = new HashSet<Employee>();
+            InternalUserWorkingSites = new HashSet<InternalUserWorkingSite>();
             OrderHeaders = new HashSet<OrderHeader>();
-            ShelvesManagements = new HashSet<ShelvesManagement>();
-            WarehouseEntryReceipts = new HashSet<WarehouseEntryReceipt>();
-            WarehouseManagements = new HashSet<WarehouseManagement>();
+            ProductImportReceipts = new HashSet<ProductImportReceipt>();
         }
 
         [Key]
@@ -48,15 +46,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [ForeignKey(nameof(AddressId))]
         [InverseProperty(nameof(DynamicAddress.SiteInformations))]
         public virtual DynamicAddress Address { get; set; }
-        [InverseProperty(nameof(Employee.Site))]
-        public virtual ICollection<Employee> Employees { get; set; }
+        [InverseProperty(nameof(InternalUserWorkingSite.Site))]
+        public virtual ICollection<InternalUserWorkingSite> InternalUserWorkingSites { get; set; }
         [InverseProperty(nameof(OrderHeader.Site))]
         public virtual ICollection<OrderHeader> OrderHeaders { get; set; }
-        [InverseProperty(nameof(ShelvesManagement.Site))]
-        public virtual ICollection<ShelvesManagement> ShelvesManagements { get; set; }
-        [InverseProperty(nameof(WarehouseEntryReceipt.Site))]
-        public virtual ICollection<WarehouseEntryReceipt> WarehouseEntryReceipts { get; set; }
-        [InverseProperty(nameof(WarehouseManagement.Site))]
-        public virtual ICollection<WarehouseManagement> WarehouseManagements { get; set; }
+        [InverseProperty(nameof(ProductImportReceipt.Site))]
+        public virtual ICollection<ProductImportReceipt> ProductImportReceipts { get; set; }
     }
 }

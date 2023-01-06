@@ -27,7 +27,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string EmployeeId { get; set; }
 
         [ForeignKey(nameof(EmployeeId))]
-        [InverseProperty("Blogs")]
-        public virtual Employee Employee { get; set; }
+        [InverseProperty(nameof(InternalUser.Blogs))]
+        public virtual InternalUser Employee { get; set; }
     }
 }

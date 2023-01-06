@@ -14,8 +14,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public ProductDetail()
         {
             Comments = new HashSet<Comment>();
-            ShelvesManagements = new HashSet<ShelvesManagement>();
-            WarehouseManagements = new HashSet<WarehouseManagement>();
         }
 
         [Key]
@@ -56,9 +54,5 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public virtual Unit Unit { get; set; }
         [InverseProperty(nameof(Comment.Product))]
         public virtual ICollection<Comment> Comments { get; set; }
-        [InverseProperty(nameof(ShelvesManagement.Product))]
-        public virtual ICollection<ShelvesManagement> ShelvesManagements { get; set; }
-        [InverseProperty(nameof(WarehouseManagement.Product))]
-        public virtual ICollection<WarehouseManagement> WarehouseManagements { get; set; }
     }
 }

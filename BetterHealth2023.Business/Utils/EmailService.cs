@@ -1,4 +1,4 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Employee;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -52,7 +52,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             }
         }
 
-        public static async Task<bool> SendWelcomeEmail(RegisterEmployee registerEmployee, string subject, bool isHtml)
+        public static async Task<bool> SendWelcomeEmail(RegisterInternalUser registerEmployee, string subject, bool isHtml)
         {
             string roleName = String.Empty;
             string imageURL = registerEmployee.ImageUrl;

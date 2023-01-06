@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository
+namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos
 {
     public class DynamicAddressRepo : Repository<DynamicAddress>, IDynamicAddressRepo
     {

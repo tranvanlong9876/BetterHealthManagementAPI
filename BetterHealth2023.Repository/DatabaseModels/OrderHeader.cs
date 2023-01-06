@@ -11,11 +11,18 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
     [Table("OrderHeader")]
     public partial class OrderHeader
     {
+        public OrderHeader()
+        {
+            OrderBatches = new HashSet<OrderBatch>();
+        }
+
         [Key]
         [StringLength(50)]
         public string Id { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime? CreateDate { get; set; }
+        [Column("isApproved")]
+        public bool IsApproved { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime? ApprovedDate { get; set; }
         [Column("CustomerID")]
@@ -49,8 +56,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [InverseProperty("OrderHeaders")]
         public virtual Customer Customer { get; set; }
         [ForeignKey(nameof(EmployeeId))]
-        [InverseProperty("OrderHeaders")]
-        public virtual Employee Employee { get; set; }
+        [InverseProperty(nameof(InternalUser.OrderHeaders))]
+        public virtual InternalUser Employee { get; set; }
         [ForeignKey(nameof(OrderStatus))]
         [InverseProperty("OrderHeaders")]
         public virtual OrderStatus OrderStatusNavigation { get; set; }
@@ -63,5 +70,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [ForeignKey(nameof(VoucherCode))]
         [InverseProperty(nameof(Voucher.OrderHeaders))]
         public virtual Voucher VoucherCodeNavigation { get; set; }
+        [InverseProperty(nameof(OrderBatch.Order))]
+        public virtual ICollection<OrderBatch> OrderBatches { get; set; }
     }
 }

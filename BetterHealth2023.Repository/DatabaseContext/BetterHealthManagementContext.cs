@@ -28,25 +28,27 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<CustomerCard> CustomerCards { get; set; }
         public virtual DbSet<District> Districts { get; set; }
         public virtual DbSet<DynamicAddress> DynamicAddresses { get; set; }
-        public virtual DbSet<Employee> Employees { get; set; }
+        public virtual DbSet<InternalUser> InternalUsers { get; set; }
+        public virtual DbSet<InternalUserWorkingSite> InternalUserWorkingSites { get; set; }
         public virtual DbSet<Manufacturer> Manufacturers { get; set; }
+        public virtual DbSet<OrderBatch> OrderBatches { get; set; }
         public virtual DbSet<OrderDetail> OrderDetails { get; set; }
         public virtual DbSet<OrderExecution> OrderExecutions { get; set; }
         public virtual DbSet<OrderHeader> OrderHeaders { get; set; }
         public virtual DbSet<OrderStatus> OrderStatuses { get; set; }
         public virtual DbSet<OrderType> OrderTypes { get; set; }
         public virtual DbSet<PhoneOtp> PhoneOtps { get; set; }
-        public virtual DbSet<ProductBatchShelf> ProductBatchShelves { get; set; }
-        public virtual DbSet<ProductBatchWarehouse> ProductBatchWarehouses { get; set; }
         public virtual DbSet<ProductDescription> ProductDescriptions { get; set; }
         public virtual DbSet<ProductDetail> ProductDetails { get; set; }
         public virtual DbSet<ProductDiscount> ProductDiscounts { get; set; }
+        public virtual DbSet<ProductImportBatch> ProductImportBatches { get; set; }
+        public virtual DbSet<ProductImportDetail> ProductImportDetails { get; set; }
+        public virtual DbSet<ProductImportReceipt> ProductImportReceipts { get; set; }
         public virtual DbSet<ProductIngredient> ProductIngredients { get; set; }
         public virtual DbSet<ProductIngredientDescription> ProductIngredientDescriptions { get; set; }
         public virtual DbSet<ProductParent> ProductParents { get; set; }
         public virtual DbSet<PurchaseVoucherHistory> PurchaseVoucherHistories { get; set; }
         public virtual DbSet<RoleInternal> RoleInternals { get; set; }
-        public virtual DbSet<ShelvesManagement> ShelvesManagements { get; set; }
         public virtual DbSet<SiteInformation> SiteInformations { get; set; }
         public virtual DbSet<SubCategory> SubCategories { get; set; }
         public virtual DbSet<Unit> Units { get; set; }
@@ -55,10 +57,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<VoucherDetail> VoucherDetails { get; set; }
         public virtual DbSet<VoucherShop> VoucherShops { get; set; }
         public virtual DbSet<Ward> Wards { get; set; }
-        public virtual DbSet<WarehouseEntryReceipt> WarehouseEntryReceipts { get; set; }
-        public virtual DbSet<WarehouseEntryReceiptProductBatch> WarehouseEntryReceiptProductBatches { get; set; }
-        public virtual DbSet<WarehouseEntryReceiptProductDetail> WarehouseEntryReceiptProductDetails { get; set; }
-        public virtual DbSet<WarehouseManagement> WarehouseManagements { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -156,28 +154,52 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasConstraintName("FK_Dynamic_Address_Ward");
             });
 
-            modelBuilder.Entity<Employee>(entity =>
+            modelBuilder.Entity<InternalUser>(entity =>
             {
                 entity.Property(e => e.Password).IsUnicode(false);
 
                 entity.Property(e => e.PasswordSalt).IsUnicode(false);
 
                 entity.HasOne(d => d.Address)
-                    .WithMany(p => p.Employees)
+                    .WithMany(p => p.InternalUsers)
                     .HasForeignKey(d => d.AddressId)
                     .HasConstraintName("FK_Employee_Dynamic_Address");
 
                 entity.HasOne(d => d.Role)
-                    .WithMany(p => p.Employees)
+                    .WithMany(p => p.InternalUsers)
                     .HasForeignKey(d => d.RoleId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Internal_User_Role_Internal");
+            });
 
+            modelBuilder.Entity<InternalUserWorkingSite>(entity =>
+            {
                 entity.HasOne(d => d.Site)
-                    .WithMany(p => p.Employees)
+                    .WithMany(p => p.InternalUserWorkingSites)
                     .HasForeignKey(d => d.SiteId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Internal_User_Site_Information");
+                    .HasConstraintName("FK_InternalUser_WorkingSite_Site_Information");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.InternalUserWorkingSites)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_InternalUser_WorkingSite_Internal_User");
+            });
+
+            modelBuilder.Entity<OrderBatch>(entity =>
+            {
+                entity.HasOne(d => d.Batch)
+                    .WithMany(p => p.OrderBatches)
+                    .HasForeignKey(d => d.BatchId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Order_Batches_ProductImport_Batches");
+
+                entity.HasOne(d => d.Order)
+                    .WithMany(p => p.OrderBatches)
+                    .HasForeignKey(d => d.OrderId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Order_Batches_OrderHeader");
             });
 
             modelBuilder.Entity<OrderDetail>(entity =>
@@ -280,36 +302,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .IsFixedLength(true);
             });
 
-            modelBuilder.Entity<ProductBatchShelf>(entity =>
-            {
-                entity.HasOne(d => d.Batch)
-                    .WithMany()
-                    .HasForeignKey(d => d.BatchId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Product_Batch_Shelves_WarehouseEntry_Receipt_ProductBatches");
-
-                entity.HasOne(d => d.Shelves)
-                    .WithMany()
-                    .HasForeignKey(d => d.ShelvesId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Product_Batch_Shelves_Shelves_Management");
-            });
-
-            modelBuilder.Entity<ProductBatchWarehouse>(entity =>
-            {
-                entity.HasOne(d => d.Batch)
-                    .WithMany()
-                    .HasForeignKey(d => d.BatchId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Product_Batch_Warehouse_WarehouseEntry_Receipt_ProductBatches1");
-
-                entity.HasOne(d => d.Warehouse)
-                    .WithMany()
-                    .HasForeignKey(d => d.WarehouseId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Product_Batch_Warehouse_Warehouse_Management");
-            });
-
             modelBuilder.Entity<ProductDetail>(entity =>
             {
                 entity.HasOne(d => d.Discount)
@@ -328,6 +320,51 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasForeignKey(d => d.UnitId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Product_Details_Unit");
+            });
+
+            modelBuilder.Entity<ProductImportBatch>(entity =>
+            {
+                entity.HasOne(d => d.Receipt)
+                    .WithMany(p => p.ProductImportBatches)
+                    .HasForeignKey(d => d.ReceiptId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_WarehouseEntry_Receipt_ProductBatches_WarehouseEntry_Receipt");
+            });
+
+            modelBuilder.Entity<ProductImportDetail>(entity =>
+            {
+                entity.HasOne(d => d.Product)
+                    .WithMany()
+                    .HasForeignKey(d => d.ProductId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_WarehouseEntry_Receipt_ProductDetails_Product_Details");
+
+                entity.HasOne(d => d.ProductNavigation)
+                    .WithMany()
+                    .HasForeignKey(d => d.ProductId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_WarehouseEntry_Receipt_ProductDetails_WarehouseEntry_Receipt_ProductBatches");
+
+                entity.HasOne(d => d.Receipt)
+                    .WithMany()
+                    .HasForeignKey(d => d.ReceiptId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_WarehouseEntry_Receipt_ProductDetails_WarehouseEntry_Receipt");
+            });
+
+            modelBuilder.Entity<ProductImportReceipt>(entity =>
+            {
+                entity.HasOne(d => d.Manager)
+                    .WithMany(p => p.ProductImportReceipts)
+                    .HasForeignKey(d => d.ManagerId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_WarehouseEntry_Receipt_Employee");
+
+                entity.HasOne(d => d.Site)
+                    .WithMany(p => p.ProductImportReceipts)
+                    .HasForeignKey(d => d.SiteId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_WarehouseEntry_Receipt_Site_Information");
             });
 
             modelBuilder.Entity<ProductIngredientDescription>(entity =>
@@ -377,21 +414,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasForeignKey(d => d.VoucherShopId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_PurchaseVoucherHistory_VoucherShop");
-            });
-
-            modelBuilder.Entity<ShelvesManagement>(entity =>
-            {
-                entity.HasOne(d => d.Product)
-                    .WithMany(p => p.ShelvesManagements)
-                    .HasForeignKey(d => d.ProductId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Shelves_Management_Product_Details");
-
-                entity.HasOne(d => d.Site)
-                    .WithMany(p => p.ShelvesManagements)
-                    .HasForeignKey(d => d.SiteId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Shelves_Management_Site_Information");
             });
 
             modelBuilder.Entity<SiteInformation>(entity =>
@@ -449,68 +471,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasForeignKey(d => d.DistrictId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Warp_District");
-            });
-
-            modelBuilder.Entity<WarehouseEntryReceipt>(entity =>
-            {
-                entity.HasOne(d => d.Employee)
-                    .WithMany(p => p.WarehouseEntryReceipts)
-                    .HasForeignKey(d => d.EmployeeId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_WarehouseEntry_Receipt_Employee");
-
-                entity.HasOne(d => d.Site)
-                    .WithMany(p => p.WarehouseEntryReceipts)
-                    .HasForeignKey(d => d.SiteId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_WarehouseEntry_Receipt_Site_Information");
-            });
-
-            modelBuilder.Entity<WarehouseEntryReceiptProductBatch>(entity =>
-            {
-                entity.HasOne(d => d.Receipt)
-                    .WithMany(p => p.WarehouseEntryReceiptProductBatches)
-                    .HasForeignKey(d => d.ReceiptId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_WarehouseEntry_Receipt_ProductBatches_WarehouseEntry_Receipt");
-            });
-
-            modelBuilder.Entity<WarehouseEntryReceiptProductDetail>(entity =>
-            {
-                entity.HasOne(d => d.Product)
-                    .WithMany()
-                    .HasForeignKey(d => d.ProductId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_WarehouseEntry_Receipt_ProductDetails_Product_Details");
-
-                entity.HasOne(d => d.ProductNavigation)
-                    .WithMany()
-                    .HasForeignKey(d => d.ProductId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_WarehouseEntry_Receipt_ProductDetails_WarehouseEntry_Receipt_ProductBatches");
-
-                entity.HasOne(d => d.Receipt)
-                    .WithMany()
-                    .HasForeignKey(d => d.ReceiptId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_WarehouseEntry_Receipt_ProductDetails_WarehouseEntry_Receipt");
-            });
-
-            modelBuilder.Entity<WarehouseManagement>(entity =>
-            {
-                entity.Property(e => e.Quantity).IsFixedLength(true);
-
-                entity.HasOne(d => d.Product)
-                    .WithMany(p => p.WarehouseManagements)
-                    .HasForeignKey(d => d.ProductId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Product_Management_Product_Details");
-
-                entity.HasOne(d => d.Site)
-                    .WithMany(p => p.WarehouseManagements)
-                    .HasForeignKey(d => d.SiteId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Drug_Management_Site_Information");
             });
 
             OnModelCreatingPartial(modelBuilder);

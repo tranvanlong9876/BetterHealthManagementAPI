@@ -1,17 +1,17 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Employee;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository
+namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.InternalUserAuthRepos
 {
-    public interface IEmployeeAuthRepo : IRepository<Employee>
+    public interface IInternalUserAuthRepo : IRepository<InternalUser>
     {
-        public Task<bool> RegisterEmployee(Employee employee);
-        public Task<Employee> CheckLogin(LoginEmployee loginEmployee);
+        public Task<bool> RegisterInternalUser(InternalUser internalUser);
+        public Task<InternalUser> CheckLogin(LoginInternalUser loginEmployee);
 
         public Task<bool> CheckDuplicateUsername(string username);
 
@@ -19,7 +19,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         public Task<bool> CheckDuplicateEmail(string email, bool isUpdate);
 
-        public Task<List<Employee>> GetEmployeeBySiteID(string SiteID);
+        public Task<List<InternalUser>> GetEmployeeBySiteID(string SiteID);
         
         public Task<string> GetLatestEmployeeCode();
     }

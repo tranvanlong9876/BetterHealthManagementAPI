@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels
 {
-    public class RegisterEmployeeStatus
+    public class RegisterInternalUserStatus
     {
         public string ConfirmPasswordFailed { get; set; }
         public string DuplicateEmail { get; set; }

@@ -8,9 +8,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 {
-    [Table("WarehouseEntry_Receipt_ProductBatches")]
-    public partial class WarehouseEntryReceiptProductBatch
+    [Table("ProductImport_Batches")]
+    public partial class ProductImportBatch
     {
+        public ProductImportBatch()
+        {
+            OrderBatches = new HashSet<OrderBatch>();
+        }
+
         [Key]
         [StringLength(50)]
         public string Id { get; set; }
@@ -27,9 +32,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public DateTime ManufactureDate { get; set; }
         [Column(TypeName = "date")]
         public DateTime ExpireDate { get; set; }
+        [Column("isOutOfStock")]
+        public bool IsOutOfStock { get; set; }
 
         [ForeignKey(nameof(ReceiptId))]
-        [InverseProperty(nameof(WarehouseEntryReceipt.WarehouseEntryReceiptProductBatches))]
-        public virtual WarehouseEntryReceipt Receipt { get; set; }
+        [InverseProperty(nameof(ProductImportReceipt.ProductImportBatches))]
+        public virtual ProductImportReceipt Receipt { get; set; }
+        [InverseProperty(nameof(OrderBatch.Batch))]
+        public virtual ICollection<OrderBatch> OrderBatches { get; set; }
     }
 }

@@ -13,7 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
     {
         public DynamicAddress()
         {
-            Employees = new HashSet<Employee>();
+            InternalUsers = new HashSet<InternalUser>();
             SiteInformations = new HashSet<SiteInformation>();
         }
 
@@ -41,8 +41,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [ForeignKey(nameof(WardId))]
         [InverseProperty("DynamicAddresses")]
         public virtual Ward Ward { get; set; }
-        [InverseProperty(nameof(Employee.Address))]
-        public virtual ICollection<Employee> Employees { get; set; }
+        [InverseProperty(nameof(InternalUser.Address))]
+        public virtual ICollection<InternalUser> InternalUsers { get; set; }
         [InverseProperty(nameof(SiteInformation.Address))]
         public virtual ICollection<SiteInformation> SiteInformations { get; set; }
     }

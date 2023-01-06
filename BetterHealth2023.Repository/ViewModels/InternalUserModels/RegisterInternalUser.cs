@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Employee
+namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels
 {
-    public class RegisterEmployee
+    public class RegisterInternalUser
     {
         [Required]
         [StringLength(50)]

@@ -2,6 +2,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.InternalUserAuthRepos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -66,7 +68,7 @@ namespace BetterHealthManagementAPI
             services.AddScoped<IEmployeeAuthService, EmployeeAuthService>();
 
             //them tang repo
-            services.AddTransient<IEmployeeAuthRepo, EmployeeAuthRepo>();
+            services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();
             services.AddTransient<IDynamicAddressRepo, DynamicAddressRepo>();
         }
 

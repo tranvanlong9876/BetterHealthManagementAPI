@@ -8,14 +8,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 {
-    [Table("Employee")]
-    public partial class Employee
+    [Table("Internal_User")]
+    public partial class InternalUser
     {
-        public Employee()
+        public InternalUser()
         {
             Blogs = new HashSet<Blog>();
+            InternalUserWorkingSites = new HashSet<InternalUserWorkingSite>();
             OrderHeaders = new HashSet<OrderHeader>();
-            WarehouseEntryReceipts = new HashSet<WarehouseEntryReceipt>();
+            ProductImportReceipts = new HashSet<ProductImportReceipt>();
         }
 
         [Key]
@@ -50,10 +51,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Column("ImageURL")]
         [StringLength(500)]
         public string ImageUrl { get; set; }
-        [Required]
-        [Column("SiteID")]
-        [StringLength(50)]
-        public string SiteId { get; set; }
         public int Status { get; set; }
         [Column("AddressID")]
         [StringLength(50)]
@@ -63,19 +60,18 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public int? Gender { get; set; }
 
         [ForeignKey(nameof(AddressId))]
-        [InverseProperty(nameof(DynamicAddress.Employees))]
+        [InverseProperty(nameof(DynamicAddress.InternalUsers))]
         public virtual DynamicAddress Address { get; set; }
         [ForeignKey(nameof(RoleId))]
-        [InverseProperty(nameof(RoleInternal.Employees))]
+        [InverseProperty(nameof(RoleInternal.InternalUsers))]
         public virtual RoleInternal Role { get; set; }
-        [ForeignKey(nameof(SiteId))]
-        [InverseProperty(nameof(SiteInformation.Employees))]
-        public virtual SiteInformation Site { get; set; }
         [InverseProperty(nameof(Blog.Employee))]
         public virtual ICollection<Blog> Blogs { get; set; }
+        [InverseProperty(nameof(InternalUserWorkingSite.User))]
+        public virtual ICollection<InternalUserWorkingSite> InternalUserWorkingSites { get; set; }
         [InverseProperty(nameof(OrderHeader.Employee))]
         public virtual ICollection<OrderHeader> OrderHeaders { get; set; }
-        [InverseProperty(nameof(WarehouseEntryReceipt.Employee))]
-        public virtual ICollection<WarehouseEntryReceipt> WarehouseEntryReceipts { get; set; }
+        [InverseProperty(nameof(ProductImportReceipt.Manager))]
+        public virtual ICollection<ProductImportReceipt> ProductImportReceipts { get; set; }
     }
 }

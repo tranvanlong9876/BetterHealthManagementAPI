@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Employee
+namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels
 {
-    public class EmployeeTokenModel
+    public class InternalUserTokenModel
     {
         public string Id { get; set; }
         public string Name { get; set; } = string.Empty;

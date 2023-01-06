@@ -39,6 +39,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [ForeignKey(nameof(StatusChangeTo))]
         public virtual OrderStatus StatusChangeToNavigation { get; set; }
         [ForeignKey(nameof(UserId))]
-        public virtual Employee User { get; set; }
+        public virtual InternalUser User { get; set; }
     }
 }

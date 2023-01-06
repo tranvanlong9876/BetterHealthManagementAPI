@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore;
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 {
     [Keyless]
-    [Table("WarehouseEntry_Receipt_ProductDetails")]
-    public partial class WarehouseEntryReceiptProductDetail
+    [Table("ProductImport_Details")]
+    public partial class ProductImportDetail
     {
         [Required]
         [Column("Receipt_ID")]
@@ -27,8 +27,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [ForeignKey(nameof(ProductId))]
         public virtual ProductDetail Product { get; set; }
         [ForeignKey(nameof(ProductId))]
-        public virtual WarehouseEntryReceiptProductBatch ProductNavigation { get; set; }
+        public virtual ProductImportBatch ProductNavigation { get; set; }
         [ForeignKey(nameof(ReceiptId))]
-        public virtual WarehouseEntryReceipt Receipt { get; set; }
+        public virtual ProductImportReceipt Receipt { get; set; }
     }
 }

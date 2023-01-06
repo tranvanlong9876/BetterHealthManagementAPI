@@ -13,7 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
     {
         public RoleInternal()
         {
-            Employees = new HashSet<Employee>();
+            InternalUsers = new HashSet<InternalUser>();
         }
 
         [Key]
@@ -23,7 +23,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [StringLength(70)]
         public string RoleName { get; set; }
 
-        [InverseProperty(nameof(Employee.Role))]
-        public virtual ICollection<Employee> Employees { get; set; }
+        [InverseProperty(nameof(InternalUser.Role))]
+        public virtual ICollection<InternalUser> InternalUsers { get; set; }
     }
 }

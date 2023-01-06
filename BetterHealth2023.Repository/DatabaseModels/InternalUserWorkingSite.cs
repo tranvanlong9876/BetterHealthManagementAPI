@@ -8,32 +8,30 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 {
-    [Table("Warehouse_Management")]
-    public partial class WarehouseManagement
+    [Table("InternalUser_WorkingSite")]
+    public partial class InternalUserWorkingSite
     {
         [Key]
         [StringLength(50)]
         public string Id { get; set; }
         [Required]
-        [Column("Product_ID")]
+        [Column("UserID")]
         [StringLength(50)]
-        public string ProductId { get; set; }
+        public string UserId { get; set; }
         [Required]
         [Column("SiteID")]
         [StringLength(50)]
         public string SiteId { get; set; }
         [Column(TypeName = "datetime")]
-        public DateTime UpdateDate { get; set; }
-        [Required]
-        [StringLength(10)]
-        public string Quantity { get; set; }
-        public int Status { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? UpdatedDate { get; set; }
 
-        [ForeignKey(nameof(ProductId))]
-        [InverseProperty(nameof(ProductDetail.WarehouseManagements))]
-        public virtual ProductDetail Product { get; set; }
         [ForeignKey(nameof(SiteId))]
-        [InverseProperty(nameof(SiteInformation.WarehouseManagements))]
+        [InverseProperty(nameof(SiteInformation.InternalUserWorkingSites))]
         public virtual SiteInformation Site { get; set; }
+        [ForeignKey(nameof(UserId))]
+        [InverseProperty(nameof(InternalUser.InternalUserWorkingSites))]
+        public virtual InternalUser User { get; set; }
     }
 }

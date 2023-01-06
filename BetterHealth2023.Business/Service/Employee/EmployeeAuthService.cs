@@ -1,86 +1,87 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Employee;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.InternalUserAuthRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
 {
     public class EmployeeAuthService : IEmployeeAuthService
     {
-        private readonly IEmployeeAuthRepo _employeeAuthRepo;
+        private readonly IInternalUserAuthRepo _employeeAuthRepo;
         private readonly IDynamicAddressRepo _dynamicAddressRepo;
 
-        public EmployeeAuthService(IEmployeeAuthRepo employeeAuthRepo, IDynamicAddressRepo dynamicAddressRepo)
+        public EmployeeAuthService(IInternalUserAuthRepo employeeAuthRepo, IDynamicAddressRepo dynamicAddressRepo)
         {
             _employeeAuthRepo = employeeAuthRepo;
             _dynamicAddressRepo = dynamicAddressRepo;
         }
 
-        public async Task<EmployeeTokenModel> Login(LoginEmployee loginEmployee)
+        public async Task<InternalUserTokenModel> Login(LoginInternalUser loginEmployee)
         {
-            Repository.DatabaseModels.Employee employee = await _employeeAuthRepo.CheckLogin(loginEmployee);
+            Repository.DatabaseModels.InternalUser user = await _employeeAuthRepo.CheckLogin(loginEmployee);
 
-            if(employee == null) throw new ArgumentException("Không tìm thấy tài khoản của nhân viên.");
-            if (employee.Status == 0) throw new ArgumentException("Tài khoản nhân viên đã ngưng kích hoạt, vui lòng liên hệ Admin để được hỗ trợ.");
+            if(user == null) throw new ArgumentException("Không tìm thấy tài khoản của nhân viên.");
+            if (user.Status == 0) throw new ArgumentException("Tài khoản nhân viên đã ngưng kích hoạt, vui lòng liên hệ Admin để được hỗ trợ.");
 
-            byte[] passwordHashByte = PasswordHash.GetByteFromString(employee.Password);
-            byte[] passwordSaltByte = PasswordHash.GetByteFromString(employee.PasswordSalt);
+            byte[] passwordHashByte = PasswordHash.GetByteFromString(user.Password);
+            byte[] passwordSaltByte = PasswordHash.GetByteFromString(user.PasswordSalt);
 
             var check = PasswordHash.VerifyPasswordHash(loginEmployee.Password.Trim(), passwordHashByte, passwordSaltByte);
 
             if (!check) throw new ArgumentException("Mật khẩu đăng nhập không đúng.");
 
-            string token = JwtUserToken.CreateEmployeeToken(employee);
+            string token = JwtUserToken.CreateInternalUserToken(user);
 
-            EmployeeTokenModel employeeTokenModel = new()
+            InternalUserTokenModel employeeTokenModel = new()
             {
-                Id = employee.Id,
-                Name = employee.Fullname,
-                Email = employee.Email,
-                ImageURL = employee.ImageUrl,
-                Status = employee.Status,
-                RoleId = employee.RoleId,
-                RoleName = employee.Role.RoleName,
+                Id = user.Id,
+                Name = user.Fullname,
+                Email = user.Email,
+                ImageURL = user.ImageUrl,
+                Status = user.Status,
+                RoleId = user.RoleId,
+                RoleName = user.Role.RoleName,
                 Token = token
             };
 
             return employeeTokenModel;
         }
 
-        public async Task<List<Repository.DatabaseModels.Employee>> GetEmployeeById(string id)
+        public async Task<List<Repository.DatabaseModels.InternalUser>> GetEmployeeById(string id)
         {
             //để return thử
-            List<Repository.DatabaseModels.Employee> list = new List<Repository.DatabaseModels.Employee>();
+            List<Repository.DatabaseModels.InternalUser> list = new List<Repository.DatabaseModels.InternalUser>();
             return list;// ko mà nãy t sử lý qua repo 
             //hạn chế đổi tên folder, mốt thêm file thôi.
         }
 
-        public async Task<RegisterEmployeeStatus> Register(RegisterEmployee employee)
+        public async Task<RegisterInternalUserStatus> Register(RegisterInternalUser internalUser)
         {
             var check = false;
-            var checkError = new RegisterEmployeeStatus();
-            var isMatches = employee.Password.Trim().Equals(employee.ConfirmPassword.Trim());
+            var checkError = new RegisterInternalUserStatus();
+            var isMatches = internalUser.Password.Trim().Equals(internalUser.ConfirmPassword.Trim());
             if (!isMatches)
             {
                 checkError.isError = true;
                 checkError.ConfirmPasswordFailed = "Mật khẩu xác nhận không trùng khớp.";
             }
 
-            if (await _employeeAuthRepo.CheckDuplicateUsername(employee.Username)) {
+            if (await _employeeAuthRepo.CheckDuplicateUsername(internalUser.Username)) {
                 checkError.isError = true;
                 checkError.DuplicateUsername = "Tài khoản nhân viên đã tồn tại, vui lòng nhập tài khoản khác.";
             }
-            if (await _employeeAuthRepo.CheckDuplicateEmail(employee.Email, false))
+            if (await _employeeAuthRepo.CheckDuplicateEmail(internalUser.Email, false))
             {
                 checkError.isError = true;
                 checkError.DuplicateEmail = "Email nhân viên đã tồn tại.";
             }
-            if (await _employeeAuthRepo.CheckDuplicatePhoneNo(employee.PhoneNo, false))
+            if (await _employeeAuthRepo.CheckDuplicatePhoneNo(internalUser.PhoneNo, false))
             {
                 checkError.isError = true;
                 checkError.DuplicatePhoneNo = "Số điện thoại nhân viên đã tồn tại.";
@@ -95,8 +96,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
 
             var currentLength = (lastestCode).ToString().Length; // length = 1
             string newEmployeeCode = String.Empty;
-            if (employee.RoleId == "1") newEmployeeCode += "MN01";
-            if (employee.RoleId == "2") newEmployeeCode += "PM01";
+            if (internalUser.RoleId == "1") newEmployeeCode += "MN01";
+            if (internalUser.RoleId == "2") newEmployeeCode += "PM01";
             if (currentLength < 5)
             {
                 for(int i = currentLength; i < 5; i++)
@@ -107,45 +108,45 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
             newEmployeeCode += newCode.ToString();
 
             //create encrypted Password for Employee.
-            PasswordHash.CreatePasswordHash(employee.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            PasswordHash.CreatePasswordHash(internalUser.Password, out byte[] passwordHash, out byte[] passwordSalt);
             var empID = Guid.NewGuid().ToString();
             var addressID = Guid.NewGuid().ToString();
             var insertAddress = false;
 
             //check if need to insert Employee's Address?
-            if(employee.CityID != null && employee.DistrictID != null && employee.WardID != null && employee.HomeNumber != null) {
+            if(internalUser.CityID != null && internalUser.DistrictID != null && internalUser.WardID != null && internalUser.HomeNumber != null) {
                 Repository.DatabaseModels.DynamicAddress dynamicAddress = new()
                 {
                     Id = addressID,
-                    CityId = employee.CityID,
-                    DistrictId = employee.DistrictID,
-                    WardId = employee.WardID,
-                    HomeAddress = employee.HomeNumber
+                    CityId = internalUser.CityID,
+                    DistrictId = internalUser.DistrictID,
+                    WardId = internalUser.WardID,
+                    HomeAddress = internalUser.HomeNumber
                 };
                 await _dynamicAddressRepo.InsertNewAddress(dynamicAddress);
                 insertAddress = true;
             } //done insert employee's address.
 
-            Repository.DatabaseModels.Employee employeeModel = new()
+            Repository.DatabaseModels.InternalUser internalUserModel = new()
             {
                 Id = empID,
                 Code = newEmployeeCode,
-                Username = employee.Username,
-                Fullname = employee.Fullname,
-                PhoneNo = employee.PhoneNo,
-                Email = employee.Email,
+                Username = internalUser.Username,
+                Fullname = internalUser.Fullname,
+                PhoneNo = internalUser.PhoneNo,
+                Email = internalUser.Email,
                 AddressId = insertAddress ? addressID : null,
-                ImageUrl = employee.ImageUrl,
-                Dob = employee.DOB,
+                ImageUrl = internalUser.ImageUrl,
+                Dob = internalUser.DOB,
                 Password = Convert.ToBase64String(passwordHash).Trim(),
                 PasswordSalt = Convert.ToBase64String(passwordSalt).Trim(),
-                RoleId = employee.RoleId,
-                SiteId = employee.SiteId,
-                Status = employee.Status,
-                Gender = employee.Gender  
+                RoleId = internalUser.RoleId,
+                //SiteId = employee.SiteId, hàm này cần sửa lại
+                Status = internalUser.Status,
+                Gender = internalUser.Gender  
             };
 
-            check = await _employeeAuthRepo.RegisterEmployee(employeeModel);
+            check = await _employeeAuthRepo.RegisterInternalUser(internalUserModel);
 
             if (check) {
                 checkError.isError = false;
@@ -155,7 +156,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Employee
                 checkError.OtherError = "Hệ thống đang bị lỗi, vui lòng thử lại sau.";
             }
 
-            await EmailService.SendWelcomeEmail(employee, $"Chào mừng {employee.Fullname} về đội của chúng tôi.", true);
+            await EmailService.SendWelcomeEmail(internalUser, $"Chào mừng {internalUser.Fullname} về đội của chúng tôi.", true);
 
             return checkError;
         }
