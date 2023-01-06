@@ -48,7 +48,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string Email { get; set; }
         [Required]
         [Column("ImageURL")]
-        [StringLength(100)]
+        [StringLength(500)]
         public string ImageUrl { get; set; }
         [Required]
         [Column("SiteID")]
