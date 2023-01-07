@@ -1,5 +1,6 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;

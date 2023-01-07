@@ -15,12 +15,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         public Task<bool> CheckDuplicateUsername(string username);
 
-        public Task<bool> CheckDuplicatePhoneNo(string phoneNo, bool isUpdate);
+        public Task<bool> CheckDuplicatePhoneNo(string username, string phoneNo, bool isUpdate);
 
-        public Task<bool> CheckDuplicateEmail(string email, bool isUpdate);
+        public Task<bool> CheckDuplicateEmail(string username, string email, bool isUpdate);
 
         public Task<List<InternalUser>> GetEmployeeBySiteID(string SiteID);
         
         public Task<string> GetLatestEmployeeCode();
+
+        public Task<string> GetInternalUserID(string username);
+        public Task<InternalUser> GetOldPassword(UpdateInternalUser updateInternalUser);
+        public Task<bool> ChangePassword(string guid, string passwordHash, string passwordSalt);
     }
 }

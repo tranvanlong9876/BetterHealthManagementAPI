@@ -78,12 +78,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
                 checkError.isError = true;
                 checkError.DuplicateUsername = "Tài khoản đã tồn tại, vui lòng nhập tài khoản khác.";
             }
-            if (await _employeeAuthRepo.CheckDuplicateEmail(internalUser.Email, false))
+            if (await _employeeAuthRepo.CheckDuplicateEmail(internalUser.Username, internalUser.Email, false))
             {
                 checkError.isError = true;
                 checkError.DuplicateEmail = "Email đã tồn tại.";
             }
-            if (await _employeeAuthRepo.CheckDuplicatePhoneNo(internalUser.PhoneNo, false))
+            if (await _employeeAuthRepo.CheckDuplicatePhoneNo(internalUser.Username, internalUser.PhoneNo, false))
             {
                 checkError.isError = true;
                 checkError.DuplicatePhoneNo = "Số điện thoại đã tồn tại.";
@@ -184,6 +184,141 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
                 checkError.isError = false;
                 await EmailService.SendWelcomeEmail(internalUser, $"Chào mừng {internalUser.Fullname} về đội của chúng tôi.", true);
                 //send account information via email for new internal user.
+            }
+            else
+            {
+                checkError.isError = true;
+                checkError.OtherError = "Hệ thống đang bị lỗi, vui lòng thử lại sau.";
+            }
+            return checkError;
+        }
+
+        public async Task<UpdateInternalUserStatus> UpdateInternalUser(UpdateInternalUser user)
+        {
+            var check = false;
+            var checkError = new UpdateInternalUserStatus();
+
+            //lấy ra mã khóa chính từ username của nhân viên.
+            var EmpGuid = await _employeeAuthRepo.GetInternalUserID(user.Username.Trim());
+
+            //kiểm tra trùng lặp email và số điện thoại so với các nhân viên khác.
+            if (await _employeeAuthRepo.CheckDuplicateEmail(user.Username, user.Email, true))
+            {
+                checkError.isError = true;
+                checkError.DuplicateEmail = "Email đã tồn tại.";
+            }
+            if (await _employeeAuthRepo.CheckDuplicatePhoneNo(user.Username, user.PhoneNo, true))
+            {
+                checkError.isError = true;
+                checkError.DuplicatePhoneNo = "Số điện thoại đã tồn tại.";
+            }
+            //hủy chức năng và báo cáo lại việc email hoặc sđt bị trùng với các nhân viên khác.
+            if (checkError.isError) return checkError;
+
+            //nếu nhân viên nội bộ cần thay đổi mật khẩu. isChangePassword = true
+            if (user.isChangePassword) 
+            {
+                //kiểm tra thông tin cần để thay đổi mật khẩu nhân viên đã nhập đủ chưa?
+                if(user.OldPassword == null || user.NewPassword == null || user.ConfirmPassword == null)
+                {
+                    checkError.isError = true;
+                    checkError.RequireChangePasswordFailed = "Thông tin cần thay đổi mật khẩu nhập không đầy đủ, vui lòng kiểm tra lại.";
+                    return checkError;
+                }
+                //bắt đầu kiểm tra password cũ.
+
+                //get old password.
+                Repository.DatabaseModels.InternalUser internalUser = await _employeeAuthRepo.GetOldPassword(user);
+
+                //giải mã
+                byte[] passwordHashByte = PasswordHash.GetByteFromString(internalUser.Password);
+                byte[] passwordSaltByte = PasswordHash.GetByteFromString(internalUser.PasswordSalt);
+
+                var checkOldPassword = PasswordHash.VerifyPasswordHash(user.OldPassword.Trim(), passwordHashByte, passwordSaltByte);
+                if(checkOldPassword) //nếu mật khẩu cũ nhập chính xác
+                {
+                    //kiểm tra mật khẩu mới nhập vs nhau đã trùng khớp chưa.
+                    var isMatches = user.NewPassword.Trim().Equals(user.ConfirmPassword.Trim());
+                    if (!isMatches)
+                    {
+                        checkError.isError = true;
+                        checkError.ConfirmPasswordFailed = "Mật khẩu xác nhận không trùng khớp.";
+                        return checkError;
+                    }
+                    //xác nhận trùng khớp, mã hóa mật khẩu mới cho nhân viên.
+                    PasswordHash.CreatePasswordHash(user.NewPassword.Trim(), out byte[] newPasswordHash, out byte[] newPasswordSalt);
+                    //thay đổi mật khẩu.
+                    check = await _employeeAuthRepo.ChangePassword(EmpGuid, Convert.ToBase64String(newPasswordHash).Trim(), Convert.ToBase64String(newPasswordSalt).Trim());
+                    
+                    if(!check)
+                    {
+                        checkError.isError = true;
+                        checkError.RequireChangePasswordFailed = "Lỗi thay đổi mật khẩu, vui lòng kiểm tra lại.";
+                        return checkError;
+                    }
+                } else //sai mật khẩu cũ.
+                {
+                    checkError.isError = true;
+                    checkError.WrongOldPassword = "Sai mật khẩu cũ, vui lòng thử lại.";
+                    return checkError;
+                }
+            } //hoàn thành quá trình kiểm tra và thay đổi mật khẩu.
+
+            //Mỗi nhân viên chỉ được tự cập nhật thông tin tài khoản của chính mình.
+            //Thông tin được cập nhật ngoại trừ Code, Role, Status.
+
+            //lấy dữ liệu user nội bộ đang có.
+            var currentUser = await _employeeAuthRepo.Get(EmpGuid);
+
+            //khi update bắt buộc bổ sung đủ địa chỉ.
+            //kiểm tra nhân viên đã có địa chỉ khi tạo chưa ?
+
+            //nếu chưa có
+            if(currentUser.AddressId == null || currentUser.AddressId.Equals(String.Empty))
+            {
+                //tạo mới địa chỉ
+                var newAddressId = Guid.NewGuid().ToString();
+                DynamicAddress dynamicAddress = new DynamicAddress()
+                {
+                    CityId = user.CityID,
+                    DistrictId = user.DistrictID,
+                    WardId = user.WardID,
+                    HomeAddress = user.HomeNumber,
+                    Id = newAddressId
+                };
+                await _dynamicAddressRepo.InsertNewAddress(dynamicAddress);
+                //thêm xong, cập nhật địa chỉ vào cho user.
+                currentUser.AddressId = newAddressId;
+                await _employeeAuthRepo.Update();
+            } else //nếu địa chỉ đã có sẵn
+            {
+                //lấy ra mã địa chỉ của user
+                var currentAddressID = currentUser.AddressId;
+                //lấy thông tin địa chỉ
+                var userAddress = await _dynamicAddressRepo.Get(currentAddressID);
+                //cập nhật lại thông tin
+                userAddress.CityId = user.CityID;
+                userAddress.DistrictId = user.DistrictID;
+                userAddress.WardId = user.WardID;
+                userAddress.HomeAddress = user.HomeNumber;
+
+                await _dynamicAddressRepo.Update();
+            }
+
+            //tiến hành cập nhật nốt các thông tin còn lại.
+
+            currentUser.Dob = user.DOB;
+            currentUser.Gender = user.Gender;
+            currentUser.ImageUrl = user.ImageUrl;
+            currentUser.PhoneNo = user.PhoneNo;
+            currentUser.Email = user.Email;
+            currentUser.Fullname = user.Fullname;
+
+            check = await _employeeAuthRepo.Update();
+
+            if (check)
+            {
+                checkError.isError = false;
             }
             else
             {
