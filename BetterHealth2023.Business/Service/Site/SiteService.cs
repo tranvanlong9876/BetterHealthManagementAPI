@@ -178,10 +178,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
             return _siteRepo.UpdateSite(siteInformation);
         }
 
-        public Task DeleteSite(SiteInformation siteInformation)
-        {
-            throw new System.NotImplementedException();
-        }
+    
 
         public Task<SiteInformation> GetSiteById(string id)
         {
