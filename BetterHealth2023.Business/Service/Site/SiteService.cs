@@ -91,34 +91,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
                 }
 
 
-                if (IsDelivery == true)
-                {
-                    List<Repository.DatabaseModels.InternalUser> employees =
-                        await _employeeAuthRepo.GetEmployeeBySiteID(SiteId);
-                    if (employees.Count < 2)
-                    {
-                        return await Task.FromResult(false);
-                    }
-                }
-
-                if (IsDelivery == false)
-                {
-                List<OrderHeader> orderHeaders = await _orderHeaderRepo.GetOrderHeadersBySiteId(SiteId);
-                if (orderHeaders.Count < 1)
-                {
-                    throw new Exception("Site must have at least one order");
-                }
-
-                foreach (var x in orderHeaders)
-                {
-                    if (x.OrderStatus != "1" || x.OrderStatus != "4" || x.OrderStatus != "8")
-                    {
-                        throw new Exception("Site still have order in progress");
-                    }
-
-                }
-            }
-
+              
                 site.IsActivate = IsDelivery;
                 site.LastUpdate = DateTime.Now;
                 await _siteRepo.Update();
@@ -134,38 +107,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
                     throw new Exception("Site not found");
                 }
 
-
-                if (IsActive == true)
-                {
-                    List<Repository.DatabaseModels.InternalUser> employees =
-                        await _employeeAuthRepo.GetEmployeeBySiteID(SiteId);
-                    if (employees.Count < 1)
-                    {
-                        throw new Exception("Site must have at least one employee");
-                    }
-                }
-
-                if (IsActive == false)
-                {
-                    List<OrderHeader> orderHeaders = await _orderHeaderRepo.GetOrderHeadersBySiteId(SiteId);
-                    if (orderHeaders.Count < 1)
-                    {
-                        throw new Exception("Site must have at least one order");
-                    }
-
-                    foreach (var x in orderHeaders)
-                    {
-                        if (x.OrderStatus != "1" || x.OrderStatus != "4" || x.OrderStatus != "8")
-                        {
-                            throw new Exception("Site still have order in progress");
-                        }
-
-                    }
-
-                UpdateSiteIsDelivery(SiteId, false);
-
-
-            }
                 site.IsActivate = IsActive;
                 site.LastUpdate = DateTime.Now;
                 await _siteRepo.Update();
@@ -173,17 +114,21 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
             }
 
 
-        public Task<bool> UpdateSite(SiteInformation siteInformation)
+        public async Task<bool> UpdateSite(SiteInformation siteInformation)
         {
-            return _siteRepo.UpdateSite(siteInformation);
+            return await _siteRepo.UpdateSite(siteInformation);
         }
 
-    
 
-        public Task<SiteInformation> GetSiteById(string id)
+
+        public async Task<SiteInformation> GetSite(string siteId)
         {
-            throw new System.NotImplementedException();
+            //get site by id
+            return await _siteRepo.GetSiteById(siteId)
         }
+
+
+
 
     }
 }
