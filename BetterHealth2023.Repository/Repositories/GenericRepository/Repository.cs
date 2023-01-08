@@ -30,9 +30,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
             return entity.GetType().GetProperty("Id").GetValue(entity).ToString();
         }
 
-        public async Task Update()
+        public async Task<bool> Update()
         {
             await context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<List<T>> GetAll()

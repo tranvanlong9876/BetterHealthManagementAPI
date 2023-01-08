@@ -12,6 +12,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
     {
         //Tạo nhân viên
         Task<RegisterInternalUserStatus> Register(RegisterInternalUser employee);
+
+        //Cập nhật thông tin tài khoản
+        Task<UpdateInternalUserStatus> UpdateInternalUser(UpdateInternalUser user);
         
         //Đăng nhập nội bộ
         Task<InternalUserTokenModel> Login(LoginInternalUser loginEmployee);

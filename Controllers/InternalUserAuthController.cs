@@ -6,13 +6,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.Controllers
 {
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/User")]
     [ApiController]
+    [Authorize]
     public class InternalUserAuthController : ControllerBase
     {
         private IInternalUserAuthService _employeeAuthService;
@@ -21,7 +23,8 @@ namespace BetterHealthManagementAPI.Controllers
             _employeeAuthService = employeeAuthService;
         }
 
-        [HttpPost]
+        [HttpPost("Login")]
+        [AllowAnonymous]
         public async Task<IActionResult> LoginInternal(LoginInternalUser loginEmployee) {
             try
             {
@@ -35,7 +38,7 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
-        [HttpPut, Authorize(Roles = "Admin")]
+        [HttpPost("Register"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> RegisterNewEmployee(RegisterInternalUser employee) 
         {
             try
@@ -47,6 +50,23 @@ namespace BetterHealthManagementAPI.Controllers
                 }
                 return Created("", "Create new employee successfully.");
             } catch (Exception ex)
+            {
+                return BadRequest(ex.ToString());
+            }
+        }
+
+        [HttpPut("Update"), Authorize]
+        public async Task<IActionResult> UpdateInternalUser(UpdateInternalUser updateInternalUser)
+        {
+            try
+            {
+                var check = await _employeeAuthService.UpdateInternalUser(updateInternalUser);
+                if(check.isError)
+                {
+                    return BadRequest(check);
+                }
+                return NoContent();
+            } catch(Exception ex)
             {
                 return BadRequest(ex.ToString());
             }
