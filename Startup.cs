@@ -5,6 +5,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.InternalUserAuthRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UserWorkingSiteRepos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -76,6 +77,7 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IDynamicAddressRepo, DynamicAddressRepo>();
             services.AddTransient<IUserWorkingSiteRepo, UserWorkingSiteRepo>();
             services.AddTransient<ISiteRepo, SiteRepo>();
+            services.AddTransient<IOrderHeaderRepo, OrderHeaderRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
