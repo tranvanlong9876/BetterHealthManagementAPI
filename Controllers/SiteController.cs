@@ -57,7 +57,7 @@ namespace BetterHealthManagementAPI.Controllers
         [HttpPut("Update-Site")]
         [Authorize(Roles="Admin")]
         [AllowAnonymous]
-        public async Task<IActionResult> UpdateSite(UpdateSiteModel UpdateSiteModels)
+        public async Task<IActionResult> UpdateSite([FromBody]UpdateSiteModel UpdateSiteModels)
         {
 
             try
