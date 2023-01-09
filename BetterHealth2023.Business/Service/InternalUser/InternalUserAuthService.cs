@@ -398,7 +398,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
                 }
             }
             //done checking Pharmacist's Executing Order.
-
+            if (checkError.isError) return checkError;
             //update database
             var check = await _employeeAuthRepo.UpdateAccountStatus(deleteUser.Id, status);
             
