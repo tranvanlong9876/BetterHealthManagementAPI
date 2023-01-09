@@ -1,4 +1,5 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -55,20 +56,22 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
         public static async Task<bool> SendWelcomeEmail(RegisterInternalUser registerEmployee, string subject, bool isHtml)
         {
             string roleName = String.Empty;
+
             string imageURL = registerEmployee.ImageUrl;
             var webClient = new WebClient();
             byte[] imageBytes = webClient.DownloadData(imageURL);
             MemoryStream ms = new MemoryStream(imageBytes);
-            if (registerEmployee.RoleId == "1")
+
+            if (registerEmployee.RoleId == Commons.MANAGER)
             {
                 roleName = "Quản Lý chi nhánh";
-            } else if(registerEmployee.RoleId == "2")
+            } else if(registerEmployee.RoleId == Commons.PHARMACIST)
             {
                 roleName = "Dược sĩ";
-            } else if (registerEmployee.RoleId == "3")
+            } else if (registerEmployee.RoleId == Commons.OWNER)
             {
                 roleName = "Chủ sở hữu";
-            } else if (registerEmployee.RoleId == "4")
+            } else if (registerEmployee.RoleId == Commons.ADMIN)
             {
                 roleName = "Quản lý tài khoản";
             }
@@ -93,12 +96,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             emailService._body.Append("Đây sẽ là tài khoản đăng nhập nội bộ của bạn, đừng quên thay đổi lại mật khẩu để đảm bảo an toàn bảo mật cho tài khoản. Cảm ơn bạn đã hợp tác cùng chuỗi cửa hàng dược phẩm BetterHealth! <br/><br/>");
             emailService._body.Append("Trân trọng. BetterHealth Company!");
             emailService._body.Append("</html>");
+
             AlternateView alternateView = default(AlternateView);
             alternateView = AlternateView.CreateAlternateViewFromString(emailService._body.ToString(), null, "text/html");
             LinkedResource linkedResource = new LinkedResource(ms, MediaTypeNames.Image.Jpeg);
             linkedResource.ContentId = "image1";
             linkedResource.TransferEncoding = TransferEncoding.Base64;
             alternateView.LinkedResources.Add(linkedResource);
+
             return await emailService.SendEmailAsync(registerEmployee.Email, subject, isHtml, alternateView);
         }
 

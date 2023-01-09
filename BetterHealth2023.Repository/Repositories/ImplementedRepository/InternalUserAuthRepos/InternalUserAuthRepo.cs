@@ -166,5 +166,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             }
 
         }
+
+        public async Task<bool> UpdateAccountStatus(string guid, int status)
+        {
+            var internalUser = await Get(guid);
+            internalUser.Status = status;
+
+            await Update();
+            return true;
+        }
     }
 }

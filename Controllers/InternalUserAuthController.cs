@@ -71,6 +71,22 @@ namespace BetterHealthManagementAPI.Controllers
                 return BadRequest(ex.ToString());
             }
         }
+        [HttpDelete("Status"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateUserStatus(UpdateUserStatusEntrance updateUserStatusEntrance)
+        {
+            try
+            {
+                var check = await _employeeAuthService.UpdateAccountStatus(updateUserStatusEntrance.UserID, updateUserStatusEntrance.Status);
+                if (check.isError)
+                {
+                    return BadRequest(check);
+                }
+                return Ok();
+            } catch (Exception ex)
+            {
+                return BadRequest(ex.ToString());
+            }
+        }
     }
 }
 

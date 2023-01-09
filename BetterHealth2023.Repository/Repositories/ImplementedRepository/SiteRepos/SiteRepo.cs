@@ -4,6 +4,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos
 {

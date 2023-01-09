@@ -20,6 +20,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
         Task<InternalUserTokenModel> Login(LoginInternalUser loginEmployee);
 
         Task<List<Repository.DatabaseModels.InternalUser>> GetEmployeeById(string id);
-        
+
+        Task<UpdateUserStatus> UpdateAccountStatus(string guid, int status);
     }
 }

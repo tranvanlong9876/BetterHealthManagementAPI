@@ -26,5 +26,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public Task<string> GetInternalUserID(string username);
         public Task<InternalUser> GetOldPassword(UpdateInternalUser updateInternalUser);
         public Task<bool> ChangePassword(string guid, string passwordHash, string passwordSalt);
+        public Task<bool> UpdateAccountStatus(string guid, int status);
     }
 }
