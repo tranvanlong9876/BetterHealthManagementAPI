@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos;
 
 namespace BetterHealthManagementAPI
 {
@@ -76,6 +77,8 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IDynamicAddressRepo, DynamicAddressRepo>();
             services.AddTransient<IUserWorkingSiteRepo, UserWorkingSiteRepo>();
             services.AddTransient<ISiteRepo, SiteRepo>();
+            services.AddTransient<IOrderHeaderRepo, OrderHeaderRepo>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

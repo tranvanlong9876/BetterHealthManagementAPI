@@ -16,15 +16,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
         private readonly ISiteRepo _siteRepo;
         private readonly IDynamicAddressRepo _dynamicAddressRepo;
         private readonly IInternalUserAuthRepo _employeeAuthRepo;
-        private readonly IOrderHeaderRepo _orderHeaderRepo;
+       
 
         public SiteService(ISiteRepo siteRepo, IDynamicAddressRepo dynamicAddressRepo,
-            IInternalUserAuthRepo employeeAuthRepo, IOrderHeaderRepo orderHeaderRepo)
+            IInternalUserAuthRepo employeeAuthRepo)
         {
             _siteRepo = siteRepo;
             _dynamicAddressRepo = dynamicAddressRepo;
             _employeeAuthRepo = employeeAuthRepo;
-            _orderHeaderRepo = orderHeaderRepo;
+          
         }
 
         public async Task<SiteInformation> InsertSite(SiteViewModels siteviewmodel)
