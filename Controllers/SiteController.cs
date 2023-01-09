@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -20,12 +21,14 @@ namespace BetterHealthManagementAPI.Controllers
             _siteService = siteService;
         }
 
-        [HttpPost]
+        [HttpPost("Insert-Site")]
+        [AllowAnonymous]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> InsertSite(SiteViewModels siteviewmodel)
         {
             try
             {
+                siteviewmodel.DynamicAddModel.Id = Guid.NewGuid().ToString();
                 var site = await _siteService.InsertSite(siteviewmodel);
                 if (site == null)
                 {
@@ -51,19 +54,22 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPut("Update-Site")]
         [Authorize(Roles="Admin")]
-        public async Task<IActionResult> UpdateSite(string SiteID, SiteViewModels stSiteViewModels)
+        [AllowAnonymous]
+        public async Task<IActionResult> UpdateSite(UpdateSiteModel UpdateSiteModels)
         {
-           
+
             try
             {
-                var check = await _siteService.UpdateSite(SiteID, stSiteViewModels);
-                if (check)
+                var site = await _siteService.GetSite(UpdateSiteModels.SiteID);
+                if (site == null)
                 {
-                    return Ok("Update site successfully");
+                    return BadRequest("SiteID not found");
                 }
-                return BadRequest("Update site failed");
+
+                var result = await _siteService.UpdateSite(UpdateSiteModels);
+                return Ok(site);
             }
             catch (ArgumentNullException ex)
             {
@@ -85,9 +91,10 @@ namespace BetterHealthManagementAPI.Controllers
 
       
 
-        [HttpGet]
+        [HttpGet("Get-Site")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetSitebyID(string SiteID)
+        [AllowAnonymous]
+        public async Task<IActionResult> GetSitebyID([FromBody] string SiteID)
         {
             try
             {
@@ -117,19 +124,19 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         //update IsActive siteinformation
-        [HttpPut]
+        [HttpPut("Active")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateSiteActive(string SiteID, bool IsActive)
+        [AllowAnonymous]
+        public async Task<IActionResult> UpdateSiteActive([FromBody] UpdateStatusSiteModel siteU)
         {
-            //update active site
             try
             {
-                var check = await _siteService.UpdateSiteIsActive(SiteID, IsActive);
-                if (check)
+                var site = await _siteService.UpdateSiteIsActive(siteU.SiteID, siteU.Status);
+                if (site == null)
                 {
-                    return Ok("Update site successfully");
+                    return BadRequest("SiteID not found");
                 }
-                return BadRequest("Update site failed");
+                return Ok(site);
             }
             catch (ArgumentNullException ex)
             {
@@ -150,14 +157,16 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
 
-        [HttpPut]
+        [HttpPut("Delivery")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateSiteIsDelivery(string SiteID, bool IsDelivery)
+        [AllowAnonymous]
+        public async Task<IActionResult> UpdateSiteIsDelivery([FromBody] UpdateStatusSiteModel site)
+      
         {
             //update active site
             try
             {
-                var check = await _siteService.UpdateSiteIsDelivery(SiteID, IsDelivery);
+                var check = await _siteService.UpdateSiteIsDelivery(site.SiteID, site.Status);
                 if (check)
                 {
                     return Ok("Update site successfully");

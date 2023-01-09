@@ -30,7 +30,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
         public async Task<SiteInformation> InsertSite(SiteViewModels siteviewmodel)
         {
             //check exist addressid
-            siteviewmodel.DynamicAddress.Id =  Guid.NewGuid().ToString();
+            siteviewmodel.DynamicAddModel.Id =  Guid.NewGuid().ToString();
           
 
             SiteInformation site = new SiteInformation()
@@ -39,7 +39,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
                 SiteName = siteviewmodel.SiteName,
                 Description = siteviewmodel.Description,
                 ContactInfo = siteviewmodel.ContactInfo,
-                AddressId = siteviewmodel.DynamicAddress.Id,
+                AddressId = siteviewmodel.DynamicAddModel.Id,
                 LastUpdate = DateTime.Now,
                 IsActivate = false,
                 IsDelivery = false
@@ -52,22 +52,22 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
 
 
 
-        public async Task<bool> UpdateSite(string SiteID, SiteViewModels stSiteViewModels)
+        public async Task<bool> UpdateSite(UpdateSiteModel updateSiteModel)
         {
            
-            SiteInformation site = await _siteRepo.Get(SiteID);
+            SiteInformation site = await _siteRepo.Get(updateSiteModel.SiteID);
             if (site == null)
             {
                 return await Task.FromResult(false);
             }
-            site.SiteName = stSiteViewModels.SiteName;
-            site.Description = stSiteViewModels.Description;
-            site.ContactInfo = stSiteViewModels.ContactInfo;
+            site.SiteName = updateSiteModel.SiteName;
+            site.Description = updateSiteModel.Description;
+            site.ContactInfo = updateSiteModel.ContactInfo;
             DynamicAddress dynamicAddress = await _dynamicAddressRepo.Get(site.AddressId);
-            dynamicAddress.CityId = stSiteViewModels.DynamicAddress.CityId;
-            dynamicAddress.DistrictId = stSiteViewModels.DynamicAddress.DistrictId;
-            dynamicAddress.WardId = stSiteViewModels.DynamicAddress.WardId;
-            dynamicAddress.HomeAddress = stSiteViewModels.DynamicAddress.HomeAddress;
+            dynamicAddress.CityId = updateSiteModel.DynamicAddress.CityId;
+            dynamicAddress.DistrictId = updateSiteModel.DynamicAddress.DistrictId;
+            dynamicAddress.WardId = updateSiteModel.DynamicAddress.WardId;
+            dynamicAddress.HomeAddress = updateSiteModel.DynamicAddress.HomeAddress;
             site.LastUpdate = DateTime.Now;
             await _dynamicAddressRepo.Update();
             await _siteRepo.Update();

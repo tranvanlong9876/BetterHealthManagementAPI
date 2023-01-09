@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DynamicAddressViewModel;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site
 {
@@ -16,7 +17,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site
      
         public string ContactInfo { get; set; }
 
-        public DynamicAddress DynamicAddress { get; set; }
+        public DynamicAddModel DynamicAddModel { get; set; }
 
 
     }
