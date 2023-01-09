@@ -30,11 +30,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
         public async Task<SiteInformation> InsertSite(SiteViewModels siteviewmodel)
         {
             //check exist addressid
-            var address = _dynamicAddressRepo.Get(siteviewmodel.AddressID);
-            if (address == null)
-            {
-                return await Task.FromResult<SiteInformation>(null);
-            }
+            siteviewmodel.DynamicAddress.Id =  Guid.NewGuid().ToString();
+          
 
             SiteInformation site = new SiteInformation()
             {
@@ -42,7 +39,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
                 SiteName = siteviewmodel.SiteName,
                 Description = siteviewmodel.Description,
                 ContactInfo = siteviewmodel.ContactInfo,
-                AddressId = siteviewmodel.AddressID,
+                AddressId = siteviewmodel.DynamicAddress.Id,
                 LastUpdate = DateTime.Now,
                 IsActivate = false,
                 IsDelivery = false
@@ -57,24 +54,22 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
 
         public async Task<bool> UpdateSite(string SiteID, SiteViewModels stSiteViewModels)
         {
+           
             SiteInformation site = await _siteRepo.Get(SiteID);
-            var address = await _dynamicAddressRepo.Get(stSiteViewModels.AddressID);
-            if (address == null)
-            {
-                return await Task.FromResult(false);
-                ;
-            }
-
             if (site == null)
             {
                 return await Task.FromResult(false);
             }
-
             site.SiteName = stSiteViewModels.SiteName;
             site.Description = stSiteViewModels.Description;
             site.ContactInfo = stSiteViewModels.ContactInfo;
-            site.AddressId = stSiteViewModels.AddressID;
+            DynamicAddress dynamicAddress = await _dynamicAddressRepo.Get(site.AddressId);
+            dynamicAddress.CityId = stSiteViewModels.DynamicAddress.CityId;
+            dynamicAddress.DistrictId = stSiteViewModels.DynamicAddress.DistrictId;
+            dynamicAddress.WardId = stSiteViewModels.DynamicAddress.WardId;
+            dynamicAddress.HomeAddress = stSiteViewModels.DynamicAddress.HomeAddress;
             site.LastUpdate = DateTime.Now;
+            await _dynamicAddressRepo.Update();
             await _siteRepo.Update();
             return await Task.FromResult(true);
         }
@@ -89,9 +84,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
                 {
                     return await Task.FromResult(false);
                 }
-
-
-              
                 site.IsActivate = IsDelivery;
                 site.LastUpdate = DateTime.Now;
                 await _siteRepo.Update();
@@ -124,7 +116,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
         public async Task<SiteInformation> GetSite(string siteId)
         {
             //get site by id
-            return await _siteRepo.GetSiteById(siteId)
+            return await _siteRepo.GetSiteById(siteId);
         }
 
 

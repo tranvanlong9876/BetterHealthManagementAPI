@@ -52,6 +52,7 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         [HttpPut]
+        [Authorize(Roles="Admin")]
         public async Task<IActionResult> UpdateSite(string SiteID, SiteViewModels stSiteViewModels)
         {
            
@@ -115,8 +116,72 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
-       
+        //update IsActive siteinformation
+        [HttpPut]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateSiteActive(string SiteID, bool IsActive)
+        {
+            //update active site
+            try
+            {
+                var check = await _siteService.UpdateSiteIsActive(SiteID, IsActive);
+                if (check)
+                {
+                    return Ok("Update site successfully");
+                }
+                return BadRequest("Update site failed");
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+            catch (SqlException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+        }
 
-       
+
+        [HttpPut]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateSiteIsDelivery(string SiteID, bool IsDelivery)
+        {
+            //update active site
+            try
+            {
+                var check = await _siteService.UpdateSiteIsDelivery(SiteID, IsDelivery);
+                if (check)
+                {
+                    return Ok("Update site successfully");
+                }
+                return BadRequest("Update site failed");
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+            catch (SqlException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+        }
+
+
     }
 }
