@@ -34,19 +34,35 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
             _orderHeaderRepo = orderHeaderRepo;
         }
 
-        public async Task<InternalUserTokenModel> Login(LoginInternalUser loginEmployee)
+        public async Task<LoginUserStatus> Login(LoginInternalUser loginEmployee)
         {
             Repository.DatabaseModels.InternalUser user = await _employeeAuthRepo.CheckLogin(loginEmployee);
+            var checkError = new LoginUserStatus();
 
-            if(user == null) throw new ArgumentException("Không tìm thấy tài khoản của nhân viên.");
-            if (user.Status == 0) throw new ArgumentException("Tài khoản nhân viên đã ngưng kích hoạt, vui lòng liên hệ Admin để được hỗ trợ.");
+            if(user == null)
+            {
+                checkError.isError = true;
+                checkError.UserNotFound = "Không tìm thấy tài khoản nhân viên nội bộ, vui lòng thử lại.";
+                return checkError;
+            }
+            if (user.Status == 0)
+            {
+                checkError.isError = true;
+                checkError.UserNotFound = "Tài khoản nhân viên đã ngưng kích hoạt, vui lòng liên hệ Admin để được hỗ trợ.";
+                return checkError;
+            }
 
             byte[] passwordHashByte = PasswordHash.GetByteFromString(user.Password);
             byte[] passwordSaltByte = PasswordHash.GetByteFromString(user.PasswordSalt);
 
             var check = PasswordHash.VerifyPasswordHash(loginEmployee.Password.Trim(), passwordHashByte, passwordSaltByte);
 
-            if (!check) throw new ArgumentException("Mật khẩu đăng nhập không đúng.");
+            if (!check)
+            {
+                checkError.isError = true;
+                checkError.WrongPassword = "Mật khẩu đăng nhập không đúng.";
+                return checkError;
+            }
 
             string token = JwtUserToken.CreateInternalUserToken(user);
 
@@ -62,7 +78,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
                 Token = token
             };
 
-            return employeeTokenModel;
+            checkError.isError = false;
+            checkError.userToken = employeeTokenModel;
+
+            return checkError;
         }
 
         public async Task<List<Repository.DatabaseModels.InternalUser>> GetEmployeeById(string id)
@@ -339,6 +358,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
         public async Task<UpdateUserStatus> UpdateAccountStatus(string guid, int status)
         {
             var deleteUser = await _employeeAuthRepo.Get(guid);
+
             var checkError = new UpdateUserStatus();
 
             //check if the site that user is working is still Active ?
@@ -356,27 +376,29 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
                     //if delivery mode is turn on, site has to have at least 1 Pharmacist and 2 Manager.
                     if (site.IsDelivery)
                     {
-                        if (pharmacistWorking.Count == 2 && deleteUser.RoleId.Equals(Commons.PHARMACIST))
+                        if (pharmacistWorking.Count <= 2 && deleteUser.RoleId.Equals(Commons.PHARMACIST))
                         {
                             checkError.isError = true;
                             checkError.NotEnoughPharmacist = "Hiện tại không thể ngắt hoạt động Dược sĩ vì chi nhánh cần tối thiểu 2 Dược Sĩ để giao hàng.";
                         }
-                        if (managerWorking.Count == 1 && deleteUser.RoleId.Equals(Commons.MANAGER))
+                        if (managerWorking.Count <= 1 && deleteUser.RoleId.Equals(Commons.MANAGER))
                         {
                             checkError.isError = true;
                             checkError.NotEnoughManager = "Hiện tại không thể ngắt hoạt động Quản Lý vì chi nhánh cần tối thiểu 1 Quản Lý để nhập hàng.";
                         }
                     }
+
+                    if (checkError.isError) return checkError;
                     //if activate mode is turn on, site has to have at least 1 Pharmacist and 1 Manager.
 
                     if (site.IsActivate)
                     {
-                        if (pharmacistWorking.Count == 1 && deleteUser.RoleId.Equals(Commons.PHARMACIST))
+                        if (pharmacistWorking.Count <= 1 && deleteUser.RoleId.Equals(Commons.PHARMACIST))
                         {
                             checkError.isError = true;
                             checkError.NotEnoughPharmacist = "Hiện tại không thể ngắt hoạt động Dược sĩ vì chi nhánh cần tối thiểu 1 Dược Sĩ để bán hàng.";
                         }
-                        if (managerWorking.Count == 1 && deleteUser.RoleId.Equals(Commons.MANAGER))
+                        if (managerWorking.Count <= 1 && deleteUser.RoleId.Equals(Commons.MANAGER))
                         {
                             checkError.isError = true;
                             checkError.NotEnoughManager = "Hiện tại không thể ngắt hoạt động Quản Lý vì chi nhánh cần tối thiểu 1 Quản Lý để nhập hàng.";

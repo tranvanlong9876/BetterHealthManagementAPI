@@ -28,10 +28,18 @@ namespace BetterHealthManagementAPI.Controllers
         public async Task<IActionResult> LoginInternal(LoginInternalUser loginEmployee) {
             try
             {
-                var employeeTokenModel = await _employeeAuthService.Login(loginEmployee);
-                if (employeeTokenModel == null) return BadRequest("Lỗi tạo token JWT, vui lòng thử lại sau.");
+                var userStatusModel = await _employeeAuthService.Login(loginEmployee);
 
-                return Ok(employeeTokenModel);
+                if(userStatusModel.isError)
+                {
+                    if (userStatusModel.UserInactive != null) return BadRequest(userStatusModel);
+                    if (userStatusModel.UserNotFound != null) return NotFound(userStatusModel);
+                    if (userStatusModel.WrongPassword != null) return Unauthorized(userStatusModel);
+                }
+
+                if (userStatusModel.userToken == null) return BadRequest("Lỗi tạo token JWT, vui lòng thử lại sau.");
+
+                return Ok(userStatusModel.userToken);
             } catch(Exception ex)
             {
                 return BadRequest(ex.ToString());
@@ -81,7 +89,7 @@ namespace BetterHealthManagementAPI.Controllers
                 {
                     return BadRequest(check);
                 }
-                return Ok();
+                return Ok("Đã ngắt hoạt động nhân viên nội bộ.");
             } catch (Exception ex)
             {
                 return BadRequest(ex.ToString());
