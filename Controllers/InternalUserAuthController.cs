@@ -1,5 +1,6 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUser;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,16 @@ namespace BetterHealthManagementAPI.Controllers
         public InternalUserAuthController(IInternalUserAuthService employeeAuthService)
         {
             _employeeAuthService = employeeAuthService;
+        }
+
+        [HttpGet("{id}")]
+        [Authorize(Roles = Commons.TOTAL_INTERNAL_ROLE_NAME)]
+        public async Task<IActionResult> GetUserInfo(string id)
+        {
+            var userInfo = await _employeeAuthService.GetUserInfoModel(id);
+            if (userInfo == null) return NotFound("Không tìm thấy thông tin nhân viên.");
+
+            return Ok(userInfo);
         }
 
         [HttpPost("Login")]

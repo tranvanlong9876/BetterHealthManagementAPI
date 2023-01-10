@@ -435,5 +435,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
             }
             return checkError;
         }
+
+        public async Task<UserInfoModel> GetUserInfoModel(string guid)
+        {
+            UserInfoModel infoModel = await _employeeAuthRepo.GetUserInfo(guid);
+            return infoModel;
+        }
     }
 }

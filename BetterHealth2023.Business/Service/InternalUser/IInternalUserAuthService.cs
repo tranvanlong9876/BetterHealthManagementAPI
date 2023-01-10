@@ -10,6 +10,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
 {
     public interface IInternalUserAuthService
     {
+        Task<UserInfoModel> GetUserInfoModel(string guid);
         //Tạo nhân viên
         Task<RegisterInternalUserStatus> Register(RegisterInternalUser employee);
 

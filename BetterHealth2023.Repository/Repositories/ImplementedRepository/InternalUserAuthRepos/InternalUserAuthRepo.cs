@@ -175,5 +175,41 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             await Update();
             return true;
         }
+
+        public async Task<UserInfoModel> GetUserInfo(string guid)
+        {
+            var query = from user in context.InternalUsers
+                        join role in context.RoleInternals on user.RoleId equals role.Id
+                        from working in context.InternalUserWorkingSites.Where(work => work.UserId == user.Id).DefaultIfEmpty()
+                        from address in context.DynamicAddresses.Where(add => add.Id == user.AddressId).DefaultIfEmpty()
+                        from site in context.SiteInformations.Where(s => s.Id == working.SiteId).DefaultIfEmpty()
+                        where user.Id.Trim().Equals(guid.Trim())
+                        select new { user, role, working, address, site };
+            var userModel = await query.Select(selector => new UserInfoModel()
+            {
+                Id = selector.user.Id,
+                Username = selector.user.Username,
+                Fullname = selector.user.Fullname,
+                Code = selector.user.Code,
+                RoleId = selector.user.RoleId,
+                RoleName = selector.role.RoleName,
+                PhoneNo = selector.user.PhoneNo,
+                Email = selector.user.Email,
+                ImageUrl = selector.user.ImageUrl,
+                Status = selector.user.Status,
+                DOB = selector.user.Dob,
+                Gender = selector.user.Gender ?? default(int),
+                CityID = selector.address.CityId,
+                DistrictID = selector.address.DistrictId,
+                WardID = selector.address.WardId,
+                HomeNumber = selector.address.HomeAddress,
+                SiteID = selector.working.SiteId,
+                SiteName = selector.site.SiteName
+            }).FirstOrDefaultAsync();
+
+            Console.WriteLine(userModel == null);
+
+            return userModel;
+        }
     }
 }
