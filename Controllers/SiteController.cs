@@ -22,6 +22,70 @@ namespace BetterHealthManagementAPI.Controllers
             _siteService = siteService;
         }
 
+
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Owner")]
+        public async Task<IActionResult> GetAllSite(string id)
+        {
+            try
+            {
+                var site = await _siteService.GetSite(id);
+                if (site == null)
+                {
+                    return BadRequest("SiteID not found");
+                }
+                return Ok(site);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+            catch (SqlException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+        }
+
+        [HttpGet()]
+        [Authorize(Roles = "Admin,Owner")]
+        public async Task<IActionResult> GetAllSites()
+        {
+            try
+            {
+                var site = await _siteService.GetListSite();
+                if (site == null)
+                {
+                    return BadRequest("Site is empty");
+                }
+                return Ok(site);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+            catch (SqlException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+
+        }
+
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> InsertSite(SiteViewModels siteviewmodel)
@@ -86,69 +150,6 @@ namespace BetterHealthManagementAPI.Controllers
             {
                 return StatusCode(500, "Internal server exception");
             }
-        }
-
-        [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,Owner")]
-        public async Task<IActionResult> GetAllSite([FromBody] string id)
-        {
-            try
-            {
-                var site = await _siteService.GetSite(id);
-                if (site == null)
-                {
-                    return BadRequest("SiteID not found");
-                }
-                return Ok(site);
-            }
-            catch (ArgumentNullException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (DbUpdateException)
-            {
-                return StatusCode(500, "Internal server exception");
-            }
-            catch (SqlException)
-            {
-                return StatusCode(500, "Internal server exception");
-            }
-        }
-
-        [HttpGet()]
-        [Authorize(Roles = "Admin,Owner")]
-        public async Task<IActionResult> GetAllSites()
-        {
-            try
-            {
-                var site = await _siteService.GetListSite();
-                if (site == null)
-                {
-                    return BadRequest("Site is empty");
-                }
-                return Ok(site);
-            }
-            catch (ArgumentNullException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (DbUpdateException)
-            {
-                return StatusCode(500, "Internal server exception");
-            }
-            catch (SqlException)
-            {
-                return StatusCode(500, "Internal server exception");
-            }
-
         }
 
         //update IsActive siteinformation
