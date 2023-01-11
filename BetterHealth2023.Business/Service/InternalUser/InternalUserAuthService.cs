@@ -10,6 +10,9 @@ using System.Web.Http;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UserWorkingSiteRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUser
 {
@@ -18,27 +21,48 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
         private readonly IInternalUserAuthRepo _employeeAuthRepo;
         private readonly IDynamicAddressRepo _dynamicAddressRepo;
         private readonly IUserWorkingSiteRepo _userWorkingSiteRepo;
+        private readonly ISiteRepo _siteRepo;
+        private readonly IOrderHeaderRepo _orderHeaderRepo;
 
-        public InternalUserAuthService(IInternalUserAuthRepo employeeAuthRepo, IDynamicAddressRepo dynamicAddressRepo, IUserWorkingSiteRepo userWorkingSiteRepo)
+        public InternalUserAuthService(IInternalUserAuthRepo employeeAuthRepo, IDynamicAddressRepo dynamicAddressRepo, IUserWorkingSiteRepo userWorkingSiteRepo, 
+            ISiteRepo siteRepo, IOrderHeaderRepo orderHeaderRepo)
         {
             _employeeAuthRepo = employeeAuthRepo;
             _dynamicAddressRepo = dynamicAddressRepo;
             _userWorkingSiteRepo = userWorkingSiteRepo;
+            _siteRepo = siteRepo;
+            _orderHeaderRepo = orderHeaderRepo;
         }
 
-        public async Task<InternalUserTokenModel> Login(LoginInternalUser loginEmployee)
+        public async Task<LoginUserStatus> Login(LoginInternalUser loginEmployee)
         {
             Repository.DatabaseModels.InternalUser user = await _employeeAuthRepo.CheckLogin(loginEmployee);
+            var checkError = new LoginUserStatus();
 
-            if(user == null) throw new ArgumentException("Không tìm thấy tài khoản của nhân viên.");
-            if (user.Status == 0) throw new ArgumentException("Tài khoản nhân viên đã ngưng kích hoạt, vui lòng liên hệ Admin để được hỗ trợ.");
+            if(user == null)
+            {
+                checkError.isError = true;
+                checkError.UserNotFound = "Không tìm thấy tài khoản nhân viên nội bộ, vui lòng thử lại.";
+                return checkError;
+            }
+            if (user.Status == 0)
+            {
+                checkError.isError = true;
+                checkError.UserNotFound = "Tài khoản nhân viên đã ngưng kích hoạt, vui lòng liên hệ Admin để được hỗ trợ.";
+                return checkError;
+            }
 
             byte[] passwordHashByte = PasswordHash.GetByteFromString(user.Password);
             byte[] passwordSaltByte = PasswordHash.GetByteFromString(user.PasswordSalt);
 
             var check = PasswordHash.VerifyPasswordHash(loginEmployee.Password.Trim(), passwordHashByte, passwordSaltByte);
 
-            if (!check) throw new ArgumentException("Mật khẩu đăng nhập không đúng.");
+            if (!check)
+            {
+                checkError.isError = true;
+                checkError.WrongPassword = "Mật khẩu đăng nhập không đúng.";
+                return checkError;
+            }
 
             string token = JwtUserToken.CreateInternalUserToken(user);
 
@@ -54,7 +78,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
                 Token = token
             };
 
-            return employeeTokenModel;
+            checkError.isError = false;
+            checkError.userToken = employeeTokenModel;
+
+            return checkError;
         }
 
         public async Task<List<Repository.DatabaseModels.InternalUser>> GetEmployeeById(string id)
@@ -78,12 +105,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
                 checkError.isError = true;
                 checkError.DuplicateUsername = "Tài khoản đã tồn tại, vui lòng nhập tài khoản khác.";
             }
-            if (await _employeeAuthRepo.CheckDuplicateEmail(internalUser.Email, false))
+            if (await _employeeAuthRepo.CheckDuplicateEmail(internalUser.Username, internalUser.Email, false))
             {
                 checkError.isError = true;
                 checkError.DuplicateEmail = "Email đã tồn tại.";
             }
-            if (await _employeeAuthRepo.CheckDuplicatePhoneNo(internalUser.PhoneNo, false))
+            if (await _employeeAuthRepo.CheckDuplicatePhoneNo(internalUser.Username, internalUser.PhoneNo, false))
             {
                 checkError.isError = true;
                 checkError.DuplicatePhoneNo = "Số điện thoại đã tồn tại.";
@@ -191,6 +218,228 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
                 checkError.OtherError = "Hệ thống đang bị lỗi, vui lòng thử lại sau.";
             }
             return checkError;
+        }
+
+        public async Task<UpdateInternalUserStatus> UpdateInternalUser(UpdateInternalUser user)
+        {
+            var check = false;
+            var checkError = new UpdateInternalUserStatus();
+
+            //lấy ra mã khóa chính từ username của nhân viên.
+            var EmpGuid = await _employeeAuthRepo.GetInternalUserID(user.Username.Trim());
+
+            //kiểm tra trùng lặp email và số điện thoại so với các nhân viên khác.
+            if (await _employeeAuthRepo.CheckDuplicateEmail(user.Username, user.Email, true))
+            {
+                checkError.isError = true;
+                checkError.DuplicateEmail = "Email đã tồn tại.";
+            }
+            if (await _employeeAuthRepo.CheckDuplicatePhoneNo(user.Username, user.PhoneNo, true))
+            {
+                checkError.isError = true;
+                checkError.DuplicatePhoneNo = "Số điện thoại đã tồn tại.";
+            }
+            //hủy chức năng và báo cáo lại việc email hoặc sđt bị trùng với các nhân viên khác.
+            if (checkError.isError) return checkError;
+
+            //nếu nhân viên nội bộ cần thay đổi mật khẩu. isChangePassword = true
+            if (user.isChangePassword) 
+            {
+                //kiểm tra thông tin cần để thay đổi mật khẩu nhân viên đã nhập đủ chưa?
+                if(user.OldPassword == null || user.NewPassword == null || user.ConfirmPassword == null)
+                {
+                    checkError.isError = true;
+                    checkError.RequireChangePasswordFailed = "Thông tin cần thay đổi mật khẩu nhập không đầy đủ, vui lòng kiểm tra lại.";
+                    return checkError;
+                }
+                //bắt đầu kiểm tra password cũ.
+
+                //get old password.
+                Repository.DatabaseModels.InternalUser internalUser = await _employeeAuthRepo.GetOldPassword(user);
+
+                //giải mã
+                byte[] passwordHashByte = PasswordHash.GetByteFromString(internalUser.Password);
+                byte[] passwordSaltByte = PasswordHash.GetByteFromString(internalUser.PasswordSalt);
+
+                var checkOldPassword = PasswordHash.VerifyPasswordHash(user.OldPassword.Trim(), passwordHashByte, passwordSaltByte);
+                if(checkOldPassword) //nếu mật khẩu cũ nhập chính xác
+                {
+                    //kiểm tra mật khẩu mới nhập vs nhau đã trùng khớp chưa.
+                    var isMatches = user.NewPassword.Trim().Equals(user.ConfirmPassword.Trim());
+                    if (!isMatches)
+                    {
+                        checkError.isError = true;
+                        checkError.ConfirmPasswordFailed = "Mật khẩu xác nhận không trùng khớp.";
+                        return checkError;
+                    }
+                    //xác nhận trùng khớp, mã hóa mật khẩu mới cho nhân viên.
+                    PasswordHash.CreatePasswordHash(user.NewPassword.Trim(), out byte[] newPasswordHash, out byte[] newPasswordSalt);
+                    //thay đổi mật khẩu.
+                    check = await _employeeAuthRepo.ChangePassword(EmpGuid, Convert.ToBase64String(newPasswordHash).Trim(), Convert.ToBase64String(newPasswordSalt).Trim());
+                    
+                    if(!check)
+                    {
+                        checkError.isError = true;
+                        checkError.RequireChangePasswordFailed = "Lỗi thay đổi mật khẩu, vui lòng kiểm tra lại.";
+                        return checkError;
+                    }
+                } else //sai mật khẩu cũ.
+                {
+                    checkError.isError = true;
+                    checkError.WrongOldPassword = "Sai mật khẩu cũ, vui lòng thử lại.";
+                    return checkError;
+                }
+            } //hoàn thành quá trình kiểm tra và thay đổi mật khẩu.
+
+            //Mỗi nhân viên chỉ được tự cập nhật thông tin tài khoản của chính mình.
+            //Thông tin được cập nhật ngoại trừ Code, Role, Status.
+
+            //lấy dữ liệu user nội bộ đang có.
+            var currentUser = await _employeeAuthRepo.Get(EmpGuid);
+
+            //khi update bắt buộc bổ sung đủ địa chỉ.
+            //kiểm tra nhân viên đã có địa chỉ khi tạo chưa ?
+
+            //nếu chưa có
+            if(currentUser.AddressId == null || currentUser.AddressId.Equals(String.Empty))
+            {
+                //tạo mới địa chỉ
+                var newAddressId = Guid.NewGuid().ToString();
+                DynamicAddress dynamicAddress = new DynamicAddress()
+                {
+                    CityId = user.CityID,
+                    DistrictId = user.DistrictID,
+                    WardId = user.WardID,
+                    HomeAddress = user.HomeNumber,
+                    Id = newAddressId
+                };
+                await _dynamicAddressRepo.InsertNewAddress(dynamicAddress);
+                //thêm xong, cập nhật địa chỉ vào cho user.
+                currentUser.AddressId = newAddressId;
+                await _employeeAuthRepo.Update();
+            } else //nếu địa chỉ đã có sẵn
+            {
+                //lấy ra mã địa chỉ của user
+                var currentAddressID = currentUser.AddressId;
+                //lấy thông tin địa chỉ
+                var userAddress = await _dynamicAddressRepo.Get(currentAddressID);
+                //cập nhật lại thông tin
+                userAddress.CityId = user.CityID;
+                userAddress.DistrictId = user.DistrictID;
+                userAddress.WardId = user.WardID;
+                userAddress.HomeAddress = user.HomeNumber;
+
+                await _dynamicAddressRepo.Update();
+            }
+
+            //tiến hành cập nhật nốt các thông tin còn lại.
+
+            currentUser.Dob = user.DOB;
+            currentUser.Gender = user.Gender;
+            currentUser.ImageUrl = user.ImageUrl;
+            currentUser.PhoneNo = user.PhoneNo;
+            currentUser.Email = user.Email;
+            currentUser.Fullname = user.Fullname;
+
+            check = await _employeeAuthRepo.Update();
+
+            if (check)
+            {
+                checkError.isError = false;
+            }
+            else
+            {
+                checkError.isError = true;
+                checkError.OtherError = "Hệ thống đang bị lỗi, vui lòng thử lại sau.";
+            }
+            return checkError;
+        }
+
+        public async Task<UpdateUserStatus> UpdateAccountStatus(string guid, int status)
+        {
+            var deleteUser = await _employeeAuthRepo.Get(guid);
+
+            var checkError = new UpdateUserStatus();
+
+            //check if the site that user is working is still Active ?
+            var siteID = await _userWorkingSiteRepo.GetInternalUserWorkingSite(deleteUser.Id);
+
+            //if admin is going to delete user, do this function.
+            if (siteID != null && status == 0)
+            {
+                //get site details.
+                var site = await _siteRepo.Get(siteID);
+                if(site.IsActivate || site.IsDelivery)
+                {
+                    var pharmacistWorking = await _userWorkingSiteRepo.GetTotalPharmacist(siteID);
+                    var managerWorking = await _userWorkingSiteRepo.GetTotalManager(siteID);
+                    //if delivery mode is turn on, site has to have at least 1 Pharmacist and 2 Manager.
+                    if (site.IsDelivery)
+                    {
+                        if (pharmacistWorking.Count <= 2 && deleteUser.RoleId.Equals(Commons.PHARMACIST))
+                        {
+                            checkError.isError = true;
+                            checkError.NotEnoughPharmacist = "Hiện tại không thể ngắt hoạt động Dược sĩ vì chi nhánh cần tối thiểu 2 Dược Sĩ để giao hàng.";
+                        }
+                        if (managerWorking.Count <= 1 && deleteUser.RoleId.Equals(Commons.MANAGER))
+                        {
+                            checkError.isError = true;
+                            checkError.NotEnoughManager = "Hiện tại không thể ngắt hoạt động Quản Lý vì chi nhánh cần tối thiểu 1 Quản Lý để nhập hàng.";
+                        }
+                    }
+
+                    if (checkError.isError) return checkError;
+                    //if activate mode is turn on, site has to have at least 1 Pharmacist and 1 Manager.
+
+                    if (site.IsActivate)
+                    {
+                        if (pharmacistWorking.Count <= 1 && deleteUser.RoleId.Equals(Commons.PHARMACIST))
+                        {
+                            checkError.isError = true;
+                            checkError.NotEnoughPharmacist = "Hiện tại không thể ngắt hoạt động Dược sĩ vì chi nhánh cần tối thiểu 1 Dược Sĩ để bán hàng.";
+                        }
+                        if (managerWorking.Count <= 1 && deleteUser.RoleId.Equals(Commons.MANAGER))
+                        {
+                            checkError.isError = true;
+                            checkError.NotEnoughManager = "Hiện tại không thể ngắt hoạt động Quản Lý vì chi nhánh cần tối thiểu 1 Quản Lý để nhập hàng.";
+                        }
+                    }
+                }
+            }
+            //done checking Manager vs Pharmacist working site.
+            if (checkError.isError) return checkError;
+
+            //check Pharmacist's Executing Order.
+            if (deleteUser.RoleId.Equals(Commons.PHARMACIST) && status == 0)
+            {
+                var executingOrder = await _orderHeaderRepo.GetExecutingOrdersByPharmacistId(deleteUser.Id);
+                if(executingOrder.Count >= 1)
+                {
+                    checkError.isError = true;
+                    checkError.PharmacistHaveOrder = "Hiện tại không thể ngắt hoạt động Dược Sĩ vì vẫn còn đơn hàng đang xử lý.";
+                }
+            }
+            //done checking Pharmacist's Executing Order.
+            if (checkError.isError) return checkError;
+            //update database
+            var check = await _employeeAuthRepo.UpdateAccountStatus(deleteUser.Id, status);
+            
+            if (check)
+            {
+                checkError.isError = false;
+            }
+            else
+            {
+                checkError.isError = true;
+                checkError.OtherError = "Hệ thống đang bị lỗi, vui lòng thử lại sau.";
+            }
+            return checkError;
+        }
+
+        public async Task<UserInfoModel> GetUserInfoModel(string guid)
+        {
+            UserInfoModel infoModel = await _employeeAuthRepo.GetUserInfo(guid);
+            return infoModel;
         }
     }
 }
