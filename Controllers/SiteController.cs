@@ -25,7 +25,7 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Owner")]
-        public async Task<IActionResult> GetAllSite(string id)
+        public async Task<IActionResult> GetSite(string id)
         {
             try
             {
