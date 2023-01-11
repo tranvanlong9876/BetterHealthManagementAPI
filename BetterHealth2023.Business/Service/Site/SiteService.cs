@@ -64,10 +64,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
             site.Description = updateSiteModel.Description;
             site.ContactInfo = updateSiteModel.ContactInfo;
             DynamicAddress dynamicAddress = await _dynamicAddressRepo.Get(site.AddressId);
-            dynamicAddress.CityId = updateSiteModel.DynamicAddress.CityId;
-            dynamicAddress.DistrictId = updateSiteModel.DynamicAddress.DistrictId;
-            dynamicAddress.WardId = updateSiteModel.DynamicAddress.WardId;
-            dynamicAddress.HomeAddress = updateSiteModel.DynamicAddress.HomeAddress;
+            dynamicAddress.CityId = updateSiteModel.DynamicAddModel.CityId;
+            dynamicAddress.DistrictId = updateSiteModel.DynamicAddModel.DistrictId;
+            dynamicAddress.WardId = updateSiteModel.DynamicAddModel.WardId;
+            dynamicAddress.HomeAddress = updateSiteModel.DynamicAddModel.HomeAddress;
             site.LastUpdate = DateTime.Now;
             await _dynamicAddressRepo.Update();
             await _siteRepo.Update();
@@ -117,6 +117,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
         {
             //get site by id
             return await _siteRepo.GetSiteById(siteId);
+        }
+
+        public async Task<List<SiteInformation>> GetListSite()
+        {
+            List<SiteInformation> list = await _siteRepo.GetAll();
+            //arrange is Active
+            list.Sort((x, y) => x.IsActivate.CompareTo(y.IsActivate));
+            return list;
         }
 
 

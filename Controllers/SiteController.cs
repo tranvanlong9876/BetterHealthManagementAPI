@@ -89,12 +89,10 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
-      
-
-        [HttpGet("Get-Site")]
-        [Authorize(Roles = "Admin")]
+        [HttpGet("Get-AllSite")]
+        [Authorize(Roles = "Admin,Owner")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetSitebyID([FromBody] string SiteID)
+        public async Task<IActionResult> GetAllSite([FromBody] string SiteID)
         {
             try
             {
@@ -123,9 +121,42 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
+        [HttpGet("Get-Site")]
+        [Authorize(Roles = "Admin,Owner")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetSitebyID()
+        {
+            try
+            {
+                var site = await _siteService.GetListSite();
+                if (site == null)
+                {
+                    return BadRequest("Site is empty");
+                }
+                return Ok(site);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+            catch (SqlException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+
+        }
+
         //update IsActive siteinformation
         [HttpPut("Active")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Owner")]
         [AllowAnonymous]
         public async Task<IActionResult> UpdateSiteActive([FromBody] UpdateStatusSiteModel siteU)
         {
@@ -158,7 +189,7 @@ namespace BetterHealthManagementAPI.Controllers
 
 
         [HttpPut("Delivery")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Owner")]
         [AllowAnonymous]
         public async Task<IActionResult> UpdateSiteIsDelivery([FromBody] UpdateStatusSiteModel site)
       
