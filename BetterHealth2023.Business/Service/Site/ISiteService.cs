@@ -12,6 +12,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
         public Task<bool> UpdateSite(UpdateSiteModel updateSiteModel);
         public Task<bool> UpdateSiteIsActive(string SiteId, bool IsActive);
         public Task<bool> UpdateSiteIsDelivery(string SiteId, bool IsDelivery);
+        public Task<SiteInformation> GetSite(string siteId);
         public Task<List<SiteInformation>> GetListSite();
     }
 }
