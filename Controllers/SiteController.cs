@@ -13,6 +13,7 @@ namespace BetterHealthManagementAPI.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
+    [Authorize]
     public class SiteController : ControllerBase
     {
         private ISiteService _siteService;
@@ -21,8 +22,7 @@ namespace BetterHealthManagementAPI.Controllers
             _siteService = siteService;
         }
 
-        [HttpPost("Insert-Site")]
-        [AllowAnonymous]
+        [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> InsertSite(SiteViewModels siteviewmodel)
         {
@@ -54,9 +54,8 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
-        [HttpPut("Update-Site")]
+        [HttpPut]
         [Authorize(Roles="Admin")]
-        [AllowAnonymous]
         public async Task<IActionResult> UpdateSite([FromBody]UpdateSiteModel UpdateSiteModels)
         {
 
@@ -89,14 +88,13 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
-        [HttpGet("Get-AllSite")]
+        [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Owner")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetAllSite([FromBody] string SiteID)
+        public async Task<IActionResult> GetAllSite([FromBody] string id)
         {
             try
             {
-                var site = await _siteService.GetSite(SiteID);
+                var site = await _siteService.GetSite(id);
                 if (site == null)
                 {
                     return BadRequest("SiteID not found");
@@ -121,10 +119,9 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
-        [HttpGet("Get-Site")]
+        [HttpGet()]
         [Authorize(Roles = "Admin,Owner")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetSitebyID()
+        public async Task<IActionResult> GetAllSites()
         {
             try
             {
@@ -157,7 +154,6 @@ namespace BetterHealthManagementAPI.Controllers
         //update IsActive siteinformation
         [HttpPut("Active")]
         [Authorize(Roles = "Admin,Owner")]
-        [AllowAnonymous]
         public async Task<IActionResult> UpdateSiteActive([FromBody] UpdateStatusSiteModel siteU)
         {
             try
@@ -190,7 +186,6 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpPut("Delivery")]
         [Authorize(Roles = "Admin,Owner")]
-        [AllowAnonymous]
         public async Task<IActionResult> UpdateSiteIsDelivery([FromBody] UpdateStatusSiteModel site)
       
         {
