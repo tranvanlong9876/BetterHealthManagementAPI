@@ -16,25 +16,22 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
         private readonly ISiteRepo _siteRepo;
         private readonly IDynamicAddressRepo _dynamicAddressRepo;
         private readonly IInternalUserAuthRepo _employeeAuthRepo;
-        private readonly IOrderHeaderRepo _orderHeaderRepo;
+       
 
         public SiteService(ISiteRepo siteRepo, IDynamicAddressRepo dynamicAddressRepo,
-            IInternalUserAuthRepo employeeAuthRepo, IOrderHeaderRepo orderHeaderRepo)
+            IInternalUserAuthRepo employeeAuthRepo)
         {
             _siteRepo = siteRepo;
             _dynamicAddressRepo = dynamicAddressRepo;
             _employeeAuthRepo = employeeAuthRepo;
-            _orderHeaderRepo = orderHeaderRepo;
+          
         }
 
         public async Task<SiteInformation> InsertSite(SiteViewModels siteviewmodel)
         {
             //check exist addressid
-            var address = _dynamicAddressRepo.Get(siteviewmodel.AddressID);
-            if (address == null)
-            {
-                return await Task.FromResult<SiteInformation>(null);
-            }
+            siteviewmodel.DynamicAddModel.Id =  Guid.NewGuid().ToString();
+          
 
             SiteInformation site = new SiteInformation()
             {
@@ -42,7 +39,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
                 SiteName = siteviewmodel.SiteName,
                 Description = siteviewmodel.Description,
                 ContactInfo = siteviewmodel.ContactInfo,
-                AddressId = siteviewmodel.AddressID,
+                AddressId = siteviewmodel.DynamicAddModel.Id,
                 LastUpdate = DateTime.Now,
                 IsActivate = false,
                 IsDelivery = false
@@ -55,26 +52,24 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
 
 
 
-        public async Task<bool> UpdateSite(string SiteID, SiteViewModels stSiteViewModels)
+        public async Task<bool> UpdateSite(UpdateSiteModel updateSiteModel)
         {
-            SiteInformation site = await _siteRepo.Get(SiteID);
-            var address = await _dynamicAddressRepo.Get(stSiteViewModels.AddressID);
-            if (address == null)
-            {
-                return await Task.FromResult(false);
-                ;
-            }
-
+           
+            SiteInformation site = await _siteRepo.Get(updateSiteModel.SiteID);
             if (site == null)
             {
                 return await Task.FromResult(false);
             }
-
-            site.SiteName = stSiteViewModels.SiteName;
-            site.Description = stSiteViewModels.Description;
-            site.ContactInfo = stSiteViewModels.ContactInfo;
-            site.AddressId = stSiteViewModels.AddressID;
+            site.SiteName = updateSiteModel.SiteName;
+            site.Description = updateSiteModel.Description;
+            site.ContactInfo = updateSiteModel.ContactInfo;
+            DynamicAddress dynamicAddress = await _dynamicAddressRepo.Get(site.AddressId);
+            dynamicAddress.CityId = updateSiteModel.DynamicAddModel.CityId;
+            dynamicAddress.DistrictId = updateSiteModel.DynamicAddModel.DistrictId;
+            dynamicAddress.WardId = updateSiteModel.DynamicAddModel.WardId;
+            dynamicAddress.HomeAddress = updateSiteModel.DynamicAddModel.HomeAddress;
             site.LastUpdate = DateTime.Now;
+            await _dynamicAddressRepo.Update();
             await _siteRepo.Update();
             return await Task.FromResult(true);
         }
@@ -89,36 +84,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
                 {
                     return await Task.FromResult(false);
                 }
-
-
-                if (IsDelivery == true)
-                {
-                    List<Repository.DatabaseModels.InternalUser> employees =
-                        await _employeeAuthRepo.GetEmployeeBySiteID(SiteId);
-                    if (employees.Count < 2)
-                    {
-                        return await Task.FromResult(false);
-                    }
-                }
-
-                if (IsDelivery == false)
-                {
-                List<OrderHeader> orderHeaders = await _orderHeaderRepo.GetOrderHeadersBySiteId(SiteId);
-                if (orderHeaders.Count < 1)
-                {
-                    throw new Exception("Site must have at least one order");
-                }
-
-                foreach (var x in orderHeaders)
-                {
-                    if (x.OrderStatus != "1" || x.OrderStatus != "4" || x.OrderStatus != "8")
-                    {
-                        throw new Exception("Site still have order in progress");
-                    }
-
-                }
-            }
-
                 site.IsActivate = IsDelivery;
                 site.LastUpdate = DateTime.Now;
                 await _siteRepo.Update();
@@ -134,38 +99,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
                     throw new Exception("Site not found");
                 }
 
-
-                if (IsActive == true)
-                {
-                    List<Repository.DatabaseModels.InternalUser> employees =
-                        await _employeeAuthRepo.GetEmployeeBySiteID(SiteId);
-                    if (employees.Count < 1)
-                    {
-                        throw new Exception("Site must have at least one employee");
-                    }
-                }
-
-                if (IsActive == false)
-                {
-                    List<OrderHeader> orderHeaders = await _orderHeaderRepo.GetOrderHeadersBySiteId(SiteId);
-                    if (orderHeaders.Count < 1)
-                    {
-                        throw new Exception("Site must have at least one order");
-                    }
-
-                    foreach (var x in orderHeaders)
-                    {
-                        if (x.OrderStatus != "1" || x.OrderStatus != "4" || x.OrderStatus != "8")
-                        {
-                            throw new Exception("Site still have order in progress");
-                        }
-
-                    }
-
-                UpdateSiteIsDelivery(SiteId, false);
-
-
-            }
                 site.IsActivate = IsActive;
                 site.LastUpdate = DateTime.Now;
                 await _siteRepo.Update();
@@ -173,17 +106,29 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
             }
 
 
-        public Task<bool> UpdateSite(SiteInformation siteInformation)
+        public async Task<bool> UpdateSite(SiteInformation siteInformation)
         {
-            return _siteRepo.UpdateSite(siteInformation);
+            return await _siteRepo.UpdateSite(siteInformation);
         }
 
-    
 
-        public Task<SiteInformation> GetSiteById(string id)
+
+        public async Task<SiteInformation> GetSite(string siteId)
         {
-            throw new System.NotImplementedException();
+            //get site by id
+            return await _siteRepo.GetSiteById(siteId);
         }
+
+        public async Task<List<SiteInformation>> GetListSite()
+        {
+            List<SiteInformation> list = await _siteRepo.GetAll();
+            //arrange is Active
+            list.Sort((x, y) => x.IsActivate.CompareTo(y.IsActivate));
+            return list;
+        }
+
+
+
 
     }
 }

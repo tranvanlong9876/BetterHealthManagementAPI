@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 #nullable disable
 
@@ -31,7 +32,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string WardId { get; set; }
         [StringLength(300)]
         public string HomeAddress { get; set; }
-
+        [JsonIgnore]
         [ForeignKey(nameof(CityId))]
         [InverseProperty("DynamicAddresses")]
         public virtual City City { get; set; }
