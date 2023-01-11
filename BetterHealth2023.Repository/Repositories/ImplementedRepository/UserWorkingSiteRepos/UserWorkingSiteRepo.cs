@@ -16,6 +16,46 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         }
 
+        public async Task<string> GetInternalUserWorkingSite(string userID)
+        {
+            var query = from x in context.InternalUserWorkingSites
+                        where x.UserId.Trim().Equals(userID.Trim())
+                        select new { x };
+            var workingSite = await query.Select(selector => new InternalUserWorkingSite() { 
+                Id = selector.x.Id,
+                SiteId = selector.x.SiteId,
+                UserId = selector.x.UserId
+            }).FirstOrDefaultAsync();
+            if(workingSite != null)
+            {
+                return workingSite.SiteId;
+            }
+            return null;
+        }
+
+        public async Task<List<InternalUserWorkingSite>> GetTotalManager(string siteID)
+        {
+            var query = from x in context.InternalUserWorkingSites
+                        join manager in context.InternalUsers on x.UserId equals manager.Id
+                        where x.SiteId.Trim().Equals(siteID.Trim()) && manager.RoleId.Equals(Commons.Commons.MANAGER)
+                        select new { x };
+            var workingSite = await query.Select(selector => new InternalUserWorkingSite()).ToListAsync();
+
+            return workingSite;
+        }
+
+        public async Task<List<InternalUserWorkingSite>> GetTotalPharmacist(string siteID)
+        {
+            var query = from x in context.InternalUserWorkingSites
+                        join pharmacist in context.InternalUsers on x.UserId equals pharmacist.Id
+                        where x.SiteId.Trim().Equals(siteID.Trim()) && pharmacist.RoleId.Equals(Commons.Commons.PHARMACIST)
+                        select new { x };
+            var workingSite = await query.Select(selector => new InternalUserWorkingSite()).ToListAsync();
+
+            return workingSite;
+
+        }
+
         public async Task<bool> InsertWorkingSite(InternalUserWorkingSite internalUserWorkingSite)
         {
             await context.AddAsync(internalUserWorkingSite);

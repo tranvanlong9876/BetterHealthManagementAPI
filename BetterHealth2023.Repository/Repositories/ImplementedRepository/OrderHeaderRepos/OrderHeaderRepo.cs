@@ -15,6 +15,18 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
         }
 
+        public async Task<List<OrderHeader>> GetExecutingOrdersByPharmacistId(string pharID)
+        {
+            //pick up order are executing by pharmacist ID
+            var query = from order in context.OrderHeaders
+                        where (order.OrderStatus.Equals("2") || order.OrderStatus.Equals("3") || order.OrderStatus.Equals("5") || order.OrderStatus.Equals("6") || order.OrderStatus.Equals("7"))
+                        && (order.EmployeeId.Trim().Equals(pharID.Trim()))
+                        select new { order };
+            var orders = await query.Select(selector => new OrderHeader()).ToListAsync();
+            
+            return orders;
+        }
+
         public async Task<List<OrderHeader>> GetOrderHeadersBySiteId(string siteId)
         {
             List<OrderHeader> list = await context.OrderHeaders.Where(x => x.SiteId == siteId).ToListAsync();

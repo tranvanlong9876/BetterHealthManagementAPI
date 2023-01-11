@@ -10,6 +10,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
 {
     public interface IInternalUserAuthService
     {
+        Task<UserInfoModel> GetUserInfoModel(string guid);
         //Tạo nhân viên
         Task<RegisterInternalUserStatus> Register(RegisterInternalUser employee);
 
@@ -17,9 +18,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
         Task<UpdateInternalUserStatus> UpdateInternalUser(UpdateInternalUser user);
         
         //Đăng nhập nội bộ
-        Task<InternalUserTokenModel> Login(LoginInternalUser loginEmployee);
+        Task<LoginUserStatus> Login(LoginInternalUser loginEmployee);
 
         Task<List<Repository.DatabaseModels.InternalUser>> GetEmployeeById(string id);
-        
+
+        Task<UpdateUserStatus> UpdateAccountStatus(string guid, int status);
     }
 }

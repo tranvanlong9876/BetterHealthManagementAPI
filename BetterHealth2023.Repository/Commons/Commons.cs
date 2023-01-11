@@ -12,67 +12,30 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Commons
         public static readonly string JWTClaimEmail = "Email";
         public static readonly string JWTClaimRoleID = "RoleID";
 
-        // Show Status
 
-        public static readonly string DRAFT = "Draft";
-        public static readonly string APPROVE = "Approve";
-        public static readonly string REJECT = "Reject";
-        public static readonly string PUBLIC = "Public";
-        public static readonly string UNPUBLIC = "UnPublic";
-        public static readonly string PENDING = "Pending";
-        public static readonly string HIDDEN = "Hidden";
-        public static readonly string ENDED = "Ended";
+        //Internal User Role ID
 
-        public static readonly List<string> SHOWSTATUS = new()
+        public static readonly string MANAGER = "1";
+        public static readonly string PHARMACIST = "2";
+        public static readonly string OWNER = "3";
+        public static readonly string ADMIN = "4";
+
+        //Internal User Role Name
+        public static readonly string MANAGER_NAME = "Manager";
+        public static readonly string PHARMACIST_NAME = "Pharmacist";
+        public static readonly string OWNER_NAME = "Owner";
+        public static readonly string ADMIN_NAME = "Admin";
+
+        public const string TOTAL_INTERNAL_ROLE_NAME = "Manager,Pharmacist,Owner,Admin";
+
+
+        public static readonly List<string> ROLES = new()
         {
-            DRAFT,
-            APPROVE,
-            REJECT,
-            PUBLIC,
-            UNPUBLIC,
-            PENDING,
-            HIDDEN
+            MANAGER,
+            PHARMACIST,
+            OWNER,
+            ADMIN
         };
-
-        //Show Type
-
-        public static readonly string INDOOR = "Indoor";
-        public static readonly string OUTDOOR = "Outdoor";
-        public static readonly string ALL = "All";
-
-        public static readonly List<string> SHOWTYPES = new()
-        {
-            INDOOR,
-            OUTDOOR,
-        };
-
-        //Role
-
-        public static readonly int ADMIN = 1;
-        public static readonly int ORGANIZER = 1;
-        public static readonly int STAFF = 2;
-        public static readonly int TICKETINSPECTOR = 3;
-        public static readonly int ARTIST = 4;
-        public static readonly int CUSTOMER = 5;
-
-
-        public static readonly List<int> ROLES = new()
-        {
-            ADMIN,
-            ORGANIZER,
-            STAFF,
-            TICKETINSPECTOR,
-            ARTIST,
-            CUSTOMER
-        };
-
-        //BookingLink
-
-        public static readonly string BOOKING_LINK_PREFIX = "https://ultratix.net/show/";
-
-        public static readonly string CAMPAIGN_ID_PARAMETER = "?c=";
-
-        //Hub
 
         //-Local
         public static readonly string LOCAL_HUB = "https://localhost:7042/notifyhub";

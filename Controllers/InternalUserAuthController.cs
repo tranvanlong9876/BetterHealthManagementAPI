@@ -1,5 +1,6 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUser;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,15 +24,33 @@ namespace BetterHealthManagementAPI.Controllers
             _employeeAuthService = employeeAuthService;
         }
 
+        [HttpGet("{id}")]
+        [Authorize(Roles = Commons.TOTAL_INTERNAL_ROLE_NAME)]
+        public async Task<IActionResult> GetUserInfo(string id)
+        {
+            var userInfo = await _employeeAuthService.GetUserInfoModel(id);
+            if (userInfo == null) return NotFound("Không tìm thấy thông tin nhân viên.");
+
+            return Ok(userInfo);
+        }
+
         [HttpPost("Login")]
         [AllowAnonymous]
         public async Task<IActionResult> LoginInternal(LoginInternalUser loginEmployee) {
             try
             {
-                var employeeTokenModel = await _employeeAuthService.Login(loginEmployee);
-                if (employeeTokenModel == null) return BadRequest("Lỗi tạo token JWT, vui lòng thử lại sau.");
+                var userStatusModel = await _employeeAuthService.Login(loginEmployee);
 
-                return Ok(employeeTokenModel);
+                if(userStatusModel.isError)
+                {
+                    if (userStatusModel.UserInactive != null) return BadRequest(userStatusModel);
+                    if (userStatusModel.UserNotFound != null) return NotFound(userStatusModel);
+                    if (userStatusModel.WrongPassword != null) return Unauthorized(userStatusModel);
+                }
+
+                if (userStatusModel.userToken == null) return BadRequest("Lỗi tạo token JWT, vui lòng thử lại sau.");
+
+                return Ok(userStatusModel.userToken);
             } catch(Exception ex)
             {
                 return BadRequest(ex.ToString());
@@ -67,6 +86,22 @@ namespace BetterHealthManagementAPI.Controllers
                 }
                 return NoContent();
             } catch(Exception ex)
+            {
+                return BadRequest(ex.ToString());
+            }
+        }
+        [HttpDelete("Status"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateUserStatus(UpdateUserStatusEntrance updateUserStatusEntrance)
+        {
+            try
+            {
+                var check = await _employeeAuthService.UpdateAccountStatus(updateUserStatusEntrance.UserID, updateUserStatusEntrance.Status);
+                if (check.isError)
+                {
+                    return BadRequest(check);
+                }
+                return Ok("Đã ngắt hoạt động nhân viên nội bộ.");
+            } catch (Exception ex)
             {
                 return BadRequest(ex.ToString());
             }
