@@ -89,10 +89,10 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
-        [HttpGet("Get-AllSite")]
+        [HttpGet("Get-Site")]
         [Authorize(Roles = "Admin,Owner")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllSite([FromBody] string SiteID)
+        public async Task<IActionResult> GetSiteByID([FromBody] string SiteID)
         {
             try
             {
@@ -121,10 +121,10 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
-        [HttpGet("Get-Site")]
+        [HttpGet("Get-ALLSite")]
         [Authorize(Roles = "Admin,Owner")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetSitebyID()
+        public async Task<IActionResult> GetSiteAllSite()
         {
             try
             {
