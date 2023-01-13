@@ -84,12 +84,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
             return checkError;
         }
 
-        public async Task<List<Repository.DatabaseModels.InternalUser>> GetEmployeeById(string id)
-        {
-            List<Repository.DatabaseModels.InternalUser> list = new List<Repository.DatabaseModels.InternalUser>();
-            return list;
-        }
-
         public async Task<RegisterInternalUserStatus> Register(RegisterInternalUser internalUser)
         {
             var check = false;

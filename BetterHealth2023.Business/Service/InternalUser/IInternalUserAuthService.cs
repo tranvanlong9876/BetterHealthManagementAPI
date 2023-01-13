@@ -19,9 +19,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
         
         //Đăng nhập nội bộ
         Task<LoginUserStatus> Login(LoginInternalUser loginEmployee);
-
-        Task<List<Repository.DatabaseModels.InternalUser>> GetEmployeeById(string id);
-
         Task<UpdateUserStatus> UpdateAccountStatus(string guid, int status);
     }
 }

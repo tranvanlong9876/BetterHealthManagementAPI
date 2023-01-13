@@ -26,6 +26,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalRole;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.RoleRepos;
 
 namespace BetterHealthManagementAPI
 {
@@ -73,7 +75,8 @@ namespace BetterHealthManagementAPI
             //them tang service
             services.AddScoped<IInternalUserAuthService, InternalUserAuthService>();
             services.AddScoped<ISiteService, SiteService>();
-            services.AddTransient<IAddressService, AddressService>();
+            services.AddScoped<IAddressService, AddressService>();
+            services.AddScoped<IRoleService, RoleService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();
@@ -81,6 +84,7 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IUserWorkingSiteRepo, UserWorkingSiteRepo>();
             services.AddTransient<ISiteRepo, SiteRepo>();
             services.AddTransient<IOrderHeaderRepo, OrderHeaderRepo>();
+            services.AddTransient<IRoleRepo, RoleRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

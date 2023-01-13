@@ -207,8 +207,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 SiteName = selector.site.SiteName
             }).FirstOrDefaultAsync();
 
-            Console.WriteLine(userModel == null);
-
             return userModel;
         }
     }

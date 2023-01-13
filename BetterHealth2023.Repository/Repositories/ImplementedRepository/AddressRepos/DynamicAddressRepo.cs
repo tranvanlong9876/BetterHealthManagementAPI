@@ -18,6 +18,29 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         }
 
+        public async Task<AddressModel> GetAddressFromId(string addressID)
+        {
+            var query = from address in context.DynamicAddresses
+                        from city in context.Cities.Where(city => city.Id == address.CityId).DefaultIfEmpty()
+                        from district in context.Districts.Where(district => district.Id == address.DistrictId).DefaultIfEmpty()
+                        from ward in context.Wards.Where(ward => ward.Id == address.WardId).DefaultIfEmpty()
+                        where address.Id.Trim().Equals(addressID.Trim())
+                        select new { address, city, district, ward};
+            var addressModel = await query.Select(selector => new AddressModel()
+            {
+                AddressId = selector.address.Id,
+                CityId = selector.address.CityId,
+                CityName = selector.city.CityName,
+                DistrictId = selector.address.DistrictId,
+                DistrictName = selector.district.DistrictName,
+                WardId = selector.address.WardId,
+                WardName = selector.ward.WardName,
+                HomeAddress = selector.address.HomeAddress
+            }).FirstOrDefaultAsync();
+
+            return addressModel;
+        }
+
         public async Task<List<CityModel>> GetAllCitys()
         {
             var query = from city in context.Cities
@@ -63,5 +86,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             await Update();
             return true;
         }
+
     }
 }

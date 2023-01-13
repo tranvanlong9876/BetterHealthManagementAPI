@@ -18,6 +18,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Address
             _dynamicAddressRepo = dynamicAddressRepo;
         }
 
+        public async Task<AddressModel> GetAddressById(string addressId)
+        {
+            var addressModel = await _dynamicAddressRepo.GetAddressFromId(addressId);
+            return addressModel;
+        }
+
         public async Task<List<CityModel>> GetAllCitys()
         {
             var cities = await _dynamicAddressRepo.GetAllCitys();
@@ -48,7 +54,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Address
 
             };
             //insert to database
-            _dynamicAddressRepo.Insert(dynamicAddress);
+            await _dynamicAddressRepo.Insert(dynamicAddress);
         }
     }
 }
