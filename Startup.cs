@@ -71,6 +71,10 @@ namespace BetterHealthManagementAPI
 
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddDbContext<BetterHealthManagementContext>();
+            services.AddCors(p => p.AddPolicy("MyCors", build =>
+            {
+                build.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+            }));
 
             //them tang service
             services.AddScoped<IInternalUserAuthService, InternalUserAuthService>();
@@ -98,6 +102,8 @@ namespace BetterHealthManagementAPI
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors("MyCors");
 
             app.UseRouting();
 
