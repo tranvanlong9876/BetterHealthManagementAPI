@@ -87,9 +87,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
             return await Task.FromResult(true);
         }
 
-
-
-        //chua lam check tinh trang don hang
         public async Task<UpdateSiteStatus> UpdateSiteIsDelivery(string SiteId, bool IsDelivery)
         {
             UpdateSiteStatus updateSiteStatus = new UpdateSiteStatus();
@@ -128,7 +125,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
             return await Task.FromResult(updateSiteStatus);
         }
 
-        //chua lam check tinh trang don hang
         public async Task<UpdateSiteStatus> UpdateSiteIsActive(string SiteId, bool IsActive)
         {
             UpdateSiteStatus updateSiteStatus = new UpdateSiteStatus();
