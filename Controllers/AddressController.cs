@@ -20,6 +20,28 @@ namespace BetterHealthManagementAPI.Controllers
             _addressService = addressService;
         }
 
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAddressById(string id)
+        {
+            var addressModel = await _addressService.GetAddressById(id);
+            try
+            {
+                if (addressModel != null)
+                {
+                    return Ok(addressModel);
+                }
+                else
+                {
+                    return NotFound("Không tìm thấy thông tin Địa Chỉ");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.ToString());
+            }
+        }
+
         [HttpGet("City")]
         [AllowAnonymous]
         public async Task<IActionResult> GetCities()

@@ -6,6 +6,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.InternalUserAuthRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UserWorkingSiteRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.SiteErrorModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,45 +18,45 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
         private readonly ISiteRepo _siteRepo;
         private readonly IDynamicAddressRepo _dynamicAddressRepo;
         private readonly IInternalUserAuthRepo _employeeAuthRepo;
-       
+        private readonly IUserWorkingSiteRepo _userWorkingSiteRepo;
 
         public SiteService(ISiteRepo siteRepo, IDynamicAddressRepo dynamicAddressRepo,
-            IInternalUserAuthRepo employeeAuthRepo)
+            IInternalUserAuthRepo employeeAuthRepo, IUserWorkingSiteRepo userWorkingSiteRepo)
         {
             _siteRepo = siteRepo;
             _dynamicAddressRepo = dynamicAddressRepo;
             _employeeAuthRepo = employeeAuthRepo;
-          
+            _userWorkingSiteRepo = userWorkingSiteRepo;
         }
 
         public async Task<SiteInformation> InsertSite(SiteViewModels siteviewmodel)
         {
             //check exist addressid
-            siteviewmodel.DynamicAddModel.Id =  Guid.NewGuid().ToString();
-          
+            var addressID = Guid.NewGuid().ToString();
+            var siteID = Guid.NewGuid().ToString();
 
             SiteInformation site = new SiteInformation()
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = siteID,
                 SiteName = siteviewmodel.SiteName,
                 Description = siteviewmodel.Description,
                 ContactInfo = siteviewmodel.ContactInfo,
                 ImageUrl = siteviewmodel.ImageUrl,
-                AddressId = siteviewmodel.DynamicAddModel.Id,
+                AddressId = addressID,
                 LastUpdate = DateTime.Now,
                 IsActivate = false,
                 IsDelivery = false
 
             };
-            DynamicAddress dynamicAddress2 = new DynamicAddress()
+            DynamicAddress dynamicAddress = new DynamicAddress()
             {
-                Id = siteviewmodel.DynamicAddModel.Id,
-                CityId = siteviewmodel.DynamicAddModel.CityId,
-                DistrictId = siteviewmodel.DynamicAddModel.DistrictId,
-                WardId = siteviewmodel.DynamicAddModel.WardId,
-                HomeAddress = siteviewmodel.DynamicAddModel.HomeAddress,
+                Id = addressID,
+                CityId = siteviewmodel.cityId,
+                DistrictId = siteviewmodel.districtId,
+                WardId = siteviewmodel.wardId,
+                HomeAddress = siteviewmodel.homeAddress,
             };
-            await _dynamicAddressRepo.Insert(dynamicAddress2);
+            await _dynamicAddressRepo.Insert(dynamicAddress);
             await _siteRepo.Insert(site);
             return await Task.FromResult(site);
         }
@@ -64,7 +66,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
 
         public async Task<bool> UpdateSite(UpdateSiteModel updateSiteModel)
         {
-           
+
             SiteInformation site = await _siteRepo.Get(updateSiteModel.SiteID);
             if (site == null)
             {
@@ -75,53 +77,94 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
             site.ContactInfo = updateSiteModel.ContactInfo;
             site.ImageUrl = updateSiteModel.ImageUrl;
             DynamicAddress dynamicAddress = await _dynamicAddressRepo.Get(site.AddressId);
-            dynamicAddress.CityId = updateSiteModel.DynamicAddModel.CityId;
-            dynamicAddress.DistrictId = updateSiteModel.DynamicAddModel.DistrictId;
-            dynamicAddress.WardId = updateSiteModel.DynamicAddModel.WardId;
-            dynamicAddress.HomeAddress = updateSiteModel.DynamicAddModel.HomeAddress;
+            dynamicAddress.CityId = updateSiteModel.cityId;
+            dynamicAddress.DistrictId = updateSiteModel.districtId;
+            dynamicAddress.WardId = updateSiteModel.wardId;
+            dynamicAddress.HomeAddress = updateSiteModel.homeAddress;
             site.LastUpdate = DateTime.Now;
             await _dynamicAddressRepo.Update();
             await _siteRepo.Update();
             return await Task.FromResult(true);
         }
 
-        
-
-        //chua lam check tinh trang don hang
-            public async Task<bool> UpdateSiteIsDelivery(string SiteId, bool IsDelivery)
-            {
-                SiteInformation site = await _siteRepo.Get(SiteId);
-                if (site == null)
-                {
-                    return await Task.FromResult(false);
-                }
-                site.IsActivate = IsDelivery;
-                site.LastUpdate = DateTime.Now;
-                await _siteRepo.Update();
-                return await Task.FromResult(true);
-            }
-
-            //chua lam check tinh trang don hang
-            public async Task<bool> UpdateSiteIsActive(string SiteId, bool IsActive)
-            {
-                SiteInformation site = await _siteRepo.Get(SiteId);
-                if (site == null)
-                {
-                    throw new Exception("Site not found");
-                }
-
-                site.IsActivate = IsActive;
-                site.LastUpdate = DateTime.Now;
-                await _siteRepo.Update();
-                return await Task.FromResult(true);
-            }
-
-
-        public async Task<bool> UpdateSite(SiteInformation siteInformation)
+        public async Task<UpdateSiteStatus> UpdateSiteIsDelivery(string SiteId, bool IsDelivery)
         {
-            return await _siteRepo.UpdateSite(siteInformation);
+            UpdateSiteStatus updateSiteStatus = new UpdateSiteStatus();
+            SiteInformation site = await _siteRepo.Get(SiteId);
+            if (site == null)
+            {
+                updateSiteStatus.isError = true;
+                updateSiteStatus.SiteNotFound = "Không tìm thấy dữ liệu chi nhánh";
+            }
+
+            if (updateSiteStatus.isError) return updateSiteStatus;
+
+            if (IsDelivery)
+            {
+                var pharmacistWorking = await _userWorkingSiteRepo.GetTotalPharmacist(SiteId);
+                var managerWorking = await _userWorkingSiteRepo.GetTotalManager(SiteId);
+
+                if (pharmacistWorking.Count < 2)
+                {
+                    updateSiteStatus.isError = true;
+                    updateSiteStatus.SiteNotEnoughPharmacist = "Hiện tại không thể bật giao hàng chi nhánh, cần tối thiểu 2 Dược Sĩ.";
+                }
+                if (managerWorking.Count < 1)
+                {
+                    updateSiteStatus.isError = true;
+                    updateSiteStatus.SiteNotEnoughManager = "Hiện tại không thể bật giao hàng chi nhánh, cần tối thiểu 1 Manager.";
+                }
+            }
+
+            if (updateSiteStatus.isError) return updateSiteStatus;
+
+            site.IsDelivery = IsDelivery;
+            site.LastUpdate = DateTime.Now;
+            await _siteRepo.Update();
+            updateSiteStatus.isError = false;
+            return await Task.FromResult(updateSiteStatus);
         }
 
+        public async Task<UpdateSiteStatus> UpdateSiteIsActive(string SiteId, bool IsActive)
+        {
+            UpdateSiteStatus updateSiteStatus = new UpdateSiteStatus();
+            SiteInformation site = await _siteRepo.Get(SiteId);
+            if (site == null)
+            {
+                updateSiteStatus.isError = true;
+                updateSiteStatus.SiteNotFound = "Không tìm thấy dữ liệu chi nhánh";
+            }
+
+            if (updateSiteStatus.isError) return updateSiteStatus;
+
+            if (IsActive)
+            {
+                var pharmacistWorking = await _userWorkingSiteRepo.GetTotalPharmacist(SiteId);
+                var managerWorking = await _userWorkingSiteRepo.GetTotalManager(SiteId);
+
+                if (pharmacistWorking.Count < 1)
+                {
+                    updateSiteStatus.isError = true;
+                    updateSiteStatus.SiteNotEnoughPharmacist = "Hiện tại không thể bật hoạt động chi nhánh, cần tối thiểu 1 Dược Sĩ.";
+                }
+                if (managerWorking.Count < 1)
+                {
+                    updateSiteStatus.isError = true;
+                    updateSiteStatus.SiteNotEnoughManager = "Hiện tại không thể bật hoạt động chi nhánh, cần tối thiểu 1 Manager.";
+                }
+            }
+
+            if (updateSiteStatus.isError) return updateSiteStatus;
+
+            site.IsActivate = IsActive;
+            site.LastUpdate = DateTime.Now;
+
+            if (site.IsDelivery && !IsActive) site.IsDelivery = false;
+
+            await _siteRepo.Update();
+            updateSiteStatus.isError = false;
+            return await Task.FromResult(updateSiteStatus);
+        }
 
 
         public async Task<SiteInformation> GetSite(string siteId)

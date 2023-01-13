@@ -15,7 +15,7 @@ namespace BetterHealthManagementAPI.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
-    [Authorize]
+    [AllowAnonymous]
     public class SiteController : ControllerBase
     {
         private ISiteService _siteService;
@@ -25,44 +25,9 @@ namespace BetterHealthManagementAPI.Controllers
             _siteService = siteService;
             _addressService = addressService;
         }
-      
-
-
-        [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,Owner")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetSite(string id)
-        {
-            try
-            {
-                var site = await _siteService.GetSite(id);
-                if (site == null)
-                {
-                    return BadRequest("SiteID not found");
-                }
-                return Ok(site);
-            }
-            catch (ArgumentNullException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (DbUpdateException)
-            {
-                return StatusCode(500, "Internal server exception");
-            }
-            catch (SqlException)
-            {
-                return StatusCode(500, "Internal server exception");
-            }
-        }
 
         [HttpGet()]
         [Authorize(Roles = "Admin,Owner")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetAllSites()
         {
             try
@@ -93,8 +58,38 @@ namespace BetterHealthManagementAPI.Controllers
 
         }
 
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Owner")]
+        public async Task<IActionResult> GetSite(string id)
+        {
+            try
+            {
+                var site = await _siteService.GetSite(id);
+                if (site == null)
+                {
+                    return BadRequest("SiteID not found");
+                }
+                return Ok(site);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+            catch (SqlException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+        }
+
         [HttpPost]
-        [AllowAnonymous]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> InsertSite(SiteViewModels siteviewmodel)
         {
@@ -129,8 +124,7 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpPut]
         [Authorize(Roles="Admin")]
-        [AllowAnonymous]
-        public async Task<IActionResult> UpdateSite([FromBody]UpdateSiteModel UpdateSiteModels)
+        public async Task<IActionResult> UpdateSite(UpdateSiteModel UpdateSiteModels)
         {
 
             try
@@ -165,17 +159,23 @@ namespace BetterHealthManagementAPI.Controllers
         //update IsActive siteinformation
         [HttpPut("Active")]
         [Authorize(Roles = "Admin,Owner")]
-        [AllowAnonymous]
-        public async Task<IActionResult> UpdateSiteActive([FromBody] UpdateStatusSiteModel siteU)
+        public async Task<IActionResult> UpdateSiteActive(UpdateStatusSiteModel siteU)
         {
             try
             {
-                var site = await _siteService.UpdateSiteIsActive(siteU.SiteID, siteU.Status);
-                if (site == null)
+                var updateSiteStatus = await _siteService.UpdateSiteIsActive(siteU.SiteID, siteU.Status);
+                if (updateSiteStatus.isError)
                 {
-                    return BadRequest("SiteID not found");
+                    if (updateSiteStatus.SiteNotFound != null)
+                    {
+                        return NotFound("Không tìm thấy chi nhánh");
+                    } else
+                    {
+                        return BadRequest(updateSiteStatus);
+                    }
+
                 }
-                return Ok(site);
+                return Ok("Update Site's Operation Status Successfully");
             }
             catch (ArgumentNullException ex)
             {
@@ -198,19 +198,26 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpPut("Delivery")]
         [Authorize(Roles = "Admin,Owner")]
-        [AllowAnonymous]
-        public async Task<IActionResult> UpdateSiteIsDelivery([FromBody] UpdateStatusSiteModel site)
+        public async Task<IActionResult> UpdateSiteIsDelivery(UpdateStatusSiteModel site)
       
         {
             //update active site
             try
             {
-                var check = await _siteService.UpdateSiteIsDelivery(site.SiteID, site.Status);
-                if (check)
+                var updateSiteStatus = await _siteService.UpdateSiteIsDelivery(site.SiteID, site.Status);
+                if (updateSiteStatus.isError)
                 {
-                    return Ok("Update site successfully");
+                    if (updateSiteStatus.SiteNotFound != null)
+                    {
+                        return NotFound("Không tìm thấy chi nhánh");
+                    }
+                    else
+                    {
+                        return BadRequest(updateSiteStatus);
+                    }
+
                 }
-                return BadRequest("Update site failed");
+                return Ok("Update Site's Delivery Status Successfully");
             }
             catch (ArgumentNullException ex)
             {
