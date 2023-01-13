@@ -16,7 +16,6 @@ namespace BetterHealthManagementAPI.Controllers
     [Route("api/v1/[controller]")]
     [ApiController]
     [Authorize]
-    [AllowAnonymous]
     public class SiteController : ControllerBase
     {
         private ISiteService _siteService;
