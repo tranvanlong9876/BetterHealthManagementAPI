@@ -13,6 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
     {
         public ProductDescription()
         {
+            ProductIngredientDescriptions = new HashSet<ProductIngredientDescription>();
             ProductParents = new HashSet<ProductParent>();
         }
 
@@ -25,6 +26,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string Contraindications { get; set; }
         public string Preserve { get; set; }
 
+        [InverseProperty(nameof(ProductIngredientDescription.DrugDescription))]
+        public virtual ICollection<ProductIngredientDescription> ProductIngredientDescriptions { get; set; }
         [InverseProperty(nameof(ProductParent.DrugDescription))]
         public virtual ICollection<ProductParent> ProductParents { get; set; }
     }

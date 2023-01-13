@@ -8,10 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 {
-    [Keyless]
     [Table("Customer_Address")]
     public partial class CustomerAddress
     {
+        [Key]
+        [StringLength(50)]
+        public string Id { get; set; }
         [Required]
         [Column("Customer_ID")]
         [StringLength(50)]
@@ -23,8 +25,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public bool MainAddress { get; set; }
 
         [ForeignKey(nameof(AddressId))]
+        [InverseProperty(nameof(DynamicAddress.CustomerAddresses))]
         public virtual DynamicAddress Address { get; set; }
         [ForeignKey(nameof(CustomerId))]
+        [InverseProperty("CustomerAddresses")]
         public virtual Customer Customer { get; set; }
     }
 }

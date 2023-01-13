@@ -20,13 +20,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [StringLength(50)]
         public string Id { get; set; }
         [Required]
-        [Column("Receipt_ID")]
+        [Column("ImportDetail_ID")]
         [StringLength(50)]
-        public string ReceiptId { get; set; }
-        [Required]
-        [Column("Product_ID")]
-        [StringLength(50)]
-        public string ProductId { get; set; }
+        public string ImportDetailId { get; set; }
         public int Quantity { get; set; }
         [Column(TypeName = "date")]
         public DateTime ManufactureDate { get; set; }
@@ -35,9 +31,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Column("isOutOfStock")]
         public bool IsOutOfStock { get; set; }
 
-        [ForeignKey(nameof(ReceiptId))]
-        [InverseProperty(nameof(ProductImportReceipt.ProductImportBatches))]
-        public virtual ProductImportReceipt Receipt { get; set; }
+        [ForeignKey(nameof(ImportDetailId))]
+        [InverseProperty(nameof(ProductImportDetail.ProductImportBatches))]
+        public virtual ProductImportDetail ImportDetail { get; set; }
         [InverseProperty(nameof(OrderBatch.Batch))]
         public virtual ICollection<OrderBatch> OrderBatches { get; set; }
     }

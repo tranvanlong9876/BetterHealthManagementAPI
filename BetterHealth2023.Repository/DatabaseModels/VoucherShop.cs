@@ -19,10 +19,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Key]
         [StringLength(50)]
         public string Id { get; set; }
-        [Column(TypeName = "money")]
-        public decimal DiscountMoney { get; set; }
-        [Column(TypeName = "money")]
-        public decimal OrderMoneyCondition { get; set; }
+        public double? DiscountMoney { get; set; }
+        public double? DiscountPercent { get; set; }
         public int ApplyFor { get; set; }
         public int ExchancePointFee { get; set; }
         public int Duration { get; set; }

@@ -8,31 +8,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 {
-    [Table("OrderDetail")]
-    public partial class OrderDetail
+    [Table("Product_Image")]
+    public partial class ProductImage
     {
         [Key]
         [StringLength(50)]
         public string Id { get; set; }
         [Required]
-        [Column("OrderID")]
-        [StringLength(50)]
-        public string OrderId { get; set; }
+        [Column("ImageURL")]
+        [StringLength(500)]
+        public string ImageUrl { get; set; }
         [Required]
         [Column("ProductID")]
         [StringLength(50)]
         public string ProductId { get; set; }
-        public int Quantity { get; set; }
-        public double PriceEachOne { get; set; }
-        public double PriceTotal { get; set; }
-        [StringLength(500)]
-        public string Note { get; set; }
 
-        [ForeignKey(nameof(OrderId))]
-        [InverseProperty(nameof(OrderHeader.OrderDetails))]
-        public virtual OrderHeader Order { get; set; }
         [ForeignKey(nameof(ProductId))]
-        [InverseProperty(nameof(ProductDetail.OrderDetails))]
+        [InverseProperty(nameof(ProductDetail.ProductImages))]
         public virtual ProductDetail Product { get; set; }
     }
 }

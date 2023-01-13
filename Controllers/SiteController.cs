@@ -16,6 +16,7 @@ namespace BetterHealthManagementAPI.Controllers
     [Route("api/v1/[controller]")]
     [ApiController]
     [Authorize]
+    [AllowAnonymous]
     public class SiteController : ControllerBase
     {
         private ISiteService _siteService;
@@ -91,7 +92,7 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> InsertSite(SiteViewModels siteviewmodel)
+        public async Task<IActionResult> InsertSite(SiteEntranceModels siteviewmodel)
         {
             try
             {

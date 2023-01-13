@@ -33,9 +33,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [StringLength(50)]
         public string ManufacturerId { get; set; }
         [Column("isPrescription")]
-        public bool? IsPrescription { get; set; }
+        public bool IsPrescription { get; set; }
         [Column("isBatches")]
-        public bool? IsBatches { get; set; }
+        public bool IsBatches { get; set; }
+        [Column("isDelete")]
+        public bool IsDelete { get; set; }
 
         [ForeignKey(nameof(DrugDescriptionId))]
         [InverseProperty(nameof(ProductDescription.ProductParents))]

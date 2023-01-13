@@ -8,10 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 {
-    [Keyless]
     [Table("Order_Execution")]
     public partial class OrderExecution
     {
+        [Key]
+        [StringLength(50)]
+        public string Id { get; set; }
         [Required]
         [Column("OrderID")]
         [StringLength(50)]
@@ -33,12 +35,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string UserId { get; set; }
 
         [ForeignKey(nameof(OrderId))]
+        [InverseProperty(nameof(OrderHeader.OrderExecutions))]
         public virtual OrderHeader Order { get; set; }
         [ForeignKey(nameof(StatusChangeFrom))]
+        [InverseProperty(nameof(OrderStatus.OrderExecutionStatusChangeFromNavigations))]
         public virtual OrderStatus StatusChangeFromNavigation { get; set; }
         [ForeignKey(nameof(StatusChangeTo))]
+        [InverseProperty(nameof(OrderStatus.OrderExecutionStatusChangeToNavigations))]
         public virtual OrderStatus StatusChangeToNavigation { get; set; }
         [ForeignKey(nameof(UserId))]
+        [InverseProperty(nameof(InternalUser.OrderExecutions))]
         public virtual InternalUser User { get; set; }
     }
 }

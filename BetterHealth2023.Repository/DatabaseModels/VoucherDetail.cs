@@ -8,10 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 {
-    [Keyless]
     [Table("Voucher_Detail")]
     public partial class VoucherDetail
     {
+        [Key]
+        [StringLength(50)]
+        public string Id { get; set; }
         [Required]
         [StringLength(50)]
         public string VoucherCode { get; set; }
@@ -23,6 +25,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public double? DiscountMaxMoney { get; set; }
 
         [ForeignKey(nameof(VoucherCode))]
+        [InverseProperty(nameof(Voucher.VoucherDetails))]
         public virtual Voucher VoucherCodeNavigation { get; set; }
     }
 }

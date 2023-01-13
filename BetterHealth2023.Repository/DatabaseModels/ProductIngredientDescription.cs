@@ -8,10 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 {
-    [Keyless]
     [Table("Product_Ingredient_Description")]
     public partial class ProductIngredientDescription
     {
+        [Key]
+        [StringLength(50)]
+        public string Id { get; set; }
         [Required]
         [Column("Drug_Description_ID")]
         [StringLength(50)]
@@ -23,8 +25,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public int? Content { get; set; }
 
         [ForeignKey(nameof(DrugDescriptionId))]
+        [InverseProperty(nameof(ProductDescription.ProductIngredientDescriptions))]
         public virtual ProductDescription DrugDescription { get; set; }
         [ForeignKey(nameof(IngredientId))]
+        [InverseProperty(nameof(ProductIngredient.ProductIngredientDescriptions))]
         public virtual ProductIngredient Ingredient { get; set; }
     }
 }

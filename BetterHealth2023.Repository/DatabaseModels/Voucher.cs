@@ -15,6 +15,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         {
             OrderHeaders = new HashSet<OrderHeader>();
             VoucherCustomerRestrictions = new HashSet<VoucherCustomerRestriction>();
+            VoucherDetails = new HashSet<VoucherDetail>();
         }
 
         [Key]
@@ -38,5 +39,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public virtual ICollection<OrderHeader> OrderHeaders { get; set; }
         [InverseProperty(nameof(VoucherCustomerRestriction.VoucherCodeNavigation))]
         public virtual ICollection<VoucherCustomerRestriction> VoucherCustomerRestrictions { get; set; }
+        [InverseProperty(nameof(VoucherDetail.VoucherCodeNavigation))]
+        public virtual ICollection<VoucherDetail> VoucherDetails { get; set; }
     }
 }

@@ -14,6 +14,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public Customer()
         {
             Comments = new HashSet<Comment>();
+            CustomerAddresses = new HashSet<CustomerAddress>();
             CustomerCards = new HashSet<CustomerCard>();
             OrderHeaders = new HashSet<OrderHeader>();
             PurchaseVoucherHistories = new HashSet<PurchaseVoucherHistory>();
@@ -46,6 +47,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 
         [InverseProperty(nameof(Comment.User))]
         public virtual ICollection<Comment> Comments { get; set; }
+        [InverseProperty(nameof(CustomerAddress.Customer))]
+        public virtual ICollection<CustomerAddress> CustomerAddresses { get; set; }
         [InverseProperty(nameof(CustomerCard.Customer))]
         public virtual ICollection<CustomerCard> CustomerCards { get; set; }
         [InverseProperty(nameof(OrderHeader.Customer))]

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 #nullable disable
 
@@ -14,6 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
     {
         public DynamicAddress()
         {
+            CustomerAddresses = new HashSet<CustomerAddress>();
             InternalUsers = new HashSet<InternalUser>();
             SiteInformations = new HashSet<SiteInformation>();
         }
@@ -32,7 +32,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string WardId { get; set; }
         [StringLength(300)]
         public string HomeAddress { get; set; }
-        [JsonIgnore]
+
         [ForeignKey(nameof(CityId))]
         [InverseProperty("DynamicAddresses")]
         public virtual City City { get; set; }
@@ -42,6 +42,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [ForeignKey(nameof(WardId))]
         [InverseProperty("DynamicAddresses")]
         public virtual Ward Ward { get; set; }
+        [InverseProperty(nameof(CustomerAddress.Address))]
+        public virtual ICollection<CustomerAddress> CustomerAddresses { get; set; }
         [InverseProperty(nameof(InternalUser.Address))]
         public virtual ICollection<InternalUser> InternalUsers { get; set; }
         [InverseProperty(nameof(SiteInformation.Address))]

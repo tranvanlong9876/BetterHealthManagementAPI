@@ -7,7 +7,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DynamicAd
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site
 {
-    public class SiteViewModels
+    public class SiteEntranceModels
     {
 
         [Required]

@@ -15,6 +15,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         {
             Blogs = new HashSet<Blog>();
             InternalUserWorkingSites = new HashSet<InternalUserWorkingSite>();
+            OrderExecutions = new HashSet<OrderExecution>();
             OrderHeaders = new HashSet<OrderHeader>();
             ProductImportReceipts = new HashSet<ProductImportReceipt>();
         }
@@ -69,6 +70,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public virtual ICollection<Blog> Blogs { get; set; }
         [InverseProperty(nameof(InternalUserWorkingSite.User))]
         public virtual ICollection<InternalUserWorkingSite> InternalUserWorkingSites { get; set; }
+        [InverseProperty(nameof(OrderExecution.User))]
+        public virtual ICollection<OrderExecution> OrderExecutions { get; set; }
         [InverseProperty(nameof(OrderHeader.Employee))]
         public virtual ICollection<OrderHeader> OrderHeaders { get; set; }
         [InverseProperty(nameof(ProductImportReceipt.Manager))]

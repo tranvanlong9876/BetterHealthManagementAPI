@@ -13,7 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
     {
         public ProductImportReceipt()
         {
-            ProductImportBatches = new HashSet<ProductImportBatch>();
+            ProductImportDetails = new HashSet<ProductImportDetail>();
         }
 
         [Key]
@@ -42,7 +42,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [ForeignKey(nameof(SiteId))]
         [InverseProperty(nameof(SiteInformation.ProductImportReceipts))]
         public virtual SiteInformation Site { get; set; }
-        [InverseProperty(nameof(ProductImportBatch.Receipt))]
-        public virtual ICollection<ProductImportBatch> ProductImportBatches { get; set; }
+        [InverseProperty(nameof(ProductImportDetail.Receipt))]
+        public virtual ICollection<ProductImportDetail> ProductImportDetails { get; set; }
     }
 }

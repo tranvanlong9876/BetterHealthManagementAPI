@@ -8,10 +8,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 {
-    [Keyless]
     [Table("ProductImport_Details")]
     public partial class ProductImportDetail
     {
+        public ProductImportDetail()
+        {
+            ProductImportBatches = new HashSet<ProductImportBatch>();
+        }
+
+        [Key]
+        [StringLength(50)]
+        public string Id { get; set; }
         [Required]
         [Column("Receipt_ID")]
         [StringLength(50)]
@@ -25,10 +32,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public decimal ImportPrice { get; set; }
 
         [ForeignKey(nameof(ProductId))]
+        [InverseProperty(nameof(ProductDetail.ProductImportDetails))]
         public virtual ProductDetail Product { get; set; }
-        [ForeignKey(nameof(ProductId))]
-        public virtual ProductImportBatch ProductNavigation { get; set; }
         [ForeignKey(nameof(ReceiptId))]
+        [InverseProperty(nameof(ProductImportReceipt.ProductImportDetails))]
         public virtual ProductImportReceipt Receipt { get; set; }
+        [InverseProperty(nameof(ProductImportBatch.ImportDetail))]
+        public virtual ICollection<ProductImportBatch> ProductImportBatches { get; set; }
     }
 }

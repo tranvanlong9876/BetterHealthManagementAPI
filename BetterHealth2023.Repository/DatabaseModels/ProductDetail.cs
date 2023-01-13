@@ -14,6 +14,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public ProductDetail()
         {
             Comments = new HashSet<Comment>();
+            OrderDetails = new HashSet<OrderDetail>();
+            ProductImages = new HashSet<ProductImage>();
+            ProductImportDetails = new HashSet<ProductImportDetail>();
         }
 
         [Key]
@@ -30,10 +33,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Column("Unit_Level")]
         public int UnitLevel { get; set; }
         public int Quantitative { get; set; }
-        [Required]
-        [Column("ImageURL")]
-        [StringLength(500)]
-        public string ImageUrl { get; set; }
         [Column("sellQuantity")]
         public int SellQuantity { get; set; }
         public double Price { get; set; }
@@ -54,5 +53,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public virtual Unit Unit { get; set; }
         [InverseProperty(nameof(Comment.Product))]
         public virtual ICollection<Comment> Comments { get; set; }
+        [InverseProperty(nameof(OrderDetail.Product))]
+        public virtual ICollection<OrderDetail> OrderDetails { get; set; }
+        [InverseProperty(nameof(ProductImage.Product))]
+        public virtual ICollection<ProductImage> ProductImages { get; set; }
+        [InverseProperty(nameof(ProductImportDetail.Product))]
+        public virtual ICollection<ProductImportDetail> ProductImportDetails { get; set; }
     }
 }

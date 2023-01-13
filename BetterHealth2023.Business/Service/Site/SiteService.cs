@@ -29,7 +29,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
             _userWorkingSiteRepo = userWorkingSiteRepo;
         }
 
-        public async Task<SiteInformation> InsertSite(SiteViewModels siteviewmodel)
+        public async Task<SiteInformation> InsertSite(SiteEntranceModels siteviewmodel)
         {
             //check exist addressid
             var addressID = Guid.NewGuid().ToString();
@@ -167,22 +167,18 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
         }
 
 
-        public async Task<SiteInformation> GetSite(string siteId)
+        public async Task<SiteViewModel> GetSite(string siteId)
         {
             //get site by id
             return await _siteRepo.GetSiteById(siteId);
         }
 
-        public async Task<List<SiteInformation>> GetListSite()
+        public async Task<List<SiteViewModel>> GetListSite()
         {
-            List<SiteInformation> list = await _siteRepo.GetAll();
+            List<SiteViewModel> list = await _siteRepo.GetAllSite();
             //arrange is Active
             list.Sort((x, y) => x.IsActivate.CompareTo(y.IsActivate));
             return list;
         }
-
-
-
-
     }
 }

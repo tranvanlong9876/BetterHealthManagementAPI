@@ -14,6 +14,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public OrderHeader()
         {
             OrderBatches = new HashSet<OrderBatch>();
+            OrderDetails = new HashSet<OrderDetail>();
+            OrderExecutions = new HashSet<OrderExecution>();
         }
 
         [Key]
@@ -72,5 +74,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public virtual Voucher VoucherCodeNavigation { get; set; }
         [InverseProperty(nameof(OrderBatch.Order))]
         public virtual ICollection<OrderBatch> OrderBatches { get; set; }
+        [InverseProperty(nameof(OrderDetail.Order))]
+        public virtual ICollection<OrderDetail> OrderDetails { get; set; }
+        [InverseProperty(nameof(OrderExecution.Order))]
+        public virtual ICollection<OrderExecution> OrderExecutions { get; set; }
     }
 }

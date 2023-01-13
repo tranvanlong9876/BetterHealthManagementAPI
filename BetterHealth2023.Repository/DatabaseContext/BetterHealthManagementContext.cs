@@ -41,6 +41,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<ProductDescription> ProductDescriptions { get; set; }
         public virtual DbSet<ProductDetail> ProductDetails { get; set; }
         public virtual DbSet<ProductDiscount> ProductDiscounts { get; set; }
+        public virtual DbSet<ProductImage> ProductImages { get; set; }
         public virtual DbSet<ProductImportBatch> ProductImportBatches { get; set; }
         public virtual DbSet<ProductImportDetail> ProductImportDetails { get; set; }
         public virtual DbSet<ProductImportReceipt> ProductImportReceipts { get; set; }
@@ -106,13 +107,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
             modelBuilder.Entity<CustomerAddress>(entity =>
             {
                 entity.HasOne(d => d.Address)
-                    .WithMany()
+                    .WithMany(p => p.CustomerAddresses)
                     .HasForeignKey(d => d.AddressId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Customer_Address_Dynamic_Address");
 
                 entity.HasOne(d => d.Customer)
-                    .WithMany()
+                    .WithMany(p => p.CustomerAddresses)
                     .HasForeignKey(d => d.CustomerId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Customer_Address_Customer");
@@ -205,13 +206,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
             modelBuilder.Entity<OrderDetail>(entity =>
             {
                 entity.HasOne(d => d.Order)
-                    .WithMany()
+                    .WithMany(p => p.OrderDetails)
                     .HasForeignKey(d => d.OrderId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_OrderDetail_OrderHeader");
 
                 entity.HasOne(d => d.Product)
-                    .WithMany()
+                    .WithMany(p => p.OrderDetails)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_OrderDetail_Product_Details");
@@ -220,25 +221,25 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
             modelBuilder.Entity<OrderExecution>(entity =>
             {
                 entity.HasOne(d => d.Order)
-                    .WithMany()
+                    .WithMany(p => p.OrderExecutions)
                     .HasForeignKey(d => d.OrderId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Order_Execution_OrderHeader");
 
                 entity.HasOne(d => d.StatusChangeFromNavigation)
-                    .WithMany()
+                    .WithMany(p => p.OrderExecutionStatusChangeFromNavigations)
                     .HasForeignKey(d => d.StatusChangeFrom)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Order_Execution_OrderStatus");
 
                 entity.HasOne(d => d.StatusChangeToNavigation)
-                    .WithMany()
+                    .WithMany(p => p.OrderExecutionStatusChangeToNavigations)
                     .HasForeignKey(d => d.StatusChangeTo)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Order_Execution_OrderStatus1");
 
                 entity.HasOne(d => d.User)
-                    .WithMany()
+                    .WithMany(p => p.OrderExecutions)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Order_Execution_Employee");
@@ -322,31 +323,34 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasConstraintName("FK_Product_Details_Unit");
             });
 
+            modelBuilder.Entity<ProductImage>(entity =>
+            {
+                entity.HasOne(d => d.Product)
+                    .WithMany(p => p.ProductImages)
+                    .HasForeignKey(d => d.ProductId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Product_Image_Product_Details");
+            });
+
             modelBuilder.Entity<ProductImportBatch>(entity =>
             {
-                entity.HasOne(d => d.Receipt)
+                entity.HasOne(d => d.ImportDetail)
                     .WithMany(p => p.ProductImportBatches)
-                    .HasForeignKey(d => d.ReceiptId)
+                    .HasForeignKey(d => d.ImportDetailId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_WarehouseEntry_Receipt_ProductBatches_WarehouseEntry_Receipt");
+                    .HasConstraintName("FK_ProductImport_Batches_ProductImport_Details");
             });
 
             modelBuilder.Entity<ProductImportDetail>(entity =>
             {
                 entity.HasOne(d => d.Product)
-                    .WithMany()
+                    .WithMany(p => p.ProductImportDetails)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_WarehouseEntry_Receipt_ProductDetails_Product_Details");
 
-                entity.HasOne(d => d.ProductNavigation)
-                    .WithMany()
-                    .HasForeignKey(d => d.ProductId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_WarehouseEntry_Receipt_ProductDetails_WarehouseEntry_Receipt_ProductBatches");
-
                 entity.HasOne(d => d.Receipt)
-                    .WithMany()
+                    .WithMany(p => p.ProductImportDetails)
                     .HasForeignKey(d => d.ReceiptId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_WarehouseEntry_Receipt_ProductDetails_WarehouseEntry_Receipt");
@@ -370,13 +374,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
             modelBuilder.Entity<ProductIngredientDescription>(entity =>
             {
                 entity.HasOne(d => d.DrugDescription)
-                    .WithMany()
+                    .WithMany(p => p.ProductIngredientDescriptions)
                     .HasForeignKey(d => d.DrugDescriptionId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Product_Ingredient_Description_Product_Description");
 
                 entity.HasOne(d => d.Ingredient)
-                    .WithMany()
+                    .WithMany(p => p.ProductIngredientDescriptions)
                     .HasForeignKey(d => d.IngredientId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Product_Ingredient_Description_Product_Ingredient");
@@ -458,7 +462,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
             modelBuilder.Entity<VoucherDetail>(entity =>
             {
                 entity.HasOne(d => d.VoucherCodeNavigation)
-                    .WithMany()
+                    .WithMany(p => p.VoucherDetails)
                     .HasForeignKey(d => d.VoucherCode)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Voucher_Detail_Voucher");
