@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DynamicAddressViewModel;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Address
 {
@@ -33,6 +34,21 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Address
         {
             var wards = await _dynamicAddressRepo.GetAllWards(districtID);
             return wards;
+        }
+
+        public async Task InsertAddressSite(DynamicAddModel dynamicAddModel)
+        {
+            DynamicAddress dynamicAddress = new DynamicAddress()
+            {
+                Id = dynamicAddModel.Id,
+                CityId = dynamicAddModel.CityId,
+                DistrictId = dynamicAddModel.DistrictId,
+                WardId = dynamicAddModel.WardId,
+                HomeAddress = dynamicAddModel.HomeAddress,
+
+            };
+            //insert to database
+            _dynamicAddressRepo.Insert(dynamicAddress);
         }
     }
 }

@@ -35,17 +35,27 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
 
             SiteInformation site = new SiteInformation()
             {
-                Id = new Guid().ToString(),
+                Id = Guid.NewGuid().ToString(),
                 SiteName = siteviewmodel.SiteName,
                 Description = siteviewmodel.Description,
                 ContactInfo = siteviewmodel.ContactInfo,
+                ImageUrl = siteviewmodel.ImageUrl,
                 AddressId = siteviewmodel.DynamicAddModel.Id,
                 LastUpdate = DateTime.Now,
                 IsActivate = false,
                 IsDelivery = false
 
             };
-            _siteRepo.Insert(site);
+            DynamicAddress dynamicAddress2 = new DynamicAddress()
+            {
+                Id = siteviewmodel.DynamicAddModel.Id,
+                CityId = siteviewmodel.DynamicAddModel.CityId,
+                DistrictId = siteviewmodel.DynamicAddModel.DistrictId,
+                WardId = siteviewmodel.DynamicAddModel.WardId,
+                HomeAddress = siteviewmodel.DynamicAddModel.HomeAddress,
+            };
+            await _dynamicAddressRepo.Insert(dynamicAddress2);
+            await _siteRepo.Insert(site);
             return await Task.FromResult(site);
         }
 
@@ -63,6 +73,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
             site.SiteName = updateSiteModel.SiteName;
             site.Description = updateSiteModel.Description;
             site.ContactInfo = updateSiteModel.ContactInfo;
+            site.ImageUrl = updateSiteModel.ImageUrl;
             DynamicAddress dynamicAddress = await _dynamicAddressRepo.Get(site.AddressId);
             dynamicAddress.CityId = updateSiteModel.DynamicAddModel.CityId;
             dynamicAddress.DistrictId = updateSiteModel.DynamicAddModel.DistrictId;

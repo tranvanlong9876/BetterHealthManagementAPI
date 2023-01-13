@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DynamicAddressViewModel;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Address
 {
@@ -14,5 +15,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Address
         Task<List<DistrictModel>> GetAllDistricts(string cityID);
 
         Task<List<WardModel>> GetAllWards(string districtID);
+
+        Task InsertAddressSite(DynamicAddModel dynamicAddModel);
     }
 }

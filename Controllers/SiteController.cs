@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Address;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DynamicAddressViewModel;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -17,14 +19,18 @@ namespace BetterHealthManagementAPI.Controllers
     public class SiteController : ControllerBase
     {
         private ISiteService _siteService;
-        public SiteController(ISiteService siteService)
+        private IAddressService _addressService;
+        public SiteController(ISiteService siteService, IAddressService addressService)
         {
             _siteService = siteService;
+            _addressService = addressService;
         }
+      
 
 
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Owner")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetSite(string id)
         {
             try
@@ -56,6 +62,7 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpGet()]
         [Authorize(Roles = "Admin,Owner")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllSites()
         {
             try
@@ -87,17 +94,19 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> InsertSite(SiteViewModels siteviewmodel)
         {
             try
             {
-                siteviewmodel.DynamicAddModel.Id = Guid.NewGuid().ToString();
                 var site = await _siteService.InsertSite(siteviewmodel);
+
                 if (site == null)
                 {
                     return BadRequest("AddressID not found");
                 }
+               
                 return Created("", site);
             }
             catch (ArgumentNullException ex)
@@ -120,6 +129,7 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpPut]
         [Authorize(Roles="Admin")]
+        [AllowAnonymous]
         public async Task<IActionResult> UpdateSite([FromBody]UpdateSiteModel UpdateSiteModels)
         {
 
@@ -155,6 +165,7 @@ namespace BetterHealthManagementAPI.Controllers
         //update IsActive siteinformation
         [HttpPut("Active")]
         [Authorize(Roles = "Admin,Owner")]
+        [AllowAnonymous]
         public async Task<IActionResult> UpdateSiteActive([FromBody] UpdateStatusSiteModel siteU)
         {
             try
@@ -187,6 +198,7 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpPut("Delivery")]
         [Authorize(Roles = "Admin,Owner")]
+        [AllowAnonymous]
         public async Task<IActionResult> UpdateSiteIsDelivery([FromBody] UpdateStatusSiteModel site)
       
         {
