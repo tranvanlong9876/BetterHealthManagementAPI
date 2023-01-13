@@ -12,6 +12,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site
         public string Description { get; set; }
 
         public string ContactInfo { get; set; }
+        
+        public string ImageUrl { get; set; }
 
         public DynamicAddModel DynamicAddModel { get; set; }
     }
