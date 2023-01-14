@@ -1,6 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -51,23 +52,49 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return siteView;
         }
 
-        public async Task<List<SiteViewModel>> GetAllSite()
+        public async Task<PagedResult<SiteViewModel>> GetAllSitePaging(GetSitePagingRequest pagingRequest)
         {
-            var query = from x in context.SiteInformations
-                        select new { x };
-            var siteList = await query.Select(selector => new SiteViewModel()
+            var query = from site in context.SiteInformations
+                        from address in context.DynamicAddresses.Where(x => x.Id == site.AddressId).DefaultIfEmpty()
+                        from city in context.Cities.Where(x => x.Id == address.CityId).DefaultIfEmpty()
+                        orderby site.IsDelivery descending, site.IsActivate descending
+                        select new { site, address, city };
+
+            if (pagingRequest.IsActive.HasValue)
             {
-                Id = selector.x.Id,
-                ImageUrl = selector.x.ImageUrl,
-                SiteName = selector.x.SiteName,
-                AddressId = selector.x.AddressId,
-                LastUpdate = selector.x.LastUpdate,
-                Description = selector.x.Description,
-                ContactInfo = selector.x.ContactInfo,
-                IsActivate = selector.x.IsActivate,
-                IsDelivery = selector.x.IsDelivery
-            }).ToListAsync();
-            return siteList;
+                query = query.Where(x => x.site.IsActivate.Equals(pagingRequest.IsActive));
+            }
+
+            if (pagingRequest.IsDelivery.HasValue)
+            {
+                query = query.Where(x => x.site.IsDelivery.Equals(pagingRequest.IsDelivery));
+            }
+
+            if (!string.IsNullOrEmpty(pagingRequest.CityID))
+            {
+                query = query.Where(x => x.city.Id.Equals(pagingRequest.CityID));
+            }
+
+            int totalRow = await query.CountAsync();
+
+            var siteList = await query.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
+                .Take(pagingRequest.pageItems)
+                .Select(selector => new SiteViewModel()
+                {
+                    Id = selector.site.Id,
+                    ImageUrl = selector.site.ImageUrl,
+                    SiteName = selector.site.SiteName,
+                    AddressId = selector.site.AddressId,
+                    LastUpdate = selector.site.LastUpdate,
+                    Description = selector.site.Description,
+                    ContactInfo = selector.site.ContactInfo,
+                    IsActivate = selector.site.IsActivate,
+                    IsDelivery = selector.site.IsDelivery,
+                }).ToListAsync();
+
+            var pageResult = new PagedResult<SiteViewModel>(siteList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
+
+            return pageResult;
         }
     }
 

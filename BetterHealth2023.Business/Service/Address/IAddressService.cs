@@ -19,5 +19,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Address
         Task InsertAddressSite(DynamicAddModel dynamicAddModel);
 
         Task<AddressModel> GetAddressById(string addressId);
+
+        Task<CityModel> GetSpecificCity(string cityID);
+        Task<DistrictModel> GetSpecificDistrict(string districtID);
+        Task<WardModel> GetSpecificWard(string wardID);
     }
 }

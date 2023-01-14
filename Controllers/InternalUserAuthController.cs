@@ -24,6 +24,16 @@ namespace BetterHealthManagementAPI.Controllers
             _employeeAuthService = employeeAuthService;
         }
 
+        [HttpGet()]
+        [Authorize(Roles = Commons.ADMIN_NAME)]
+        public async Task<IActionResult> GetAllUserPaging([FromQuery] GetInternalUserPagingRequest request)
+        {
+            var userList = await _employeeAuthService.GetAllUserPaging(request);
+            if (userList == null) return NotFound();
+
+            return Ok(userList);
+        }
+
         [HttpGet("{id}")]
         [Authorize(Roles = Commons.TOTAL_INTERNAL_ROLE_NAME)]
         public async Task<IActionResult> GetUserInfo(string id)
