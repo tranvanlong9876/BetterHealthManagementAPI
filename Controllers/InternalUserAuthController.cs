@@ -15,7 +15,7 @@ namespace BetterHealthManagementAPI.Controllers
 {
     [Route("api/v1/User")]
     [ApiController]
-    [AllowAnonymous]
+    [Authorize]
     public class InternalUserAuthController : ControllerBase
     {
         private IInternalUserAuthService _employeeAuthService;
