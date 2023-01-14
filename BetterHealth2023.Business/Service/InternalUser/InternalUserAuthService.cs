@@ -13,6 +13,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUser
 {
@@ -434,6 +435,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
         {
             UserInfoModel infoModel = await _employeeAuthRepo.GetUserInfo(guid);
             return infoModel;
+        }
+
+        public async Task<PagedResult<UserInfoModel>> GetAllUserPaging(GetInternalUserPagingRequest pagingRequest)
+        {
+            var userInfoList = await _employeeAuthRepo.GetAllPaging(pagingRequest);
+            return userInfoList;
         }
     }
 }

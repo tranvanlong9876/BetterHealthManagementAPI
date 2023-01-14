@@ -19,5 +19,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         public Task<List<WardModel>> GetAllWards(string districtID);
         public Task<AddressModel> GetAddressFromId(string addressID);
+        public Task<CityModel> GetSpecificCity(string cityID);
+        public Task<DistrictModel> GetSpecificDistrict(string districtID);
+        public Task<WardModel> GetSpecificWard(string wardID);
     }
 }

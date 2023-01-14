@@ -8,6 +8,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UserWorkingSiteRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.SiteErrorModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site;
 using Microsoft.AspNetCore.Mvc;
 
@@ -173,12 +174,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
             return await _siteRepo.GetSiteById(siteId);
         }
 
-        public async Task<List<SiteViewModel>> GetListSite()
+        public async Task<PagedResult<SiteViewModel>> GetListSitePaging(GetSitePagingRequest pagingRequest)
         {
-            List<SiteViewModel> list = await _siteRepo.GetAllSite();
-            //arrange is Active
-            list.Sort((x, y) => x.IsActivate.CompareTo(y.IsActivate));
-            return list;
+            var siteList = await _siteRepo.GetAllSitePaging(pagingRequest);
+
+            return siteList;
         }
     }
 }

@@ -21,10 +21,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Commons
         public static readonly string ADMIN = "4";
 
         //Internal User Role Name
-        public static readonly string MANAGER_NAME = "Manager";
-        public static readonly string PHARMACIST_NAME = "Pharmacist";
-        public static readonly string OWNER_NAME = "Owner";
-        public static readonly string ADMIN_NAME = "Admin";
+        public const string MANAGER_NAME = "Manager";
+        public const string PHARMACIST_NAME = "Pharmacist";
+        public const string OWNER_NAME = "Owner";
+        public const string ADMIN_NAME = "Admin";
 
         public const string TOTAL_INTERNAL_ROLE_NAME = "Manager,Pharmacist,Owner,Admin";
 

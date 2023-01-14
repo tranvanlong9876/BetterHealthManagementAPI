@@ -42,6 +42,21 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Address
             return wards;
         }
 
+        public async Task<CityModel> GetSpecificCity(string cityID)
+        {
+            return await _dynamicAddressRepo.GetSpecificCity(cityID);
+        }
+
+        public async Task<DistrictModel> GetSpecificDistrict(string districtID)
+        {
+            return await _dynamicAddressRepo.GetSpecificDistrict(districtID);
+        }
+
+        public async Task<WardModel> GetSpecificWard(string wardID)
+        {
+            return await _dynamicAddressRepo.GetSpecificWard(wardID);
+        }
+
         public async Task InsertAddressSite(DynamicAddModel dynamicAddModel)
         {
             DynamicAddress dynamicAddress = new DynamicAddress()

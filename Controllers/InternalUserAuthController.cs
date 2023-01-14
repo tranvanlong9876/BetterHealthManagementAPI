@@ -15,13 +15,23 @@ namespace BetterHealthManagementAPI.Controllers
 {
     [Route("api/v1/User")]
     [ApiController]
-    [Authorize]
+    [AllowAnonymous]
     public class InternalUserAuthController : ControllerBase
     {
         private IInternalUserAuthService _employeeAuthService;
         public InternalUserAuthController(IInternalUserAuthService employeeAuthService)
         {
             _employeeAuthService = employeeAuthService;
+        }
+
+        [HttpGet()]
+        [Authorize(Roles = Commons.ADMIN_NAME)]
+        public async Task<IActionResult> GetAllUserPaging([FromQuery] GetInternalUserPagingRequest request)
+        {
+            var userList = await _employeeAuthService.GetAllUserPaging(request);
+            if (userList == null) return NotFound();
+
+            return Ok(userList);
         }
 
         [HttpGet("{id}")]

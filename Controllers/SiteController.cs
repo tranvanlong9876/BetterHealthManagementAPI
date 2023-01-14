@@ -15,7 +15,7 @@ namespace BetterHealthManagementAPI.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
-    [Authorize]
+    [AllowAnonymous]
     public class SiteController : ControllerBase
     {
         private ISiteService _siteService;
@@ -28,16 +28,16 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpGet()]
         [Authorize(Roles = "Admin,Owner")]
-        public async Task<IActionResult> GetAllSites()
+        public async Task<IActionResult> GetAllSites([FromQuery] GetSitePagingRequest pagingRequest)
         {
             try
             {
-                var site = await _siteService.GetListSite();
-                if (site == null)
+                var siteList = await _siteService.GetListSitePaging(pagingRequest);
+                if (siteList.TotalRecord == 0)
                 {
                     return BadRequest("Site is empty");
                 }
-                return Ok(site);
+                return Ok(siteList);
             }
             catch (ArgumentNullException ex)
             {

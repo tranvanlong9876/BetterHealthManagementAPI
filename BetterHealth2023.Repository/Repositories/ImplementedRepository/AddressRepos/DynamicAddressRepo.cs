@@ -80,6 +80,39 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return wards;
         }
 
+        public async Task<CityModel> GetSpecificCity(string cityID)
+        {
+            var city = await context.Cities.FindAsync(cityID);
+            var cityModel = new CityModel()
+            {
+                Id = city.Id,
+                CityName = city.CityName
+            };
+            return cityModel;
+        }
+
+        public async Task<DistrictModel> GetSpecificDistrict(string districtID)
+        {
+            var district = await context.Districts.FindAsync(districtID);
+            var districtModel = new DistrictModel()
+            {
+                Id = district.Id,
+                DistrictName = district.DistrictName
+            };
+            return districtModel;
+        }
+
+        public async Task<WardModel> GetSpecificWard(string wardID)
+        {
+            var ward = await context.Wards.FindAsync(wardID);
+            var wardModel = new WardModel()
+            {
+                Id = ward.Id,
+                WardName = ward.WardName
+            };
+            return wardModel;
+        }
+
         public async Task<bool> InsertNewAddress(DynamicAddress dynamicAddress)
         {
             await context.AddAsync(dynamicAddress);

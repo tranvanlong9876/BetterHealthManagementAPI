@@ -2,6 +2,7 @@
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -204,10 +205,72 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 WardID = selector.address.WardId,
                 HomeNumber = selector.address.HomeAddress,
                 SiteID = selector.working.SiteId,
-                SiteName = selector.site.SiteName
+                SiteName = selector.site.SiteName,
+                AddressID = selector.user.AddressId
             }).FirstOrDefaultAsync();
 
             return userModel;
+        }
+
+        public async Task<PagedResult<UserInfoModel>> GetAllPaging(GetInternalUserPagingRequest pagingRequest)
+        {
+            //1. Select
+            var query = from user in context.InternalUsers
+                        join role in context.RoleInternals on user.RoleId equals role.Id
+                        from working in context.InternalUserWorkingSites.Where(work => work.UserId == user.Id).DefaultIfEmpty()
+                        from address in context.DynamicAddresses.Where(add => add.Id == user.AddressId).DefaultIfEmpty()
+                        from site in context.SiteInformations.Where(s => s.Id == working.SiteId).DefaultIfEmpty()
+                        orderby user.Status descending
+                        select new { user, role, working, address, site };
+
+            //2. Filter
+            if(!string.IsNullOrEmpty(pagingRequest.FullName))
+            {
+                query = query.Where(x => x.user.Fullname.Contains(pagingRequest.FullName.Trim()));
+            }
+
+            if (!string.IsNullOrEmpty(pagingRequest.RoleID))
+            {
+                query = query.Where(x => x.user.RoleId.Equals(pagingRequest.RoleID.Trim()));
+            }
+
+            if(pagingRequest.UserStatus != null)
+            {
+                query = query.Where(x => x.user.Status.Equals(pagingRequest.UserStatus));
+            }
+
+            //3. Paging
+            //-> Mỗi trang 20 record. Trang đầu tiên Skip = 0
+            //->
+            int totalRow = await query.CountAsync();
+
+            var userModelList = await query.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
+                .Take(pagingRequest.pageItems)
+                .Select(selector => new UserInfoModel()
+                {
+                    Id = selector.user.Id, //hidden form
+                    Username = selector.user.Username, 
+                    Fullname = selector.user.Fullname, //hiện trên danh sách
+                    Code = selector.user.Code, //hiện trên danh sách
+                    RoleId = selector.user.RoleId,
+                    RoleName = selector.role.RoleName, //hiện trên danh sách
+                    PhoneNo = selector.user.PhoneNo,
+                    Email = selector.user.Email,
+                    ImageUrl = selector.user.ImageUrl, //hiện trên danh sách
+                    Status = selector.user.Status, //hiện trên danh sách, gạt nút tắt mở
+                    DOB = selector.user.Dob,
+                    Gender = selector.user.Gender ?? default(int),
+                    CityID = selector.address.CityId,
+                    DistrictID = selector.address.DistrictId,
+                    WardID = selector.address.WardId,
+                    HomeNumber = selector.address.HomeAddress,
+                    SiteID = selector.working.SiteId,
+                    SiteName = selector.site.SiteName,
+                    AddressID = selector.user.AddressId
+                }).ToListAsync();
+            //4. Đổ vào dữ liệu đã paging
+            var pageResult = new PagedResult<UserInfoModel>(userModelList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
+            return pageResult;
         }
     }
 }
