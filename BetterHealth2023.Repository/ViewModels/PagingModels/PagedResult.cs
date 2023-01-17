@@ -11,8 +11,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Pagin
         public PagedResult(List<T> items, int totalRecord, int pageIndex, int pageItems) {
             Items = items;
             TotalRecord = totalRecord;
-            TotalPage = (totalRecord / pageItems) + 1;
-            if (pageIndex == 1 && pageItems == 1) TotalPage--;
+            TotalPage = (int) Math.Ceiling((double) totalRecord / pageItems);
             HasNextPage = pageIndex < TotalPage;
             HasPreviousPage = pageIndex > 1;
         }

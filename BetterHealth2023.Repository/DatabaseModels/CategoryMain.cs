@@ -22,6 +22,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Required]
         [StringLength(100)]
         public string CategoryName { get; set; }
+        [Column("ImageURL")]
+        [StringLength(500)]
+        public string ImageUrl { get; set; }
 
         [InverseProperty(nameof(SubCategory.MainCategory))]
         public virtual ICollection<SubCategory> SubCategories { get; set; }

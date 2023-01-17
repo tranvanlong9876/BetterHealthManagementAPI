@@ -28,6 +28,8 @@ using System.Threading.Tasks;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalRole;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.RoleRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.MainCategoryService;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.MainCategoryRepos;
 
 namespace BetterHealthManagementAPI
 {
@@ -56,6 +58,7 @@ namespace BetterHealthManagementAPI
                 });
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
             });
+            services.AddAutoMapper(typeof(Program).Assembly);
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddJwtBearer(options =>
                     {
@@ -68,7 +71,6 @@ namespace BetterHealthManagementAPI
                         };
                     });
             JwtUserToken.Initialize(Configuration);
-
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddDbContext<BetterHealthManagementContext>();
             services.AddCors(p => p.AddPolicy("MyCors", build =>
@@ -81,6 +83,7 @@ namespace BetterHealthManagementAPI
             services.AddScoped<ISiteService, SiteService>();
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IMainCategoryService, MainCategoryService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();
@@ -89,6 +92,7 @@ namespace BetterHealthManagementAPI
             services.AddTransient<ISiteRepo, SiteRepo>();
             services.AddTransient<IOrderHeaderRepo, OrderHeaderRepo>();
             services.AddTransient<IRoleRepo, RoleRepo>();
+            services.AddTransient<IMainCategoryRepo, MainCategoryRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

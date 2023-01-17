@@ -40,5 +40,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
         {
             return await _entities.ToListAsync();
         }
+
+        public async Task<bool> InsertEntity(T entity)
+        {
+            await _entities.AddAsync(entity);
+            await Update();
+            return true;
+        }
     }
 }

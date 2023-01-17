@@ -26,6 +26,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Column("Main_CategoryID")]
         [StringLength(50)]
         public string MainCategoryId { get; set; }
+        [Column("ImageURL")]
+        [StringLength(500)]
+        public string ImageUrl { get; set; }
 
         [ForeignKey(nameof(MainCategoryId))]
         [InverseProperty(nameof(CategoryMain.SubCategories))]
