@@ -194,7 +194,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
                         SiteId = internalUser.SiteId,
                         UserId = empID,
                         CreatedDate = DateTime.Now,
-                        UpdatedDate = DateTime.Now
+                        UpdatedDate = DateTime.Now,
+                        IsWorking = true
                     };
 
                     check = await _userWorkingSiteRepo.InsertWorkingSite(internalUserWorkingSiteModel);

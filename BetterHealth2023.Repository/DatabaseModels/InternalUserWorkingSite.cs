@@ -26,6 +26,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public DateTime? CreatedDate { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime? UpdatedDate { get; set; }
+        [Column("isWorking")]
+        public bool IsWorking { get; set; }
 
         [ForeignKey(nameof(SiteId))]
         [InverseProperty(nameof(SiteInformation.InternalUserWorkingSites))]

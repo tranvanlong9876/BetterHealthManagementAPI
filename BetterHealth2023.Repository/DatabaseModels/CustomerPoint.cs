@@ -8,23 +8,27 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 {
-    [Table("Customer_Card")]
-    public partial class CustomerCard
+    [Table("Customer_Point")]
+    public partial class CustomerPoint
     {
         [Key]
-        [Column("Card_No")]
-        [StringLength(100)]
-        public string CardNo { get; set; }
+        [StringLength(50)]
+        public string Id { get; set; }
         [Required]
         [Column("Customer_ID")]
         [StringLength(50)]
         public string CustomerId { get; set; }
         public int Point { get; set; }
+        [Column("isPlus")]
+        public bool IsPlus { get; set; }
+        [Required]
+        [StringLength(200)]
+        public string Description { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime CreateDate { get; set; }
 
         [ForeignKey(nameof(CustomerId))]
-        [InverseProperty("CustomerCards")]
+        [InverseProperty("CustomerPoints")]
         public virtual Customer Customer { get; set; }
     }
 }

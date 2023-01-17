@@ -37,7 +37,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
             var query = from x in context.InternalUserWorkingSites
                         join manager in context.InternalUsers on x.UserId equals manager.Id
-                        where x.SiteId.Trim().Equals(siteID.Trim()) && manager.RoleId.Equals(Commons.Commons.MANAGER) && manager.Status.Equals(1)
+                        where x.SiteId.Trim().Equals(siteID.Trim()) && manager.RoleId.Equals(Commons.Commons.MANAGER) && manager.Status.Equals(1) && x.IsWorking.Equals(true)
                         select new { x };
             var workingSite = await query.Select(selector => new InternalUserWorkingSite()).ToListAsync();
 
@@ -48,7 +48,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
             var query = from x in context.InternalUserWorkingSites
                         join pharmacist in context.InternalUsers on x.UserId equals pharmacist.Id
-                        where x.SiteId.Trim().Equals(siteID.Trim()) && pharmacist.RoleId.Equals(Commons.Commons.PHARMACIST) && pharmacist.Status.Equals(1)
+                        where x.SiteId.Trim().Equals(siteID.Trim()) && pharmacist.RoleId.Equals(Commons.Commons.PHARMACIST) && pharmacist.Status.Equals(1) && x.IsWorking.Equals(true)
                         select new { x };
             var workingSite = await query.Select(selector => new InternalUserWorkingSite()).ToListAsync();
 

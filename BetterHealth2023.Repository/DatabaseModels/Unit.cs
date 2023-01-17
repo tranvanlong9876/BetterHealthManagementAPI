@@ -23,6 +23,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Column("Unit_Name")]
         [StringLength(100)]
         public string UnitName { get; set; }
+        [Required]
+        [StringLength(50)]
+        public string CreatedDate { get; set; }
+        public bool Status { get; set; }
 
         [InverseProperty(nameof(ProductDetail.Unit))]
         public virtual ICollection<ProductDetail> ProductDetails { get; set; }

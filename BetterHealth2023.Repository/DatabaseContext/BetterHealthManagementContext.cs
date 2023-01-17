@@ -25,7 +25,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<CommentInformation> CommentInformations { get; set; }
         public virtual DbSet<Customer> Customers { get; set; }
         public virtual DbSet<CustomerAddress> CustomerAddresses { get; set; }
-        public virtual DbSet<CustomerCard> CustomerCards { get; set; }
+        public virtual DbSet<CustomerPoint> CustomerPoints { get; set; }
         public virtual DbSet<District> Districts { get; set; }
         public virtual DbSet<DynamicAddress> DynamicAddresses { get; set; }
         public virtual DbSet<InternalUser> InternalUsers { get; set; }
@@ -119,10 +119,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasConstraintName("FK_Customer_Address_Customer");
             });
 
-            modelBuilder.Entity<CustomerCard>(entity =>
+            modelBuilder.Entity<CustomerPoint>(entity =>
             {
                 entity.HasOne(d => d.Customer)
-                    .WithMany(p => p.CustomerCards)
+                    .WithMany(p => p.CustomerPoints)
                     .HasForeignKey(d => d.CustomerId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Customer_Card_Customer");
