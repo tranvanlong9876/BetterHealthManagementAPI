@@ -1,4 +1,6 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
+﻿using AutoMapper;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -11,6 +13,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
     {
         protected readonly BetterHealthManagementContext context;
         private DbSet<T> _entities;
+        private readonly IMapper mapper;
+
+        public Repository(BetterHealthManagementContext context, IMapper mapper)
+        {
+            this.context = context;
+            _entities = context.Set<T>();
+            this.mapper = mapper;
+        }
 
         public Repository(BetterHealthManagementContext context)
         {
@@ -23,11 +33,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
             return await _entities.FindAsync(id);
         }
 
-        public async Task<string> Insert(T entity)
+        public async Task<bool> Insert(T entity)
         {
             await _entities.AddAsync(entity);
             await Update();
-            return entity.GetType().GetProperty("Id").GetValue(entity).ToString();
+            return true;
         }
 
         public async Task<bool> Update()
@@ -36,16 +46,38 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
             return true;
         }
 
-        public async Task<List<T>> GetAll()
+        public async Task<TView> GetViewModel<TView>(string id)
         {
-            return await _entities.ToListAsync();
+            T results = await _entities.FindAsync(id);
+            TView convertResults = mapper.Map<TView>(results);
+            return convertResults;
         }
 
-        public async Task<bool> InsertEntity(T entity)
+        public async Task<List<TView>> GetAll<TView>()
         {
-            await _entities.AddAsync(entity);
-            await Update();
-            return true;
+            List<T> results = await _entities.ToListAsync();
+            return results.Select(model => mapper.Map<TView>(model)).ToList();
+        }
+
+        public async Task<PagedResult<TView>> GetAllPaging<TView>(PagingRequestBase requestBase)
+        {
+            int totalRow = await _entities.CountAsync();
+            List<T> results = await _entities.Skip((requestBase.pageIndex - 1) * requestBase.pageItems)
+                                              .Take(requestBase.pageItems)
+                                              .ToListAsync();
+            List<TView> convertResults = results.Select(model => mapper.Map<TView>(model)).ToList();
+            var pagedResult = new PagedResult<TView>(convertResults, totalRow, requestBase.pageIndex, requestBase.pageItems);
+            return pagedResult;
+        }
+
+        public async Task<PagedResult<TView>> PagingExistingQuery<TView>(IQueryable<T> query, int pageIndex, int pageItems)
+        {
+            int totalRow = await query.CountAsync();
+            List<T> results = await query.Skip((pageIndex - 1) * pageItems)
+                .Take(pageItems).ToListAsync();
+            List<TView> convertResults = results.Select(model => mapper.Map<TView>(model)).ToList();
+            var pagedResult = new PagedResult<TView>(convertResults, totalRow, pageIndex, pageItems);
+            return pagedResult;
         }
     }
 }

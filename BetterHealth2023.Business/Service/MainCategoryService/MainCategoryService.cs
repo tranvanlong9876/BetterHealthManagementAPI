@@ -18,7 +18,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.MainCatego
         }
         public async Task<List<MainCategoryViewModel>> GetAll()
         {
-            return await _mainCategoryRepo.GetAll();
+            return await _mainCategoryRepo.GetAll<MainCategoryViewModel>();
         }
     }
 }

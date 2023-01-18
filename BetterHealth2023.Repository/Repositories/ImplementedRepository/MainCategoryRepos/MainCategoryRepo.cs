@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.MainCategoryRepos
 {
-    public class MainCategoryRepo : RepositorySecond<CategoryMain, MainCategoryViewModel>, IMainCategoryRepo
+    public class MainCategoryRepo : Repository<CategoryMain>, IMainCategoryRepo
     {
         public MainCategoryRepo(BetterHealthManagementContext context, IMapper mapper) : base(context, mapper)
         {

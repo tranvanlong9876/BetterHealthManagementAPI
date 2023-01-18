@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.MainCategoryRepos
 {
-    public interface IMainCategoryRepo : IRepositorySecond<CategoryMain, MainCategoryViewModel>
+    public interface IMainCategoryRepo : IRepository<CategoryMain>
     {
         public Task<bool> UpdateStatus(string id, bool status);
     }
