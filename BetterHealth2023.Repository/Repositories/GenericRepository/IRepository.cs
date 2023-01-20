@@ -15,7 +15,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
         Task<List<TView>> GetAll<TView>();
         Task<PagedResult<TView>> GetAllPaging<TView>(PagingRequestBase requestBase);
         Task<PagedResult<TView>> PagingExistingQuery<TView>(IQueryable<T> query, int pageIndex, int pageItems);
-
+        TOut TransferBetweenTwoModels<TIn, TOut>(TIn model);
 
     }
 }

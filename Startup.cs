@@ -30,6 +30,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalRole;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.RoleRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.MainCategoryService;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.MainCategoryRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SubCategoryRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.SubCategoryService;
 
 namespace BetterHealthManagementAPI
 {
@@ -84,6 +86,7 @@ namespace BetterHealthManagementAPI
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IMainCategoryService, MainCategoryService>();
+            services.AddScoped<ISubCategoryService, SubCategoryService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();
@@ -93,6 +96,7 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IOrderHeaderRepo, OrderHeaderRepo>();
             services.AddTransient<IRoleRepo, RoleRepo>();
             services.AddTransient<IMainCategoryRepo, MainCategoryRepo>();
+            services.AddTransient<ISubCategoryRepo, SubCategoryRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

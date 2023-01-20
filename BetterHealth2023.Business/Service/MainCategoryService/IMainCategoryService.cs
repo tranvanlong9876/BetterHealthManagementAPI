@@ -10,5 +10,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.MainCatego
     public interface IMainCategoryService
     {
         public Task<List<MainCategoryViewModel>> GetAll();
+
+        public Task<MainCategoryViewModel> Get(string id);
+        public Task<bool> Create(CreateCategoryModel createCategoryModel);
+        public Task<bool> Update(UpdateCategoryModel updateCategoryModel);
     }
 }

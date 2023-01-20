@@ -79,5 +79,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
             var pagedResult = new PagedResult<TView>(convertResults, totalRow, pageIndex, pageItems);
             return pagedResult;
         }
+
+        public TOut TransferBetweenTwoModels<TIn, TOut>(TIn model)
+        {
+            return mapper.Map<TOut>(model);
+        }
     }
 }
