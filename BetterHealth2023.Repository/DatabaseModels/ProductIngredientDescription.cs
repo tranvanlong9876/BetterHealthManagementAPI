@@ -15,20 +15,26 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [StringLength(50)]
         public string Id { get; set; }
         [Required]
-        [Column("Drug_Description_ID")]
+        [Column("Product_Description_ID")]
         [StringLength(50)]
-        public string DrugDescriptionId { get; set; }
+        public string ProductDescriptionId { get; set; }
         [Required]
         [Column("Ingredient_ID")]
         [StringLength(50)]
         public string IngredientId { get; set; }
-        public int? Content { get; set; }
+        public double? Content { get; set; }
+        [Column("Unit_ID")]
+        [StringLength(50)]
+        public string UnitId { get; set; }
 
-        [ForeignKey(nameof(DrugDescriptionId))]
-        [InverseProperty(nameof(ProductDescription.ProductIngredientDescriptions))]
-        public virtual ProductDescription DrugDescription { get; set; }
         [ForeignKey(nameof(IngredientId))]
         [InverseProperty(nameof(ProductIngredient.ProductIngredientDescriptions))]
         public virtual ProductIngredient Ingredient { get; set; }
+        [ForeignKey(nameof(ProductDescriptionId))]
+        [InverseProperty("ProductIngredientDescriptions")]
+        public virtual ProductDescription ProductDescription { get; set; }
+        [ForeignKey(nameof(UnitId))]
+        [InverseProperty("ProductIngredientDescriptions")]
+        public virtual Unit Unit { get; set; }
     }
 }

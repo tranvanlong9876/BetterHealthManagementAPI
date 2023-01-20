@@ -14,6 +14,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public Unit()
         {
             ProductDetails = new HashSet<ProductDetail>();
+            ProductIngredientDescriptions = new HashSet<ProductIngredientDescription>();
         }
 
         [Key]
@@ -30,5 +31,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 
         [InverseProperty(nameof(ProductDetail.Unit))]
         public virtual ICollection<ProductDetail> ProductDetails { get; set; }
+        [InverseProperty(nameof(ProductIngredientDescription.Unit))]
+        public virtual ICollection<ProductIngredientDescription> ProductIngredientDescriptions { get; set; }
     }
 }

@@ -22,9 +22,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Required]
         [StringLength(100)]
         public string Name { get; set; }
-        [Column("Drug_Description_ID")]
+        [Column("Product_Description_ID")]
         [StringLength(50)]
-        public string DrugDescriptionId { get; set; }
+        public string ProductDescriptionId { get; set; }
         [Required]
         [Column("Sub_Category_ID")]
         [StringLength(50)]
@@ -39,12 +39,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Column("isDelete")]
         public bool IsDelete { get; set; }
 
-        [ForeignKey(nameof(DrugDescriptionId))]
-        [InverseProperty(nameof(ProductDescription.ProductParents))]
-        public virtual ProductDescription DrugDescription { get; set; }
         [ForeignKey(nameof(ManufacturerId))]
         [InverseProperty("ProductParents")]
         public virtual Manufacturer Manufacturer { get; set; }
+        [ForeignKey(nameof(ProductDescriptionId))]
+        [InverseProperty("ProductParents")]
+        public virtual ProductDescription ProductDescription { get; set; }
         [ForeignKey(nameof(SubCategoryId))]
         [InverseProperty("ProductParents")]
         public virtual SubCategory SubCategory { get; set; }

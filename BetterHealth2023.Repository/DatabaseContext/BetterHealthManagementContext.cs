@@ -384,30 +384,35 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
 
             modelBuilder.Entity<ProductIngredientDescription>(entity =>
             {
-                entity.HasOne(d => d.DrugDescription)
-                    .WithMany(p => p.ProductIngredientDescriptions)
-                    .HasForeignKey(d => d.DrugDescriptionId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Product_Ingredient_Description_Product_Description");
-
                 entity.HasOne(d => d.Ingredient)
                     .WithMany(p => p.ProductIngredientDescriptions)
                     .HasForeignKey(d => d.IngredientId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Product_Ingredient_Description_Product_Ingredient");
+
+                entity.HasOne(d => d.ProductDescription)
+                    .WithMany(p => p.ProductIngredientDescriptions)
+                    .HasForeignKey(d => d.ProductDescriptionId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Product_Ingredient_Description_Product_Description");
+
+                entity.HasOne(d => d.Unit)
+                    .WithMany(p => p.ProductIngredientDescriptions)
+                    .HasForeignKey(d => d.UnitId)
+                    .HasConstraintName("FK_Product_Ingredient_Description_Unit");
             });
 
             modelBuilder.Entity<ProductParent>(entity =>
             {
-                entity.HasOne(d => d.DrugDescription)
-                    .WithMany(p => p.ProductParents)
-                    .HasForeignKey(d => d.DrugDescriptionId)
-                    .HasConstraintName("FK_Drug_Drug_Description");
-
                 entity.HasOne(d => d.Manufacturer)
                     .WithMany(p => p.ProductParents)
                     .HasForeignKey(d => d.ManufacturerId)
                     .HasConstraintName("FK_Drug_Manufacturer");
+
+                entity.HasOne(d => d.ProductDescription)
+                    .WithMany(p => p.ProductParents)
+                    .HasForeignKey(d => d.ProductDescriptionId)
+                    .HasConstraintName("FK_Drug_Drug_Description");
 
                 entity.HasOne(d => d.SubCategory)
                     .WithMany(p => p.ProductParents)

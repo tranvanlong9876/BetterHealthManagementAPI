@@ -25,13 +25,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalRole;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.RoleRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.MainCategoryService;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.MainCategoryRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SubCategoryRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.SubCategoryService;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDescriptionRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductImageRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDetailRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductIngredientDescriptionRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductIngredientRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductParentRepos;
 
 namespace BetterHealthManagementAPI
 {
@@ -87,6 +93,7 @@ namespace BetterHealthManagementAPI
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IMainCategoryService, MainCategoryService>();
             services.AddScoped<ISubCategoryService, SubCategoryService>();
+            services.AddScoped<IProductService, ProductService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();
@@ -97,6 +104,12 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IRoleRepo, RoleRepo>();
             services.AddTransient<IMainCategoryRepo, MainCategoryRepo>();
             services.AddTransient<ISubCategoryRepo, SubCategoryRepo>();
+            services.AddTransient<IProductDescriptionRepo, ProductDescriptionRepo>();
+            services.AddTransient<IProductDetailRepo, ProductDetailRepo>();
+            services.AddTransient<IProductImageRepo, ProductImageRepo>();
+            services.AddTransient<IProductIngredientDescriptionRepo, ProductIngredientDescriptionRepo>();
+            services.AddTransient<IProductIngredientRepo, ProductIngredientRepo>();
+            services.AddTransient<IProductParentRepo, ProductParentRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

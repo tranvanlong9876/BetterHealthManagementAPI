@@ -26,9 +26,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string Contraindications { get; set; }
         public string Preserve { get; set; }
 
-        [InverseProperty(nameof(ProductIngredientDescription.DrugDescription))]
+        [InverseProperty(nameof(ProductIngredientDescription.ProductDescription))]
         public virtual ICollection<ProductIngredientDescription> ProductIngredientDescriptions { get; set; }
-        [InverseProperty(nameof(ProductParent.DrugDescription))]
+        [InverseProperty(nameof(ProductParent.ProductDescription))]
         public virtual ICollection<ProductParent> ProductParents { get; set; }
     }
 }
