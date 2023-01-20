@@ -14,6 +14,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public ProductDetail()
         {
             Comments = new HashSet<Comment>();
+            EventProductDiscounts = new HashSet<EventProductDiscount>();
             OrderDetails = new HashSet<OrderDetail>();
             ProductImages = new HashSet<ProductImage>();
             ProductImportDetails = new HashSet<ProductImportDetail>();
@@ -38,13 +39,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public double Price { get; set; }
         [Column("isSell")]
         public bool IsSell { get; set; }
-        [Column("Discount_ID")]
-        [StringLength(50)]
-        public string DiscountId { get; set; }
 
-        [ForeignKey(nameof(DiscountId))]
-        [InverseProperty(nameof(ProductDiscount.ProductDetails))]
-        public virtual ProductDiscount Discount { get; set; }
         [ForeignKey(nameof(ProductIdParent))]
         [InverseProperty(nameof(ProductParent.ProductDetails))]
         public virtual ProductParent ProductIdParentNavigation { get; set; }
@@ -53,6 +48,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public virtual Unit Unit { get; set; }
         [InverseProperty(nameof(Comment.Product))]
         public virtual ICollection<Comment> Comments { get; set; }
+        [InverseProperty(nameof(EventProductDiscount.Product))]
+        public virtual ICollection<EventProductDiscount> EventProductDiscounts { get; set; }
         [InverseProperty(nameof(OrderDetail.Product))]
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
         [InverseProperty(nameof(ProductImage.Product))]

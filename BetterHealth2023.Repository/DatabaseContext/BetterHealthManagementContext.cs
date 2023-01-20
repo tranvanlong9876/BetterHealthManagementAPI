@@ -28,6 +28,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<CustomerPoint> CustomerPoints { get; set; }
         public virtual DbSet<District> Districts { get; set; }
         public virtual DbSet<DynamicAddress> DynamicAddresses { get; set; }
+        public virtual DbSet<EventProductDiscount> EventProductDiscounts { get; set; }
         public virtual DbSet<InternalUser> InternalUsers { get; set; }
         public virtual DbSet<InternalUserWorkingSite> InternalUserWorkingSites { get; set; }
         public virtual DbSet<Manufacturer> Manufacturers { get; set; }
@@ -153,6 +154,21 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .WithMany(p => p.DynamicAddresses)
                     .HasForeignKey(d => d.WardId)
                     .HasConstraintName("FK_Dynamic_Address_Ward");
+            });
+
+            modelBuilder.Entity<EventProductDiscount>(entity =>
+            {
+                entity.HasOne(d => d.Discount)
+                    .WithMany(p => p.EventProductDiscounts)
+                    .HasForeignKey(d => d.DiscountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Event_ProductDiscount_Product_Discount");
+
+                entity.HasOne(d => d.Product)
+                    .WithMany(p => p.EventProductDiscounts)
+                    .HasForeignKey(d => d.ProductId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Event_ProductDiscount_Product_Details");
             });
 
             modelBuilder.Entity<InternalUser>(entity =>
@@ -305,11 +321,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
 
             modelBuilder.Entity<ProductDetail>(entity =>
             {
-                entity.HasOne(d => d.Discount)
-                    .WithMany(p => p.ProductDetails)
-                    .HasForeignKey(d => d.DiscountId)
-                    .HasConstraintName("FK_Product_Details_Product_Discount");
-
                 entity.HasOne(d => d.ProductIdParentNavigation)
                     .WithMany(p => p.ProductDetails)
                     .HasForeignKey(d => d.ProductIdParent)
