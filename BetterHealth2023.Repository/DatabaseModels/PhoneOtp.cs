@@ -18,7 +18,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Column("OTP_Code")]
         [StringLength(10)]
         public string OtpCode { get; set; }
-        public int NoOfRetries { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime ExpireDate { get; set; }
     }

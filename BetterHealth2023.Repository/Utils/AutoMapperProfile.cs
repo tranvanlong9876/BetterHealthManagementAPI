@@ -18,6 +18,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Utils
             CreateMap<CategoryMain, MainCategoryViewModel>();
             CreateMap<CategoryMain, CreateCategoryModel>();
             CreateMap<CreateCategoryModel, CategoryMain>();
+            CreateMap<UpdateCategoryModel, CategoryMain>();
 
             //Sub_Category
             CreateMap<SubCategory, SubCategoryViewModel>();

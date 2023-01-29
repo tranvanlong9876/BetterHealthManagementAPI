@@ -43,5 +43,28 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
             return jwt;
         }
+        public static string CreateCustomerToken(Customer customer)
+        {
+            List<Claim> claims = new List<Claim>
+            {
+                //employeeID
+                new Claim(ClaimTypes.NameIdentifier, customer.Id),
+                new Claim(ClaimTypes.Role, "Customer"),
+                new Claim(ClaimTypes.Name, customer.Fullname),
+                new Claim("Image", customer.ImageUrl)
+            };
+
+            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("JwtStorage:Token").Value));
+            var creds = new SigningCredentials(key, algorithm: SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(120),
+                signingCredentials: creds
+                );
+
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+            return jwt;
+        }
     }
 }

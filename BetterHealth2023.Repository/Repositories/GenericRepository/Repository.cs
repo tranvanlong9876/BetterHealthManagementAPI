@@ -84,5 +84,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
         {
             return mapper.Map<TOut>(model);
         }
+
+        public void TransferBetweenTwoModels<TIn, TOut>(ref TOut dbmodel, TIn model)
+        {
+            dbmodel = mapper.Map<TOut>(model);
+            context.ChangeTracker.Clear();
+            context.Entry(dbmodel).State = EntityState.Modified;
+        }
     }
 }

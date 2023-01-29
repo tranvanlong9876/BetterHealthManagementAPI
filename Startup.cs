@@ -38,6 +38,9 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductIngredientDescriptionRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductIngredientRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductParentRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.PhoneOTPRepos;
 
 namespace BetterHealthManagementAPI
 {
@@ -94,6 +97,7 @@ namespace BetterHealthManagementAPI
             services.AddScoped<IMainCategoryService, MainCategoryService>();
             services.AddScoped<ISubCategoryService, SubCategoryService>();
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<ICustomerService, CustomerService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();
@@ -110,6 +114,8 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IProductIngredientDescriptionRepo, ProductIngredientDescriptionRepo>();
             services.AddTransient<IProductIngredientRepo, ProductIngredientRepo>();
             services.AddTransient<IProductParentRepo, ProductParentRepo>();
+            services.AddTransient<ICustomerRepo, CustomerRepo>();
+            services.AddTransient<IPhoneOTPRepo, PhoneOTPRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

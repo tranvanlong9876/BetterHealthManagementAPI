@@ -42,9 +42,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.MainCatego
         public async Task<bool> Update(UpdateCategoryModel updateCategoryModel)
         {
             var categoryMain = await _mainCategoryRepo.Get(updateCategoryModel.Id);
-            categoryMain.CategoryName = updateCategoryModel.CategoryName;
-            categoryMain.ImageUrl = updateCategoryModel.ImageUrl;
-            
+            //categoryMain.CategoryName = updateCategoryModel.CategoryName;
+            //categoryMain.ImageUrl = updateCategoryModel.ImageUrl;
+            _mainCategoryRepo.TransferBetweenTwoModels(ref categoryMain, updateCategoryModel);
             return await _mainCategoryRepo.Update();
         }
     }
