@@ -69,7 +69,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                 Status = customer.Status,
                 Token = customerToken
             };
-
+            checkError.customerToken = customerTokenModel;
             checkError.isError = false;
             return checkError;
 

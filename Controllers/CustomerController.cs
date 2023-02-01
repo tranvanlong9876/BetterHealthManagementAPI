@@ -44,10 +44,10 @@ namespace BetterHealthManagementAPI.Controllers
             var loginStatusModel = await _customerService.customerLoginPhoneOTP(loginCustomerModel);
             if(loginStatusModel.isError)
             {
-                if (loginStatusModel.InvalidPhoneOTP != null) return BadRequest(loginStatusModel.InvalidPhoneOTP);
+                if (loginStatusModel.InvalidPhoneOTP != null) return BadRequest(loginStatusModel);
                 if (loginStatusModel.CustomerNotFound != null) return NotFound();
-                if (loginStatusModel.CustomerInactive != null) return BadRequest(loginStatusModel.CustomerInactive);
-                else return BadRequest(loginStatusModel.OtherError);
+                if (loginStatusModel.CustomerInactive != null) return BadRequest(loginStatusModel);
+                else return BadRequest(loginStatusModel);
             }
             return Ok(loginStatusModel.customerToken);
         }
