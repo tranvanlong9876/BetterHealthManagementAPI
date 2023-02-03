@@ -11,5 +11,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site
         public bool? IsActive { get; set; }
         public bool? IsDelivery { get; set; }
         public string CityID { get; set; }
+
+        public string DistrictID { get; set; }
+
+        public string SiteName { get; set; }
     }
 }

@@ -15,7 +15,7 @@ namespace BetterHealthManagementAPI.Controllers
 {
     [Route("api/v1/User")]
     [ApiController]
-    [Authorize]
+    [AllowAnonymous]
     public class InternalUserAuthController : ControllerBase
     {
         private IInternalUserAuthService _employeeAuthService;
@@ -100,7 +100,7 @@ namespace BetterHealthManagementAPI.Controllers
                 return BadRequest(ex.ToString());
             }
         }
-        [HttpDelete("Status"), Authorize(Roles = "Admin")]
+        [HttpPut("Status"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUserStatus(UpdateUserStatusEntrance updateUserStatusEntrance)
         {
             try

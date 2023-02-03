@@ -89,12 +89,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
         {
             var check = false;
             var checkError = new RegisterInternalUserStatus();
-            var isMatches = internalUser.Password.Trim().Equals(internalUser.ConfirmPassword.Trim());
-            if (!isMatches)
-            {
-                checkError.isError = true;
-                checkError.ConfirmPasswordFailed = "Mật khẩu xác nhận không trùng khớp.";
-            }
+            var randomPassword = PasswordHash.CreateNormalPassword(12);
 
             if (await _employeeAuthRepo.CheckDuplicateUsername(internalUser.Username)) {
                 checkError.isError = true;
@@ -143,7 +138,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
             newEmployeeCode += newCode.ToString();
 
             //create encrypted Password for Employee.
-            PasswordHash.CreatePasswordHash(internalUser.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            PasswordHash.CreatePasswordHash(randomPassword, out byte[] passwordHash, out byte[] passwordSalt);
             var empID = Guid.NewGuid().ToString();
             var addressID = Guid.NewGuid().ToString();
             var insertAddress = false;
@@ -176,7 +171,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
                 Password = Convert.ToBase64String(passwordHash).Trim(),
                 PasswordSalt = Convert.ToBase64String(passwordSalt).Trim(),
                 RoleId = internalUser.RoleId,
-                Status = internalUser.Status,
+                Status = 1,
                 Gender = internalUser.Gender  
             };
 
@@ -205,7 +200,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
 
             if (check) {
                 checkError.isError = false;
-                await EmailService.SendWelcomeEmail(internalUser, $"Chào mừng {internalUser.Fullname} về đội của chúng tôi.", true);
+                await EmailService.SendWelcomeEmail(internalUser, randomPassword.Trim(), $"Chào mừng {internalUser.Fullname} về đội của chúng tôi.", true);
                 //send account information via email for new internal user.
             }
             else

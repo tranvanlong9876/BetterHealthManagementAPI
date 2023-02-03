@@ -32,5 +32,18 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
                 return computeHash.SequenceEqual(passwordHash);
             }
         }
+
+        public static string CreateNormalPassword(int length)
+        {
+            const string alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+            StringBuilder res = new StringBuilder();
+            Random rnd = new Random();
+            while (0 < length--)
+            {
+                res.Append(alphabet[rnd.Next(alphabet.Length)]);
+            }
+            return res.ToString();
+        }
+
     }
 }

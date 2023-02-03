@@ -5,6 +5,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductIngredientDescriptionRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductParentRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -98,6 +99,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 
             return check;
 
+        }
+
+        public async Task<ViewProductModel> GetAllProduct(ProductPagingRequest pagingRequest)
+        {
+            var productModel = new ViewProductModel();
+            return productModel;
         }
     }
 }

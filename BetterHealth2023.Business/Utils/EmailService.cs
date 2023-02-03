@@ -53,7 +53,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             }
         }
 
-        public static async Task<bool> SendWelcomeEmail(RegisterInternalUser registerEmployee, string subject, bool isHtml)
+        public static async Task<bool> SendWelcomeEmail(RegisterInternalUser registerEmployee, string randomPassword, string subject, bool isHtml)
         {
             string roleName = String.Empty;
 
@@ -88,7 +88,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             emailService._body.Append("<br/>");
             emailService._body.Append($"<b>Tài khoản đăng nhập: </b> {registerEmployee.Username}");
             emailService._body.Append("<br/>");
-            emailService._body.Append($"<b>Mật khẩu đăng nhập: </b> {registerEmployee.Password}");
+            emailService._body.Append($"<b>Mật khẩu đăng nhập: </b> {randomPassword}");
             emailService._body.Append("<br/>");
             emailService._body.Append($"<b>Chức vụ của bạn là: </b> {roleName}");
             emailService._body.Append("<br/>");

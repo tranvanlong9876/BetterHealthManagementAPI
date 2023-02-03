@@ -57,8 +57,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             var query = from site in context.SiteInformations
                         from address in context.DynamicAddresses.Where(x => x.Id == site.AddressId).DefaultIfEmpty()
                         from city in context.Cities.Where(x => x.Id == address.CityId).DefaultIfEmpty()
+                        from district in context.Districts.Where(x => x.Id == address.DistrictId).DefaultIfEmpty()
                         orderby site.IsDelivery descending, site.IsActivate descending
-                        select new { site, address, city };
+                        select new { site, address, city, district };
 
             if (pagingRequest.IsActive.HasValue)
             {
@@ -73,6 +74,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             if (!string.IsNullOrEmpty(pagingRequest.CityID))
             {
                 query = query.Where(x => x.city.Id.Equals(pagingRequest.CityID));
+            }
+
+            if (!string.IsNullOrEmpty(pagingRequest.DistrictID))
+            {
+                query = query.Where(x => x.district.Id.Equals(pagingRequest.DistrictID));
+            }
+
+            if (!string.IsNullOrEmpty(pagingRequest.SiteName))
+            {
+                query = query.Where(x => x.site.SiteName.Contains(pagingRequest.SiteName.Trim()));
             }
 
             int totalRow = await query.CountAsync();
