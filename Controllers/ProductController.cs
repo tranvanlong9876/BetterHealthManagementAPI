@@ -1,5 +1,6 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,12 +20,18 @@ namespace BetterHealthManagementAPI.Controllers
         {
             _productService = productService;
         }
+        [HttpGet]
+        public async Task<IActionResult> GetAllProducts([FromQuery] ProductPagingRequest pagingRequest)
+        {
+            var listProduct = await _productService.GetAllProduct(pagingRequest);
+            return Ok(listProduct);
+        }
 
         [HttpPost]
         public async Task<IActionResult> CreateProduct(CreateProductModel createProductModel)
         {
-            var check = await _productService.CreateProduct(createProductModel);
-            if (!check) return BadRequest("Lỗi tạo sản phẩm");
+            var checkError = await _productService.CreateProduct(createProductModel);
+            if (checkError.isError) return BadRequest(checkError);
             return Created("", "Sản phẩm mới đã tạo thành công");
         }
     }

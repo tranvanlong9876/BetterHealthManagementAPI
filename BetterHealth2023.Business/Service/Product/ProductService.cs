@@ -4,6 +4,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductImageRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductIngredientDescriptionRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductParentRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.ProductErrorModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using System;
@@ -33,8 +35,27 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             _productDetailRepo = productDetailRepo;
             _productImageRepo = productImageRepo;
         }
-        public async Task<bool> CreateProduct(CreateProductModel createProductModel)
+        public async Task<CreateProductErrorModel> CreateProduct(CreateProductModel createProductModel)
         {
+            var checkError = new CreateProductErrorModel();
+            bool duplicateBarCode;
+
+            foreach(var pro_details in createProductModel.productDetailModel)
+            {
+                if(!string.IsNullOrEmpty(pro_details.BarCode))
+                {
+                    duplicateBarCode = await _productDetailRepo.CheckDuplicateBarCode(pro_details.BarCode);
+
+                    if (duplicateBarCode)
+                    {
+                        checkError.isError = true;
+                        checkError.DuplicateBarCode = "Mã BarCode sản phẩm bị trùng lặp.";
+                        checkError.BarCodeError = pro_details.BarCode;
+                        return checkError;
+                    }
+                }
+            }
+
             //id
             var desc_id = Guid.NewGuid().ToString();
             var product_parent_id = Guid.NewGuid().ToString();
@@ -97,13 +118,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 }
             }
 
-            return check;
+            if (check) checkError.isError = false;
+
+            return checkError;
 
         }
 
-        public async Task<ViewProductModel> GetAllProduct(ProductPagingRequest pagingRequest)
+        public async Task<PagedResult<ViewProductListModel>> GetAllProduct(ProductPagingRequest pagingRequest)
         {
-            var productModel = new ViewProductModel();
+            var productModel = await _productDetailRepo.GetAllProductsPaging(pagingRequest);
             return productModel;
         }
     }

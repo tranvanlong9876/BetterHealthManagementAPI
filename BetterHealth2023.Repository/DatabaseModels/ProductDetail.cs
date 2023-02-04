@@ -39,6 +39,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public double Price { get; set; }
         [Column("isSell")]
         public bool IsSell { get; set; }
+        [StringLength(50)]
+        public string BarCode { get; set; }
 
         [ForeignKey(nameof(ProductIdParent))]
         [InverseProperty(nameof(ProductParent.ProductDetails))]

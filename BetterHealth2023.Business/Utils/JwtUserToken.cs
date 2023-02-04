@@ -1,6 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -65,6 +66,22 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
             return jwt;
+        }
+
+        public static string DecodeFireBaseTokenToPhoneNo(string firebaseToken)
+        {
+            try
+            {
+                JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+                var payLoadString = tokenHandler.ReadJwtToken(firebaseToken).Payload.SerializeToJson();
+                dynamic payLoadJson = JObject.Parse(payLoadString);
+                string phoneNo = payLoadJson.phone_number;
+                return "0" + phoneNo.Substring(3);
+            } catch(Exception ex)
+            {
+                return null;
+            }
+            
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 {
     public interface IProductDetailRepo : IRepository<ProductDetail>
     {
-        public Task<ViewProductModel> GetAllProductsPaging(ProductPagingRequest pagingRequest);
+        public Task<PagedResult<ViewProductListModel>> GetAllProductsPaging(ProductPagingRequest pagingRequest);
+        public Task<bool> CheckDuplicateBarCode(string BarCode);
     }
 }

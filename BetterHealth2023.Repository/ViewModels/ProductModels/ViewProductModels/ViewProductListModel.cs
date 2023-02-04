@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels
 {
-    public class ViewProductModel
+    public class ViewProductListModel
     {
-
+        public string Id { get; set; }
         public string Name { get; set; }
 
         public string NameWithUnit { get; set; }

@@ -1,10 +1,12 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.PhoneOTPRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.CustomerErrorModels;
+using FirebaseAdmin.Auth;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,12 +14,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
 {
     public class CustomerService : ICustomerService
     {
-        private readonly IPhoneOTPRepo _phoneOTPRepos;
         private readonly ICustomerRepo _customerRepo;
 
-        public CustomerService(IPhoneOTPRepo phoneOTPRepos, ICustomerRepo customerRepo)
+        public CustomerService(ICustomerRepo customerRepo)
         {
-            _phoneOTPRepos = phoneOTPRepos;
             _customerRepo = customerRepo;
         }
 
@@ -25,8 +25,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
         {
             CustomerLoginStatus checkError = new CustomerLoginStatus();
             //check Valid
-            bool check = await _phoneOTPRepos.VerifyPhoneOTP(loginPhoneOTPModel);
-            if (!check)
+            //bool check = await _phoneOTPRepos.VerifyPhoneOTP(loginPhoneOTPModel);
+            //FirebaseToken decodeToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(loginPhoneOTPModel.firebaseToken);
+            var phoneNo = JwtUserToken.DecodeFireBaseTokenToPhoneNo(loginPhoneOTPModel.firebaseToken);
+            if (phoneNo == null)
             {
                 checkError.isError = true;
                 checkError.InvalidPhoneOTP = "Mã xác thực không đúng hoặc đã quá hạn, vui lòng thử lại";
@@ -34,7 +36,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
             }
 
             //get customer's information
-            var customer = await _customerRepo.getCustomerBasedOnPhoneNo(loginPhoneOTPModel.phoneNo);
+            var customer = await _customerRepo.getCustomerBasedOnPhoneNo(phoneNo);
             
             if (customer == null)
             {

@@ -40,7 +40,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductParentRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.PhoneOTPRepos;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 namespace BetterHealthManagementAPI
 {
@@ -57,6 +58,10 @@ namespace BetterHealthManagementAPI
         public void ConfigureServices(IServiceCollection services)
         {
 
+            services.AddSingleton(FirebaseApp.Create(new AppOptions()
+            {
+                Credential = GoogleCredential.FromFile("betterhealth-firebase.json")
+            }));
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -115,7 +120,6 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IProductIngredientRepo, ProductIngredientRepo>();
             services.AddTransient<IProductParentRepo, ProductParentRepo>();
             services.AddTransient<ICustomerRepo, CustomerRepo>();
-            services.AddTransient<IPhoneOTPRepo, PhoneOTPRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

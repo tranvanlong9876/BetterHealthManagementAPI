@@ -1,6 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,10 +9,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
 {
     public class ProductPagingRequest : PagingRequestBase
     {
-        public bool isPrescription { get; set; }
+        [Required]
+        public bool isSellFirstLevel { get; set; }
+        public bool? isPrescription { get; set; }
+        public bool? isSell { get; set; }
         public string subCategoryID { get; set; }
         public string productName { get; set; }
-
+        
         public string manufacturerID { get; set; }
     }
 }

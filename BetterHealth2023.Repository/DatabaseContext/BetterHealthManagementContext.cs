@@ -38,7 +38,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<OrderHeader> OrderHeaders { get; set; }
         public virtual DbSet<OrderStatus> OrderStatuses { get; set; }
         public virtual DbSet<OrderType> OrderTypes { get; set; }
-        public virtual DbSet<PhoneOtp> PhoneOtps { get; set; }
         public virtual DbSet<ProductDescription> ProductDescriptions { get; set; }
         public virtual DbSet<ProductDetail> ProductDetails { get; set; }
         public virtual DbSet<ProductDiscount> ProductDiscounts { get; set; }
@@ -312,15 +311,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                 entity.Property(e => e.Id).ValueGeneratedNever();
             });
 
-            modelBuilder.Entity<PhoneOtp>(entity =>
-            {
-                entity.Property(e => e.OtpCode)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-            });
-
             modelBuilder.Entity<ProductDetail>(entity =>
             {
+                entity.Property(e => e.BarCode).IsUnicode(false);
+
                 entity.HasOne(d => d.ProductIdParentNavigation)
                     .WithMany(p => p.ProductDetails)
                     .HasForeignKey(d => d.ProductIdParent)

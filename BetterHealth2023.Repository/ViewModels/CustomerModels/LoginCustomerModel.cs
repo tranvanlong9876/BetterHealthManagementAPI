@@ -9,10 +9,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Custo
     public class LoginCustomerModel
     {
         [Required]
-        public string phoneNo { get; set; }
-
-        [Required]
-        [StringLength(maximumLength: 6, MinimumLength = 6, ErrorMessage = "Mã OTP phải đầy đủ 6 số.")]
-        public string otpCode { get; set; }
+        public string firebaseToken { get; set; }
     }
 }
