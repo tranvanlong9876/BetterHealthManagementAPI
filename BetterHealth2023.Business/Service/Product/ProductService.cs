@@ -127,7 +127,52 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
         public async Task<PagedResult<ViewProductListModel>> GetAllProduct(ProductPagingRequest pagingRequest)
         {
             var productModel = await _productDetailRepo.GetAllProductsPaging(pagingRequest);
+
+            for(var i = 0; i < productModel.Items.Count; i++)
+            {
+                var imageList = await _productImageRepo.getProductImages(productModel.Items[i].Id);
+                var productUnitList = await _productDetailRepo.GetProductLaterUnit(await _productDetailRepo.GetProductParentID(productModel.Items[i].Id), productModel.Items[i].UnitLevel);
+                var productUnitName = GetStringUnit(productUnitList);
+                productModel.Items[i].imageModels = imageList;
+                productModel.Items[i].TotalUnitOnly = productUnitName;
+                productModel.Items[i].NameWithUnit = productModel.Items[i].Name + " (" + productUnitName + ")";
+            }
+
             return productModel;
+        }
+
+        public async Task<ViewSpecificProductModel> GetViewProduct(string productId)
+        {
+            var productModel = await _productDetailRepo.GetSpecificProduct(productId);
+            if (productModel == null) return null;
+            productModel.descriptionModels.ingredientModel = await _productIngredientDescriptionRepo.GetProductIngredient(productModel.descriptionModels.Id);
+            productModel.imageModels = await _productImageRepo.getProductImages(productModel.Id);
+            var productUnitName = GetStringUnit(await _productDetailRepo.GetProductLaterUnit(productModel.ProductIdParent, productModel.UnitLevel));
+            productModel.NameWithUnit = productModel.Name + " (" + productUnitName + ")";
+            productModel.TotalUnitOnly = productUnitName;
+            return productModel;
+        }
+
+        private string GetStringUnit(List<ProductUnitModel> productUnitList)
+        {
+            var namewithUnit = String.Empty;
+            if (productUnitList.Count >= 1)
+            {
+                for (var j = 0; j < productUnitList.Count; j++)
+                {
+                    var productUnit = productUnitList[j];
+                    if(j == 0)
+                    {
+                        namewithUnit = namewithUnit + "1 " + productUnit.UnitName;
+                    } else
+                    {
+                        namewithUnit = namewithUnit + productUnit.Quantitative + " " + productUnit.UnitName;
+                    }
+                    
+                    if (j != productUnitList.Count - 1) namewithUnit += " x ";
+                }
+            }
+            return namewithUnit;
         }
     }
 }

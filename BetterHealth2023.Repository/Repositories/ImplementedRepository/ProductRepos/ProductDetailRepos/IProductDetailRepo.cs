@@ -12,6 +12,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
     public interface IProductDetailRepo : IRepository<ProductDetail>
     {
         public Task<PagedResult<ViewProductListModel>> GetAllProductsPaging(ProductPagingRequest pagingRequest);
+        public Task<ViewSpecificProductModel> GetSpecificProduct(string productID);
         public Task<bool> CheckDuplicateBarCode(string BarCode);
+
+        public Task<List<ProductUnitModel>> GetProductLaterUnit(string productID, int unitLevel);
+        public Task<List<ProductUnitModel>> GetProductUnitButThis(string productID, int unitLevel);
+
+        public Task<string> GetProductParentID(string productID);
     }
 }

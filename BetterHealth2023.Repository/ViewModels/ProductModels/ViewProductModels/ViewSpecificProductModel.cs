@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels
 {
-    public class ViewProductListModel
+    public class ViewSpecificProductModel
     {
         public string Id { get; set; }
+        public string ProductIdParent { get; set; }
         public string Name { get; set; }
 
         public string NameWithUnit { get; set; }
@@ -19,21 +20,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
 
         public bool IsPrescription { get; set; }
 
-        public bool IsBatches { get; set; }
-
         public string UnitId { get; set; }
+        public string UnitName { get; set; }
         public int UnitLevel { get; set; }
-        public int Quantitative { get; set; }
-        public int SellQuantity { get; set; }
         public double Price { get; set; }
-        public bool IsSell { get; set; }
+
+        public ProductDescriptionModel descriptionModels { get; set; }
         public List<ProductImageView> imageModels { get; set; }
-
-    }
-
-    public class ProductImageView
-    {
-        public string Id { get; set; }
-        public string ImageURL { get; set; }
     }
 }

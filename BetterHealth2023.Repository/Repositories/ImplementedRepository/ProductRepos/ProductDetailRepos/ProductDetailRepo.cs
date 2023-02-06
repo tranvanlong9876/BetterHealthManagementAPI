@@ -58,6 +58,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 query = query.Where(x => x.parent.ManufacturerId.Equals(pagingRequest.manufacturerID.Trim()));
             }
 
+            if(!pagingRequest.isSellFirstLevel)
+            {
+                query = query.OrderByDescending(x => x.details.IsSell);
+            }
+
             int totalRow = await query.CountAsync();
 
             var productList = await query.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
@@ -80,6 +85,86 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             var pageResult = new PagedResult<ViewProductListModel>(productList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
 
             return pageResult;
+        }
+
+        public async Task<List<ProductUnitModel>> GetProductLaterUnit(string productID, int unitLevel)
+        {
+            var query = from details in context.ProductDetails.Where(x => x.UnitLevel >= unitLevel).Where(x => x.ProductIdParent.Equals(productID))
+                        from units in context.Units.Where(unit => unit.Id == details.UnitId).DefaultIfEmpty()
+                        orderby details.UnitLevel ascending
+                        select new { details, units };
+
+            var productLists = await query.Select(selector => new ProductUnitModel()
+            {
+                Id = selector.details.Id,
+                UnitId = selector.details.UnitId,
+                UnitName = selector.units.UnitName,
+                Quantitative = selector.details.Quantitative,
+                UnitLevel = selector.details.UnitLevel
+            }).ToListAsync();
+
+            return productLists;
+        }
+
+        public async Task<string> GetProductParentID(string productID)
+        {
+            return await (from detail in context.ProductDetails.Where(x => x.Id.Equals(productID))
+                        select detail.ProductIdParent).SingleOrDefaultAsync();
+        }
+
+        public async Task<List<ProductUnitModel>> GetProductUnitButThis(string productID, int unitLevel)
+        {
+            var query = from details in context.ProductDetails.Where(x => x.UnitLevel != unitLevel).Where(x => x.ProductIdParent.Equals(productID))
+                        from units in context.Units.Where(unit => unit.Id == details.UnitId).DefaultIfEmpty()
+                        orderby details.UnitLevel ascending
+                        select new { details, units };
+
+            var productLists = await query.Select(selector => new ProductUnitModel()
+            {
+                Id = selector.details.Id,
+                UnitId = selector.details.UnitId,
+                UnitName = selector.units.UnitName,
+                Quantitative = selector.details.Quantitative,
+                UnitLevel = selector.details.UnitLevel
+            }).ToListAsync();
+
+            return productLists;
+        }
+
+        public async Task<ViewSpecificProductModel> GetSpecificProduct(string productID)
+        {
+            var query = from details in context.ProductDetails.Where(x => x.Id.Equals(productID)).Where(x=>x.IsSell.Equals(true))
+                        from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
+                        from description in context.ProductDescriptions.Where(desc => desc.Id == parent.ProductDescriptionId).DefaultIfEmpty()
+                        from unitOfProduct in context.Units.Where(unitPro => unitPro.Id == details.UnitId).DefaultIfEmpty()
+                        select new { details, parent, description, unitOfProduct };
+
+            var productDesc = await query.Select(selector => new ProductDescriptionModel()
+            {
+                Id = selector.description.Id,
+                Contraindications = selector.description.Contraindications,
+                Effect = selector.description.Effect,
+                Instruction = selector.description.Instruction,
+                Preserve = selector.description.Preserve,
+                SideEffect = selector.description.SideEffect,
+            }).FirstOrDefaultAsync();
+
+            var product = await query.Select(selector => new ViewSpecificProductModel()
+            {
+                Id = selector.details.Id,
+                ProductIdParent = selector.details.ProductIdParent,
+                Name = selector.parent.Name,
+                IsPrescription = selector.parent.IsPrescription,
+                ManufacturerId = selector.parent.ManufacturerId,
+                Price = selector.details.Price,
+                SubCategoryId = selector.parent.SubCategoryId,
+                UnitId = selector.details.UnitId,
+                UnitName = selector.unitOfProduct.UnitName,
+                UnitLevel = selector.details.UnitLevel,
+                descriptionModels = productDesc
+            }).FirstOrDefaultAsync();
+
+            return product;
         }
     }
 }

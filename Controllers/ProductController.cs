@@ -27,6 +27,14 @@ namespace BetterHealthManagementAPI.Controllers
             return Ok(listProduct);
         }
 
+        [HttpGet("View/{id}")]
+        public async Task<IActionResult> GetViewProducts(string id)
+        {
+            var productView = await _productService.GetViewProduct(id);
+            if (productView == null) return NotFound("Không tìm thấy sản phẩm hoặc đã bị xóa.");
+            return Ok(productView);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateProduct(CreateProductModel createProductModel)
         {
