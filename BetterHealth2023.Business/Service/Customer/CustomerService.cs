@@ -1,4 +1,6 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerPointRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.CustomerErrorModels;
@@ -15,10 +17,44 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
     public class CustomerService : ICustomerService
     {
         private readonly ICustomerRepo _customerRepo;
+        private readonly ICustomerPointRepo _customerpointRepo;
 
-        public CustomerService(ICustomerRepo customerRepo)
+        public CustomerService(ICustomerRepo customerRepo, ICustomerPointRepo customerpointRepo)
         {
             _customerRepo = customerRepo;
+            _customerpointRepo = customerpointRepo;
+        }
+
+        public async Task<Repository.DatabaseModels.Customer> CreateCustomer(CustomerRegisView customerRegisView)
+        {
+            //customer model
+            Repository.DatabaseModels.Customer customer = new() {
+                Id = Guid.NewGuid().ToString(),
+                Fullname = customerRegisView.Fullname,
+                PhoneNo = customerRegisView.PhoneNo,
+                Email = customerRegisView.Email,
+                Gender = customerRegisView.Gender,
+                Status = 1,
+                ImageUrl = customerRegisView.ImageUrl,
+                Dob = customerRegisView.Dob,
+
+        };
+            //sinsert customerpoint
+            CustomerPoint customerPoint = new()
+            {
+                Id = Guid.NewGuid().ToString(),
+                CustomerId = customer.Id,
+                Point = 0,
+                IsPlus =true,
+                Description = "Tạo tài khoản thành công",
+                CreateDate = DateTime.Now,
+                
+
+            };
+            //add customer to database
+            await _customerRepo.Insert(customer);
+            await _customerpointRepo.Insert(customerPoint);
+            return await Task.FromResult(customer);
         }
 
         public async Task<CustomerLoginStatus> customerLoginPhoneOTP(LoginCustomerModel loginPhoneOTPModel)

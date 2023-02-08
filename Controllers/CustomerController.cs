@@ -38,7 +38,6 @@ namespace BetterHealthManagementAPI.Controllers
 
         // POST api/<CustomerController>
         [HttpPost("Login")]
-        [AllowAnonymous]
         public async Task<IActionResult> LoginCustomer([FromBody] LoginCustomerModel loginCustomerModel)
         {
             var loginStatusModel = await _customerService.customerLoginPhoneOTP(loginCustomerModel);
@@ -52,16 +51,15 @@ namespace BetterHealthManagementAPI.Controllers
             return Ok(loginStatusModel.customerToken);
         }
 
-        // PUT api/<CustomerController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        
+    
+        [HttpPost("Register")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RegisterCustomer([FromBody] CustomerRegisView customerRegisView)
         {
-        }
-
-        // DELETE api/<CustomerController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            var customer = await _customerService.CreateCustomer(customerRegisView);
+            if (customer == null) return BadRequest();
+            return Ok(customer);
         }
     }
 }
