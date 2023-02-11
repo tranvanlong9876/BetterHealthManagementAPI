@@ -14,6 +14,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUser
 {
@@ -64,8 +65,19 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
                 checkError.WrongPassword = "Mật khẩu đăng nhập không đúng.";
                 return checkError;
             }
-
-            string token = JwtUserToken.CreateInternalUserToken(user);
+            SiteViewModel workingSite = null;
+            if (user.Role.RoleName.Equals(Commons.PHARMACIST_NAME) || user.Role.RoleName.Equals(Commons.MANAGER_NAME))
+            {
+                workingSite = await _userWorkingSiteRepo.GetInternalUserWorkingSiteModel(user.Id);
+                if(workingSite == null)
+                {
+                    checkError.isError = true;
+                    checkError.NoWorkingSite = "Dược Sĩ và Quản Lý không có chi nhánh làm việc.";
+                    return checkError;
+                }
+            }
+            string token = JwtUserToken.CreateInternalUserToken(user, workingSite);
+            
 
             InternalUserTokenModel employeeTokenModel = new()
             {

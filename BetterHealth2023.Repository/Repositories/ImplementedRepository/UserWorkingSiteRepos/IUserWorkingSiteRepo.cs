@@ -1,5 +1,6 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
     {
         public Task<bool> InsertWorkingSite(InternalUserWorkingSite internalUserWorkingSite);
         public Task<string> GetInternalUserWorkingSite(string userID);
+
+        public Task<SiteViewModel> GetInternalUserWorkingSiteModel(string userID);
 
         public Task<List<InternalUserWorkingSite>> GetTotalPharmacist(string siteID);
         public Task<List<InternalUserWorkingSite>> GetTotalManager(string siteID);

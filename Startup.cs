@@ -42,6 +42,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Unit;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UnitRepos;
 
 namespace BetterHealthManagementAPI
 {
@@ -88,7 +90,7 @@ namespace BetterHealthManagementAPI
                     });
             JwtUserToken.Initialize(Configuration);
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
-            services.AddDbContext<BetterHealthManagementContext>();
+            services.AddDbContext<BetterHealthManagementContext>();            
             services.AddCors(p => p.AddPolicy("MyCors", build =>
             {
                 build.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
@@ -103,6 +105,7 @@ namespace BetterHealthManagementAPI
             services.AddScoped<ISubCategoryService, SubCategoryService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<IUnitService, UnitService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();
@@ -120,6 +123,7 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IProductIngredientRepo, ProductIngredientRepo>();
             services.AddTransient<IProductParentRepo, ProductParentRepo>();
             services.AddTransient<ICustomerRepo, CustomerRepo>();
+            services.AddTransient<IUnitRepo, UnitRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -144,6 +148,10 @@ namespace BetterHealthManagementAPI
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapGet("/", async context =>
+                {
+                    context.Response.Redirect("swagger");
+                });
                 endpoints.MapControllers();
             });
         }

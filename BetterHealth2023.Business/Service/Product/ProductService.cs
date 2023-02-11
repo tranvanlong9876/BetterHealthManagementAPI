@@ -7,6 +7,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.ProductErrorModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using System;
 using System.Collections.Generic;
@@ -141,15 +142,46 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             return productModel;
         }
 
-        public async Task<ViewSpecificProductModel> GetViewProduct(string productId)
+        public async Task<ViewSpecificProductModel> GetViewProduct(string productId, bool isInternal)
         {
-            var productModel = await _productDetailRepo.GetSpecificProduct(productId);
+            var productModel = await _productDetailRepo.GetSpecificProduct(productId, isInternal);
             if (productModel == null) return null;
             productModel.descriptionModels.ingredientModel = await _productIngredientDescriptionRepo.GetProductIngredient(productModel.descriptionModels.Id);
             productModel.imageModels = await _productImageRepo.getProductImages(productModel.Id);
             var productUnitName = GetStringUnit(await _productDetailRepo.GetProductLaterUnit(productModel.ProductIdParent, productModel.UnitLevel));
+            var productUnitPreferences = await _productDetailRepo.GetProductUnitButThis(productModel.ProductIdParent, productModel.UnitLevel);
             productModel.NameWithUnit = productModel.Name + " (" + productUnitName + ")";
             productModel.TotalUnitOnly = productUnitName;
+            productModel.productUnitReferences = productUnitPreferences;
+            return productModel;
+        }
+
+        public async Task<UpdateProductViewModel> GetViewProductForUpdate(string productId)
+        {
+            var productParentID = await _productDetailRepo.GetProductParentID(productId);
+            if(productParentID == null)
+            {
+                return null;
+            }
+            var productModel = await _productParentRepo.GetViewModel<UpdateProductViewModel>(productParentID);
+
+            //get product description
+            var productDescriptionModel = await _productDescriptionRepo.GetViewModel<UpdateProductDescriptionModel>(productModel.ProductDescriptionId);
+            productModel.descriptionModel = productDescriptionModel;
+            //get product ingredient
+            if(productModel.descriptionModel != null)
+            {
+                var productIngredientModel = await _productIngredientDescriptionRepo.GetProductIngredientUpdate(productModel.descriptionModel.Id);
+                productModel.descriptionModel.ingredientModel = productIngredientModel;
+            }
+            //get list product detail
+            var productDetailList = await _productDetailRepo.GetProductDetailLists(productParentID);
+            for(var i = 0; i < productDetailList.Count; i++)
+            {
+                productDetailList[i].ImageModels = await _productImageRepo.getProductImagesUpdate(productDetailList[i].Id);
+            }
+            productModel.productDetailModel = productDetailList;
+
             return productModel;
         }
 

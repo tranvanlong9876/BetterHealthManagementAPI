@@ -1,6 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.ProductErrorModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
         public Task<CreateProductErrorModel> CreateProduct(CreateProductModel createProductModel);
 
         public Task<PagedResult<ViewProductListModel>> GetAllProduct(ProductPagingRequest pagingRequest);
-        public Task<ViewSpecificProductModel> GetViewProduct(string productId);
+        public Task<ViewSpecificProductModel> GetViewProduct(string productId, bool isInternal);
+
+        public Task<UpdateProductViewModel> GetViewProductForUpdate(string productId);
     }
 }

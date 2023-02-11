@@ -11,6 +11,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Error
         public string UserNotFound { get; set; }
         public string UserInactive { get; set; }
         public string WrongPassword { get; set; }
+        public string NoWorkingSite { get; set; }
 
         public InternalUserTokenModel userToken { get; set; }
 

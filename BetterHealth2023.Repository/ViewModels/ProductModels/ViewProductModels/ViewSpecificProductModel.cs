@@ -19,6 +19,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public string ManufacturerId { get; set; }
 
         public bool IsPrescription { get; set; }
+        public bool IsBatches { get; set; }
 
         public string UnitId { get; set; }
         public string UnitName { get; set; }
@@ -27,5 +28,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
 
         public ProductDescriptionModel descriptionModels { get; set; }
         public List<ProductImageView> imageModels { get; set; }
+        public List<ProductUnitModel> productUnitReferences { get; set; }
     }
 }

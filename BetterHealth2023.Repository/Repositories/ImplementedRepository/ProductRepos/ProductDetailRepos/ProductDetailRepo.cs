@@ -3,6 +3,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -28,14 +29,23 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public async Task<PagedResult<ViewProductListModel>> GetAllProductsPaging(ProductPagingRequest pagingRequest)
         {
 
-            var query = from details in context.ProductDetails.Where(x => x.UnitLevel == (from details in context.ProductDetails where details.IsSell.Equals(pagingRequest.isSellFirstLevel) select details.UnitLevel).Min())
+            var query = from details in context.ProductDetails.Where(x => x.UnitLevel == (from details1 in context.ProductDetails where details1.IsSell.Equals(true) select details1.UnitLevel).Min())
                         from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
                         from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
                         select new { details, parent, subcategory };
 
+            if(!pagingRequest.isSellFirstLevel)
+            {
+                query = from details in context.ProductDetails.Where(x => x.UnitLevel == (from details1 in context.ProductDetails select details1.UnitLevel).Min())
+                        from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
+                        from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
+                        orderby details.IsSell descending
+                        select new { details, parent, subcategory };
+            }
+
             if (!string.IsNullOrEmpty(pagingRequest.productName))
             {
-                query = query.Where(x => x.parent.Name.Contains(pagingRequest.productName.Trim()));
+                query = query.Where(x => (x.parent.Name.Contains(pagingRequest.productName.Trim())) || (x.details.BarCode.Contains(pagingRequest.productName.Trim())));
             }
 
             if (!string.IsNullOrEmpty(pagingRequest.subCategoryID))
@@ -56,11 +66,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             if (!string.IsNullOrEmpty(pagingRequest.manufacturerID))
             {
                 query = query.Where(x => x.parent.ManufacturerId.Equals(pagingRequest.manufacturerID.Trim()));
-            }
-
-            if(!pagingRequest.isSellFirstLevel)
-            {
-                query = query.OrderByDescending(x => x.details.IsSell);
             }
 
             int totalRow = await query.CountAsync();
@@ -85,6 +90,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             var pageResult = new PagedResult<ViewProductListModel>(productList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
 
             return pageResult;
+        }
+
+        public async Task<List<UpdateProductDetailModel>> GetProductDetailLists(string productParentID)
+        {
+            var results = context.ProductDetails.Where(x => x.ProductIdParent.Trim().Equals(productParentID.Trim()));
+            return await results.Select(model => mapper.Map<UpdateProductDetailModel>(model)).ToListAsync();
+
         }
 
         public async Task<List<ProductUnitModel>> GetProductLaterUnit(string productID, int unitLevel)
@@ -131,13 +143,18 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return productLists;
         }
 
-        public async Task<ViewSpecificProductModel> GetSpecificProduct(string productID)
+        public async Task<ViewSpecificProductModel> GetSpecificProduct(string productID, bool isInternal)
         {
-            var query = from details in context.ProductDetails.Where(x => x.Id.Equals(productID)).Where(x=>x.IsSell.Equals(true))
+            var query = from details in context.ProductDetails.Where(x => x.Id.Equals(productID))
                         from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
                         from description in context.ProductDescriptions.Where(desc => desc.Id == parent.ProductDescriptionId).DefaultIfEmpty()
                         from unitOfProduct in context.Units.Where(unitPro => unitPro.Id == details.UnitId).DefaultIfEmpty()
                         select new { details, parent, description, unitOfProduct };
+
+            if(!isInternal)
+            {
+                query = query.Where(x => x.details.IsSell.Equals(true));
+            }
 
             var productDesc = await query.Select(selector => new ProductDescriptionModel()
             {
@@ -155,6 +172,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 ProductIdParent = selector.details.ProductIdParent,
                 Name = selector.parent.Name,
                 IsPrescription = selector.parent.IsPrescription,
+                IsBatches = selector.parent.IsBatches,
                 ManufacturerId = selector.parent.ManufacturerId,
                 Price = selector.details.Price,
                 SubCategoryId = selector.parent.SubCategoryId,

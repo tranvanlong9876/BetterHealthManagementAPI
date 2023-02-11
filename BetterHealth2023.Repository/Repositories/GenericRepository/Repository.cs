@@ -13,7 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
     {
         protected readonly BetterHealthManagementContext context;
         private DbSet<T> _entities;
-        private readonly IMapper mapper;
+        protected readonly IMapper mapper;
 
         public Repository(BetterHealthManagementContext context, IMapper mapper)
         {

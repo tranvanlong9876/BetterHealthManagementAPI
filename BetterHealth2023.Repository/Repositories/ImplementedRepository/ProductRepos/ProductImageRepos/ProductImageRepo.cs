@@ -2,6 +2,7 @@
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -15,6 +16,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
     {
         public ProductImageRepo(BetterHealthManagementContext context, IMapper mapper) : base(context, mapper)
         {
+
         }
 
         public async Task<List<ProductImageView>> getProductImages(string productId)
@@ -26,6 +28,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             {
                 Id = selector.Id,
                 ImageURL = selector.ImageUrl
+            }).ToListAsync();
+
+            return images;
+        }
+
+        public async Task<List<UpdateProductImageModel>> getProductImagesUpdate(string productId)
+        {
+            var query = from x in context.ProductImages.Where(x => x.ProductId.Equals(productId.Trim()))
+                        select x;
+
+            var images = await query.Select(selector => new UpdateProductImageModel()
+            {
+                Id = selector.Id,
+                ImageUrl = selector.ImageUrl
             }).ToListAsync();
 
             return images;

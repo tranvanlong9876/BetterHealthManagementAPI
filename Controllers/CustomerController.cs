@@ -37,20 +37,7 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         // POST api/<CustomerController>
-        [HttpPost("Login")]
-        [AllowAnonymous]
-        public async Task<IActionResult> LoginCustomer([FromBody] LoginCustomerModel loginCustomerModel)
-        {
-            var loginStatusModel = await _customerService.customerLoginPhoneOTP(loginCustomerModel);
-            if(loginStatusModel.isError)
-            {
-                if (loginStatusModel.InvalidPhoneOTP != null) return BadRequest(loginStatusModel);
-                if (loginStatusModel.CustomerNotFound != null) return NotFound();
-                if (loginStatusModel.CustomerInactive != null) return BadRequest(loginStatusModel);
-                else return BadRequest(loginStatusModel);
-            }
-            return Ok(loginStatusModel.customerToken);
-        }
+        
 
         // PUT api/<CustomerController>/5
         [HttpPut("{id}")]

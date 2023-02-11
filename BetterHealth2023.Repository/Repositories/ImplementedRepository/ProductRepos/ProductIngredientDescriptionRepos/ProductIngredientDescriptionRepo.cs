@@ -2,6 +2,7 @@
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -31,6 +32,24 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 Content = (double) selector.pro_ingre_desc.Content,
                 UnitId = selector.pro_ingre_desc.UnitId,
                 UnitName = selector.unit.UnitName
+            }).ToListAsync();
+
+            return data;
+        }
+
+        public async Task<List<UpdateProductIngredientModel>> GetProductIngredientUpdate(string productDescId)
+        {
+            var query = from pro_ingre_desc in context.ProductIngredientDescriptions.Where(desc => desc.ProductDescriptionId.Equals(productDescId))
+                        from ingredient in context.ProductIngredients.Where(ingre => ingre.Id == pro_ingre_desc.IngredientId).DefaultIfEmpty()
+                        from unit in context.Units.Where(units => units.Id == pro_ingre_desc.UnitId).DefaultIfEmpty()
+                        select new { pro_ingre_desc, ingredient, unit };
+
+            var data = await query.Select(selector => new UpdateProductIngredientModel()
+            {
+                Id = selector.pro_ingre_desc.Id,
+                IngredientId = selector.pro_ingre_desc.IngredientId,
+                Content = (double)selector.pro_ingre_desc.Content,
+                UnitId = selector.pro_ingre_desc.UnitId
             }).ToListAsync();
 
             return data;

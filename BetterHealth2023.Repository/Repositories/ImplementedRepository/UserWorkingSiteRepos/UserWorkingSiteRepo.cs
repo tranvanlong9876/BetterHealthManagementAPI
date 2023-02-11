@@ -1,6 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public async Task<string> GetInternalUserWorkingSite(string userID)
         {
             var query = from x in context.InternalUserWorkingSites
-                        where x.UserId.Trim().Equals(userID.Trim())
+                        where x.UserId.Trim().Equals(userID.Trim()) && x.IsWorking.Equals(true)
                         select new { x };
             var workingSite = await query.Select(selector => new InternalUserWorkingSite() { 
                 Id = selector.x.Id,
@@ -31,6 +32,21 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 return workingSite.SiteId;
             }
             return null;
+        }
+
+        public async Task<SiteViewModel> GetInternalUserWorkingSiteModel(string userID)
+        {
+            var query = from x in context.InternalUserWorkingSites
+                        from site in context.SiteInformations.Where(sites => sites.Id == x.SiteId)
+                        where x.UserId.Trim().Equals(userID.Trim()) && x.IsWorking.Equals(true)
+                        select new { x, site };
+            var workingSiteModel = await query.Select(selector => new SiteViewModel()
+            {
+                Id = selector.site.Id,
+                SiteName = selector.site.SiteName
+            }).FirstOrDefaultAsync();
+            
+            return workingSiteModel;
         }
 
         public async Task<List<InternalUserWorkingSite>> GetTotalManager(string siteID)

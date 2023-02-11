@@ -2,7 +2,9 @@
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.MainCategoryModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.SubCategoryModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.UnitModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +32,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Utils
             CreateMap<CreateProductDescriptionModel, ProductDescription>();
             CreateMap<CreateProductDetailModel, ProductDetail>();
             CreateMap<CreateProductIngredientModel, ProductIngredientDescription>();
+
+            CreateMap<ProductDescription, UpdateProductDescriptionModel>();
+            CreateMap<ProductDetail, UpdateProductDetailModel>();
+            CreateMap<ProductParent, UpdateProductViewModel>();
+            //Unit
+            CreateMap<Unit, ViewUnitModel>();
+            
+            //
         }
     }
 }
