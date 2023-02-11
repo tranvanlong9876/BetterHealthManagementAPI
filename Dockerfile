@@ -1,13 +1,21 @@
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS base
 WORKDIR /app
+EXPOSE 80
+EXPOSE 443
 
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+WORKDIR /src
+COPY ["BetterHealthManagementAPI.csproj", "."]
+RUN dotnet restore "./BetterHealthManagementAPI.csproj"
 COPY . ./
-RUN dotnet publish -c Release -o out
+WORKDIR "/src/."
+RUN dotnet build "BetterHealthManagementAPI.csproj" -c Release -o /app/build
 
-FROM mcr.microsoft.com/dotnet/aspnet:5.0
+FROM build AS publish
+RUN dotnet publish "BetterHealthManagementAPI.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
 WORKDIR /app
-COPY --from=build-env /app/out .
-
-ENV ASPNETCORE_ENVIRONMENT Production
+COPY --from=publish /app/publish .
 
 ENTRYPOINT ["dotnet", "BetterHealthManagementAPI.dll"]
