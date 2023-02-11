@@ -24,7 +24,7 @@ namespace BetterHealthManagementAPI
                 });*/
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            var port = Environment.GetEnvironmentVariable("PORT") ?? " 8080";
+            var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             if (environment == "Development")
             {
