@@ -148,10 +148,6 @@ namespace BetterHealthManagementAPI
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", async context =>
-                {
-                    context.Response.Redirect("swagger");
-                });
                 endpoints.MapControllers();
             });
         }
