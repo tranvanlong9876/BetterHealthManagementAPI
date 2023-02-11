@@ -27,7 +27,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
 
         public async Task<Repository.DatabaseModels.Customer> CreateCustomer(CustomerRegisView customerRegisView)
         {
-            //customer model
+           
+
+            //find customer by phoneno
+            var customercheck = await _customerRepo.getCustomerBasedOnPhoneNo(customerRegisView.PhoneNo);
+            if (customercheck != null)
+            {
+                return null;
+            }
+            //find customer by email
+            var customercheckemail = await _customerRepo.getCustomerBasedOnEmail(customerRegisView.Email);
+            if (customercheckemail != null)
+            {
+                return null;
+            }
             Repository.DatabaseModels.Customer customer = new() {
                 Id = Guid.NewGuid().ToString(),
                 Fullname = customerRegisView.Fullname,

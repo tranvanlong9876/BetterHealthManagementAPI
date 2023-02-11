@@ -2,6 +2,8 @@
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,15 +42,35 @@ namespace BetterHealthManagementAPI.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> LoginCustomer([FromBody] LoginCustomerModel loginCustomerModel)
         {
-            var loginStatusModel = await _customerService.customerLoginPhoneOTP(loginCustomerModel);
-            if(loginStatusModel.isError)
+            try
             {
-                if (loginStatusModel.InvalidPhoneOTP != null) return BadRequest(loginStatusModel);
-                if (loginStatusModel.CustomerNotFound != null) return NotFound();
-                if (loginStatusModel.CustomerInactive != null) return BadRequest(loginStatusModel);
-                else return BadRequest(loginStatusModel);
+                var loginStatusModel = await _customerService.customerLoginPhoneOTP(loginCustomerModel);
+                if (loginStatusModel.isError)
+                {
+                    if (loginStatusModel.InvalidPhoneOTP != null) return BadRequest(loginStatusModel);
+                    if (loginStatusModel.CustomerNotFound != null) return NotFound();
+                    if (loginStatusModel.CustomerInactive != null) return BadRequest(loginStatusModel);
+                    else return BadRequest(loginStatusModel);
+                }
+                return Ok(loginStatusModel.customerToken);
             }
-            return Ok(loginStatusModel.customerToken);
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+            catch (SqlException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+
         }
 
         
@@ -57,9 +79,28 @@ namespace BetterHealthManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> RegisterCustomer([FromBody] CustomerRegisView customerRegisView)
         {
-            var customer = await _customerService.CreateCustomer(customerRegisView);
-            if (customer == null) return BadRequest();
-            return Ok(customer);
+            try
+            {
+                var customer = await _customerService.CreateCustomer(customerRegisView);
+                if (customer == null) return BadRequest();
+                return Ok(customer);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+            catch (SqlException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
         }
     }
 }

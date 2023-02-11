@@ -16,6 +16,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
         }
 
+        public async Task<Customer> getCustomerBasedOnEmail(string Email)
+        {
+            return await context.Customers.Where(x => x.Email.Trim().Equals(Email.Trim())).FirstOrDefaultAsync();
+        }
+
         public async Task<Customer> getCustomerBasedOnPhoneNo(string phoneNo)
         {
             return await context.Customers.Where(x => x.PhoneNo.Trim().Equals(phoneNo.Trim())).FirstOrDefaultAsync();
