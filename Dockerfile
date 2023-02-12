@@ -1,9 +1,26 @@
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build-env
+# Use Microsoft's official build .NET image.
+# https://hub.docker.com/_/microsoft-dotnet
+FROM mcr.microsoft.com/dotnet/sdk:5.0-alpine AS build
 WORKDIR /app
+
+# Install production dependencies.
+# Copy csproj and restore as distinct layers.
+COPY *.csproj ./
+RUN dotnet restore
+
+# Copy local code to the container image.
 COPY . ./
-RUN dotnet publish -c Release -o out
-FROM mcr.microsoft.com/dotnet/aspnet:5.0
 WORKDIR /app
-COPY --from=build-env /app/out .
-ENV ASPNETCORE_ENVIRONMENT Production
+
+# Build a release artifact.
+RUN dotnet publish -c Release -o out
+
+
+# Use Microsoft's official runtime .NET image.
+# https://hub.docker.com/_/microsoft-dotnet
+FROM mcr.microsoft.com/dotnet/sdk:5.0-alpine AS runtime
+WORKDIR /app
+COPY --from=build /app/out ./
+
+# Run the web service on container startup.
 ENTRYPOINT ["dotnet", "BetterHealthManagementAPI.dll"]
