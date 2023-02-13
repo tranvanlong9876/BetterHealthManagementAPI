@@ -43,7 +43,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 
             foreach(var pro_details in createProductModel.productDetailModel)
             {
-                if(!string.IsNullOrEmpty(pro_details.BarCode))
+                if(!string.IsNullOrWhiteSpace(pro_details.BarCode))
                 {
                     duplicateBarCode = await _productDetailRepo.CheckDuplicateBarCode(pro_details.BarCode);
 
@@ -183,6 +183,119 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             productModel.productDetailModel = productDetailList;
 
             return productModel;
+        }
+
+        public async Task<UpdateProductErrorModel> UpdateProduct(UpdateProductEntranceModel updateProductModel)
+        {
+            var checkError = new UpdateProductErrorModel();
+            //check duplicate bar code
+            var productDetailList = await _productDetailRepo.GetProductDetailLists(updateProductModel.Id);
+            if (updateProductModel.productDetailModel.Count != productDetailList.Count)
+            {
+                checkError.isError = true;
+                return checkError;
+            }
+
+            for(int i = 0; i < updateProductModel.productDetailModel.Count; i++)
+            {
+                var productDetailModel = updateProductModel.productDetailModel[i];
+                if (!string.IsNullOrWhiteSpace(productDetailModel.BarCode))
+                {
+                    var duplicateBarCode = await _productDetailRepo.CheckDuplicateBarCodeUpdate(productDetailModel.BarCode, productDetailModel.Id);
+
+                    if (duplicateBarCode)
+                    {
+                        checkError.isError = true;
+                        checkError.DuplicateBarCode = "Mã BarCode sản phẩm bị trùng lặp.";
+                        checkError.BarCodeError = productDetailModel.BarCode;
+                        return checkError;
+                    }
+                }
+            }
+            var productParentModel = await _productParentRepo.Get(updateProductModel.Id);
+            //update general information
+            productParentModel.IsPrescription = updateProductModel.isPrescription;
+            productParentModel.Name = updateProductModel.Name;
+            productParentModel.SubCategoryId = updateProductModel.subCategoryId;
+            productParentModel.ManufacturerId = updateProductModel.manufacturerId;
+            productParentModel.IsPrescription = updateProductModel.isPrescription;
+            //done general information
+
+            //update specific information
+            for(var i = 0; i < updateProductModel.productDetailModel.Count(); i++)
+            {
+                var productDetailModelUpdate = updateProductModel.productDetailModel[i];
+                var productDetailDB = await _productDetailRepo.Get(productDetailModelUpdate.Id);
+                productDetailDB.UnitId = productDetailModelUpdate.UnitId;
+                productDetailDB.UnitLevel = productDetailModelUpdate.UnitLevel;
+                productDetailDB.Quantitative = productDetailModelUpdate.Quantitative;
+                productDetailDB.SellQuantity = productDetailModelUpdate.SellQuantity;
+                productDetailDB.Price = productDetailModelUpdate.Price;
+                productDetailDB.IsSell = productDetailModelUpdate.IsSell;
+                productDetailDB.BarCode = productDetailModelUpdate.BarCode;
+
+                await _productDetailRepo.Update();
+
+                await _productImageRepo.removeAllImages(productDetailDB.Id);
+                List<ProductImage> productImageDBs = new();
+                if(productDetailModelUpdate.ImageModels != null)
+                {
+                    for (var j = 0; j < productDetailModelUpdate.ImageModels.Count; j++)
+                    {
+                        var imageModel = productDetailModelUpdate.ImageModels[j];
+                        ProductImage productImageDB = new()
+                        {
+                            Id = String.IsNullOrWhiteSpace(imageModel.Id) ? Guid.NewGuid().ToString() : imageModel.Id,
+                            ImageUrl = imageModel.ImageUrl,
+                            ProductId = productDetailDB.Id
+                        };
+                        productImageDBs.Add(productImageDB);
+                    }
+                    if (productImageDBs.Count >= 1)
+                    {
+                        await _productImageRepo.addMultipleImages(productImageDBs);
+                    }
+                }
+            }
+            //done update specific information
+
+            //update product description
+            var productDescriptionUpdate = updateProductModel.descriptionModel;
+            var productDescriptionDB = await _productDescriptionRepo.Get(productDescriptionUpdate.Id);
+            productDescriptionDB.Instruction = productDescriptionUpdate.Instruction;
+            productDescriptionDB.Preserve = productDescriptionUpdate.Preserve;
+            productDescriptionDB.SideEffect = productDescriptionUpdate.SideEffect;
+            productDescriptionDB.Effect = productDescriptionUpdate.Effect;
+            productDescriptionDB.Contraindications = productDescriptionUpdate.Contraindications;
+            await _productDescriptionRepo.Update();
+
+            await _productIngredientDescriptionRepo.RemoveAllProductIngredients(productDescriptionDB.Id);
+            List<ProductIngredientDescription> productIngredientDescriptions = new();
+            if(productDescriptionUpdate.ingredientModel != null)
+            {
+                for (var k = 0; k < productDescriptionUpdate.ingredientModel.Count; k++)
+                {
+                    var productIngredientDescription = productDescriptionUpdate.ingredientModel[k];
+                    ProductIngredientDescription productIngredientDescriptionDB = new()
+                    {
+                        Id = String.IsNullOrWhiteSpace(productIngredientDescription.Id) ? Guid.NewGuid().ToString() : productIngredientDescription.Id,
+                        IngredientId = productIngredientDescription.IngredientId,
+                        Content = productIngredientDescription.Content,
+                        UnitId = productIngredientDescription.UnitId,
+                        ProductDescriptionId = productDescriptionDB.Id
+                    };
+                    productIngredientDescriptions.Add(productIngredientDescriptionDB);
+                }
+                if (productIngredientDescriptions.Count >= 1)
+                {
+                    await _productIngredientDescriptionRepo.AddMultipleProductIngredients(productIngredientDescriptions);
+                }
+            }
+            checkError.isError = false;
+            checkError.productViewModel = await GetViewProductForUpdate(updateProductModel.productDetailModel[0].Id);
+
+            return checkError;
+            
         }
 
         private string GetStringUnit(List<ProductUnitModel> productUnitList)

@@ -19,6 +19,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         }
 
+        public async Task<bool> addMultipleImages(List<ProductImage> productImages)
+        {
+            await context.AddRangeAsync(productImages);
+            await Update();
+            return true;
+        }
+
         public async Task<List<ProductImageView>> getProductImages(string productId)
         {
             var query = from x in context.ProductImages.Where(x => x.ProductId.Equals(productId.Trim()))
@@ -45,6 +52,17 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             }).ToListAsync();
 
             return images;
+        }
+
+        public async Task<bool> removeAllImages(string productId)
+        {
+            List<ProductImage> productImages = await context.ProductImages.Where(x => x.ProductId.Equals(productId)).ToListAsync();
+            if(productImages.Count > 0)
+            {
+                context.RemoveRange(productImages);
+                await context.SaveChangesAsync();
+            }
+            return true;
         }
     }
 }

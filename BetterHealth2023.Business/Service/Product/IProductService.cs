@@ -18,5 +18,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
         public Task<ViewSpecificProductModel> GetViewProduct(string productId, bool isInternal);
 
         public Task<UpdateProductViewModel> GetViewProductForUpdate(string productId);
+
+        public Task<UpdateProductErrorModel> UpdateProduct(UpdateProductEntranceModel updateProductModel);
     }
 }

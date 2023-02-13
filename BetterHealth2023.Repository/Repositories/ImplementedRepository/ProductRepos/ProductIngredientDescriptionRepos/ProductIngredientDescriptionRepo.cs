@@ -18,6 +18,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
         }
 
+        public async Task<bool> AddMultipleProductIngredients(List<ProductIngredientDescription> productIngredientDescriptions)
+        {
+            await context.AddRangeAsync(productIngredientDescriptions);
+            await Update();
+            return true;
+        }
+
         public async Task<List<ProductIngredientModel>> GetProductIngredient(string productDescId)
         {
             var query = from pro_ingre_desc in context.ProductIngredientDescriptions.Where(desc => desc.ProductDescriptionId.Equals(productDescId))
@@ -53,6 +60,17 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             }).ToListAsync();
 
             return data;
+        }
+
+        public async Task<bool> RemoveAllProductIngredients(string descriptionID)
+        {
+            var productDescriptions = await context.ProductIngredientDescriptions.Where(x => x.ProductDescriptionId.Equals(descriptionID.Trim())).ToListAsync();
+
+            context.RemoveRange(productDescriptions);
+
+            await Update();
+
+            return true;
         }
     }
 }

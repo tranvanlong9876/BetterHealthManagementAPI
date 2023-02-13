@@ -134,8 +134,12 @@ namespace BetterHealthManagementAPI
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BetterHealthManagementAPI v1"));
+            } else
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BetterHealthManagementAPI v1"));
             }
-
             app.UseHttpsRedirection();
 
             app.UseCors("MyCors");
@@ -149,6 +153,8 @@ namespace BetterHealthManagementAPI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.Map("/", context => Task.Run((() =>
+                    context.Response.Redirect("/swagger/index.html"))));
             });
         }
     }

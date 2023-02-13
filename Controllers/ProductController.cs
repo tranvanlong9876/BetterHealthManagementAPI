@@ -1,6 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -64,6 +65,14 @@ namespace BetterHealthManagementAPI.Controllers
             var checkError = await _productService.CreateProduct(createProductModel);
             if (checkError.isError) return BadRequest(checkError);
             return Created("", "Sản phẩm mới đã tạo thành công");
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateProduct(UpdateProductEntranceModel updateProductModel)
+        {
+            var checkError = await _productService.UpdateProduct(updateProductModel);
+            if (checkError.isError) return BadRequest(checkError);
+            return Ok(checkError.productViewModel);
         }
     }
 }

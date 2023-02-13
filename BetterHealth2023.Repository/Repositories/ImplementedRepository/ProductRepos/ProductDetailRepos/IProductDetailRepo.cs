@@ -12,9 +12,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 {
     public interface IProductDetailRepo : IRepository<ProductDetail>
     {
+        public Task<bool> UpdateProductDetailRange(List<UpdateProductDetailModel> updateProductDetailModels);
         public Task<PagedResult<ViewProductListModel>> GetAllProductsPaging(ProductPagingRequest pagingRequest);
         public Task<ViewSpecificProductModel> GetSpecificProduct(string productID, bool isInternal);
         public Task<bool> CheckDuplicateBarCode(string BarCode);
+
+        public Task<bool> CheckDuplicateBarCodeUpdate(string BarCode, string productID);
 
         public Task<List<ProductUnitModel>> GetProductLaterUnit(string productID, int unitLevel);
         public Task<List<ProductUnitModel>> GetProductUnitButThis(string productID, int unitLevel);

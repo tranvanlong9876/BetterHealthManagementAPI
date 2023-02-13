@@ -26,6 +26,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return false;
         }
 
+        public async Task<bool> CheckDuplicateBarCodeUpdate(string BarCode, string productID)
+        {
+            var product_detail = await context.ProductDetails.Where(x => (x.BarCode.Trim().Equals(BarCode.Trim())) && (x.Id.Trim() != productID.Trim())).FirstOrDefaultAsync();
+            if (product_detail != null) return true;
+            return false;
+        }
+
         public async Task<PagedResult<ViewProductListModel>> GetAllProductsPaging(ProductPagingRequest pagingRequest)
         {
 
@@ -183,6 +190,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             }).FirstOrDefaultAsync();
 
             return product;
+        }
+
+        public async Task<bool> UpdateProductDetailRange(List<UpdateProductDetailModel> updateProductDetailModels)
+        {
+            context.UpdateRange(updateProductDetailModels);
+            await Update();
+            return true;
         }
     }
 }
