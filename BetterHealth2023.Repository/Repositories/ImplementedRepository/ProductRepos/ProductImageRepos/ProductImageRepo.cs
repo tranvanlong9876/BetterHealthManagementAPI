@@ -26,6 +26,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return true;
         }
 
+        public async Task<ProductImageView> GetProductImage(string productId)
+        {
+            var query = from x in context.ProductImages.Where(x => x.ProductId.Equals(productId.Trim()) && x.IsFirstImage)
+                        select x;
+
+            var image = await query.Select(selector => new ProductImageView()
+            {
+                Id = selector.Id,
+                ImageURL = selector.ImageUrl
+            }).FirstOrDefaultAsync();
+
+            return image;
+        }
+
         public async Task<List<ProductImageView>> getProductImages(string productId)
         {
             var query = from x in context.ProductImages.Where(x => x.ProductId.Equals(productId.Trim()))
@@ -48,7 +62,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             var images = await query.Select(selector => new UpdateProductImageModel()
             {
                 Id = selector.Id,
-                ImageUrl = selector.ImageUrl
+                ImageUrl = selector.ImageUrl,
+                IsFirstImage = selector.IsFirstImage
             }).ToListAsync();
 
             return images;

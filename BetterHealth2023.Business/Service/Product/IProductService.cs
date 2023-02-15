@@ -14,7 +14,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
     {
         public Task<CreateProductErrorModel> CreateProduct(CreateProductModel createProductModel);
 
-        public Task<PagedResult<ViewProductListModel>> GetAllProduct(ProductPagingRequest pagingRequest);
+        public Task<PagedResult<ViewProductListModel>> GetAllProduct(ProductPagingRequest pagingRequest, bool isInternal);
         public Task<ViewSpecificProductModel> GetViewProduct(string productId, bool isInternal);
 
         public Task<UpdateProductViewModel> GetViewProductForUpdate(string productId);

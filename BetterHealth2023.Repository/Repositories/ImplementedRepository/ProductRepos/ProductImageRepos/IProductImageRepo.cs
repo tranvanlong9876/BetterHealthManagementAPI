@@ -12,6 +12,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
     public interface IProductImageRepo : IRepository<ProductImage>
     {
         public Task<List<ProductImageView>> getProductImages(string productId);
+
+        public Task<ProductImageView> GetProductImage(string productId);
         public Task<List<UpdateProductImageModel>> getProductImagesUpdate(string productId);
 
         public Task<bool> removeAllImages(string productId);

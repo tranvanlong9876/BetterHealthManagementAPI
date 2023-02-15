@@ -9,7 +9,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
     {
         public string IngredientId { get; set; }
         public string IngredientName { get; set; }
-        public double Content { get; set; }
+        public double? Content { get; set; }
 
         public string UnitId { get; set; }
         public string UnitName { get; set; }

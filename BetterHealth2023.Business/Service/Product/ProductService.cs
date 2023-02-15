@@ -107,11 +107,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                     foreach(var product_images in List_Product_Images)
                     {
                         var product_image_id = Guid.NewGuid().ToString();
-                        var product_image_db = new ProductImage()
-                        { 
+                        var product_image_db = new Repository.DatabaseModels.ProductImage()
+                        {
                             Id = product_image_id,
-                            ImageUrl = product_images,
-                            ProductId = product_details_id
+                            ImageUrl = product_images.imageURL,
+                            ProductId = product_details_id,
+                            IsFirstImage = product_images.IsFirstImage.HasValue ? false : (bool) product_images.IsFirstImage
                         };
                         check = await _productImageRepo.Insert(product_image_db);
                     }
@@ -125,21 +126,60 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 
         }
 
-        public async Task<PagedResult<ViewProductListModel>> GetAllProduct(ProductPagingRequest pagingRequest)
+        public async Task<PagedResult<ViewProductListModel>> GetAllProduct(ProductPagingRequest pagingRequest, bool isInternal)
         {
-            var productModel = await _productDetailRepo.GetAllProductsPaging(pagingRequest);
+            var productParentList = await _productDetailRepo.GetProductParentDistinct();
 
-            for(var i = 0; i < productModel.Items.Count; i++)
-            {
-                var imageList = await _productImageRepo.getProductImages(productModel.Items[i].Id);
-                var productUnitList = await _productDetailRepo.GetProductLaterUnit(await _productDetailRepo.GetProductParentID(productModel.Items[i].Id), productModel.Items[i].UnitLevel);
-                var productUnitName = GetStringUnit(productUnitList);
-                productModel.Items[i].imageModels = imageList;
-                productModel.Items[i].TotalUnitOnly = productUnitName;
-                productModel.Items[i].NameWithUnit = productModel.Items[i].Name + " (" + productUnitName + ")";
+            var productModelList = new List<ViewProductListModel>();
+
+            foreach(var productParent in productParentList){
+                if(isInternal)
+                {
+                    productModelList.AddRange(await _productDetailRepo.GetAllProductForInternal(productParent.Id, pagingRequest.isSell));
+                } else
+                {
+                    productModelList.AddRange(await _productDetailRepo.GetAllProductWithParent(productParent.Id, productParent.LoadIsSell));
+                }
             }
 
-            return productModel;
+            if (!string.IsNullOrEmpty(pagingRequest.productName))
+            {
+                productModelList = productModelList.Where(x => (x.Name.Contains(pagingRequest.productName.Trim())) || (x.BarCode.Contains(pagingRequest.productName.Trim()))).ToList();
+            }
+
+            if (!string.IsNullOrEmpty(pagingRequest.subCategoryID))
+            {
+                productModelList = productModelList.Where(x => x.SubCategoryId.Equals(pagingRequest.subCategoryID.Trim())).ToList();
+            }
+
+            if (pagingRequest.isPrescription.HasValue)
+            {
+                productModelList = productModelList.Where(x => x.IsPrescription.Equals(pagingRequest.isPrescription)).ToList();
+            }
+
+            if (!string.IsNullOrEmpty(pagingRequest.manufacturerID))
+            {
+                productModelList = productModelList.Where(x => x.ManufacturerId.Equals(pagingRequest.manufacturerID.Trim())).ToList();
+            }
+
+            var totalRow = productModelList.Count();
+
+            productModelList = productModelList.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
+                .Take(pagingRequest.pageItems).ToList();
+
+            var pageResult = new PagedResult<ViewProductListModel>(productModelList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
+
+            for (var i = 0; i < pageResult.Items.Count; i++)
+            {
+                var image = await _productImageRepo.GetProductImage(pageResult.Items[i].Id);
+                var productUnitList = await _productDetailRepo.GetProductLaterUnit(await _productDetailRepo.GetProductParentID(pageResult.Items[i].Id), pageResult.Items[i].UnitLevel);
+                var productUnitName = GetStringUnit(productUnitList);
+                pageResult.Items[i].imageModel = image;
+                pageResult.Items[i].TotalUnitOnly = productUnitName;
+                pageResult.Items[i].NameWithUnit = pageResult.Items[i].Name + " (" + productUnitName + ")";
+            }
+
+            return pageResult;
         }
 
         public async Task<ViewSpecificProductModel> GetViewProduct(string productId, bool isInternal)
@@ -237,13 +277,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 await _productDetailRepo.Update();
 
                 await _productImageRepo.removeAllImages(productDetailDB.Id);
-                List<ProductImage> productImageDBs = new();
+                List<Repository.DatabaseModels.ProductImage> productImageDBs = new();
                 if(productDetailModelUpdate.ImageModels != null)
                 {
                     for (var j = 0; j < productDetailModelUpdate.ImageModels.Count; j++)
                     {
                         var imageModel = productDetailModelUpdate.ImageModels[j];
-                        ProductImage productImageDB = new()
+                        Repository.DatabaseModels.ProductImage productImageDB = new()
                         {
                             Id = String.IsNullOrWhiteSpace(imageModel.Id) ? Guid.NewGuid().ToString() : imageModel.Id,
                             ImageUrl = imageModel.ImageUrl,

@@ -36,7 +36,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             {
                 IngredientId = selector.pro_ingre_desc.IngredientId,
                 IngredientName = selector.ingredient.IngredientName,
-                Content = (double) selector.pro_ingre_desc.Content,
+                Content = selector.pro_ingre_desc.Content == null ? null : (double) selector.pro_ingre_desc.Content,
                 UnitId = selector.pro_ingre_desc.UnitId,
                 UnitName = selector.unit.UnitName
             }).ToListAsync();

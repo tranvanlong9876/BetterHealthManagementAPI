@@ -27,7 +27,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public int SellQuantity { get; set; }
         public double Price { get; set; }
         public bool IsSell { get; set; }
-        public List<ProductImageView> imageModels { get; set; }
+
+        public string BarCode { get; set; }
+        public ProductImageView imageModel { get; set; }
 
     }
 

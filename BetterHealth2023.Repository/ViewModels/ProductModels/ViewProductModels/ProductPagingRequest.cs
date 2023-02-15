@@ -9,8 +9,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
 {
     public class ProductPagingRequest : PagingRequestBase
     {
-        [Required]
-        public bool isSellFirstLevel { get; set; }
         public bool? isPrescription { get; set; }
         public bool? isSell { get; set; }
         public string subCategoryID { get; set; }

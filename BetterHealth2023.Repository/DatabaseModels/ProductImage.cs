@@ -22,6 +22,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Column("ProductID")]
         [StringLength(50)]
         public string ProductId { get; set; }
+        [Column("isFirstImage")]
+        public bool IsFirstImage { get; set; }
 
         [ForeignKey(nameof(ProductId))]
         [InverseProperty(nameof(ProductDetail.ProductImages))]

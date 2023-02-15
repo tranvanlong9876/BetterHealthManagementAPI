@@ -44,6 +44,8 @@ using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Unit;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UnitRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ManufacturerRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ManufactureService;
 
 namespace BetterHealthManagementAPI
 {
@@ -106,6 +108,7 @@ namespace BetterHealthManagementAPI
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IUnitService, UnitService>();
+            services.AddScoped<IManufactureService, ManufactureService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();
@@ -124,6 +127,7 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IProductParentRepo, ProductParentRepo>();
             services.AddTransient<ICustomerRepo, CustomerRepo>();
             services.AddTransient<IUnitRepo, UnitRepo>();
+            services.AddTransient<IManufacturerRepo, ManufacturerRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -32,6 +32,7 @@
   <ItemGroup>
     <Folder Include="BetterHealth2023.Repository\DatabaseModels\" />
     <Folder Include="BetterHealth2023.Repository\DatabaseContext\" />
+    <Folder Include="BetterHealth2023.Repository\Repositories\ImplementedRepository\ProductIngredientRepos\" />
   </ItemGroup>
 
 </Project>

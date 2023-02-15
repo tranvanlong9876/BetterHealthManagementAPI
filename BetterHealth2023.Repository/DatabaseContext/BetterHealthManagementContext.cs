@@ -23,6 +23,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<City> Cities { get; set; }
         public virtual DbSet<Comment> Comments { get; set; }
         public virtual DbSet<CommentInformation> CommentInformations { get; set; }
+        public virtual DbSet<Country> Countries { get; set; }
         public virtual DbSet<Customer> Customers { get; set; }
         public virtual DbSet<CustomerAddress> CustomerAddresses { get; set; }
         public virtual DbSet<CustomerPoint> CustomerPoints { get; set; }
@@ -102,6 +103,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
             modelBuilder.Entity<CommentInformation>(entity =>
             {
                 entity.Property(e => e.LastName).IsFixedLength(true);
+            });
+
+            modelBuilder.Entity<Country>(entity =>
+            {
+                entity.Property(e => e.Iso).IsUnicode(false);
+
+                entity.Property(e => e.Iso3).IsUnicode(false);
+
+                entity.Property(e => e.Name).IsUnicode(false);
             });
 
             modelBuilder.Entity<CustomerAddress>(entity =>
@@ -201,6 +211,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_InternalUser_WorkingSite_Internal_User");
+            });
+
+            modelBuilder.Entity<Manufacturer>(entity =>
+            {
+                entity.HasOne(d => d.Country)
+                    .WithMany(p => p.Manufacturers)
+                    .HasForeignKey(d => d.CountryId)
+                    .HasConstraintName("FK_Manufacturer_Country");
             });
 
             modelBuilder.Entity<OrderBatch>(entity =>

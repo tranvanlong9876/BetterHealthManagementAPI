@@ -21,6 +21,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         [Required]
         public bool IsPrescription { get; set; }
 
+        
+        public int LoadSellProduct { get; set; }
+
         [Required]
         public bool IsBatches { get; set; }
 

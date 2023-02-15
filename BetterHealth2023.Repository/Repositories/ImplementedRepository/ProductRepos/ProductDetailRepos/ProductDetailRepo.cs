@@ -33,15 +33,31 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return false;
         }
 
+        public async Task<List<ProductParentDistinct>> GetProductParentDistinct()
+        {
+            var query = from parent in context.ProductParents
+                        from detail in context.ProductDetails.Where(details => details.ProductIdParent == parent.Id)
+                        select parent;
+
+            var data = await query.Select(selector => new ProductParentDistinct
+            {
+                Id = selector.Id,
+                LoadIsSell = selector.LoadSellProduct
+            }).Distinct().ToListAsync();
+
+            return data;
+            
+        }
+
         public async Task<PagedResult<ViewProductListModel>> GetAllProductsPaging(ProductPagingRequest pagingRequest)
         {
-
-            var query = from details in context.ProductDetails.Where(x => x.UnitLevel == (from details1 in context.ProductDetails where details1.IsSell.Equals(true) select details1.UnitLevel).Min())
+            throw new NotImplementedException();
+            /*var query = from details in context.ProductDetails.Where(x => x.UnitLevel == (from details1 in context.ProductDetails where details1.IsSell.Equals(true) select details1.UnitLevel).Min())
                         from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
                         from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
                         select new { details, parent, subcategory };
 
-            if(!pagingRequest.isSellFirstLevel)
+            if (!pagingRequest.isSellFirstLevel)
             {
                 query = from details in context.ProductDetails.Where(x => x.UnitLevel == (from details1 in context.ProductDetails select details1.UnitLevel).Min())
                         from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
@@ -96,12 +112,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             var pageResult = new PagedResult<ViewProductListModel>(productList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
 
-            return pageResult;
+            return pageResult;*/
         }
 
         public async Task<List<UpdateProductDetailModel>> GetProductDetailLists(string productParentID)
         {
-            var results = context.ProductDetails.Where(x => x.ProductIdParent.Trim().Equals(productParentID.Trim()));
+            var results = context.ProductDetails.Where(x => x.ProductIdParent.Trim().Equals(productParentID.Trim())).OrderBy(x => x.UnitLevel);
             return await results.Select(model => mapper.Map<UpdateProductDetailModel>(model)).ToListAsync();
 
         }
@@ -197,6 +213,92 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             context.UpdateRange(updateProductDetailModels);
             await Update();
             return true;
+        }
+
+        public async Task<List<ViewProductListModel>> GetAllProductWithParent(string productParentID, int loadSellProduct)
+        {
+
+            if (loadSellProduct == 0) return null;
+
+            var queryUnit = from parent in context.ProductParents
+                            from detail in context.ProductDetails.Where(details => details.ProductIdParent == parent.Id)
+                            where parent.Id.Equals(productParentID.Trim()) && detail.IsSell
+                            orderby detail.UnitLevel ascending
+                            select detail;
+
+            var unitLevel = await queryUnit.Skip(loadSellProduct - 1).Take(1).Select(x => x.UnitLevel).SingleOrDefaultAsync();
+
+
+            var query = from parent in context.ProductParents
+                        from detail in context.ProductDetails.Where(details => details.ProductIdParent == parent.Id)
+                        from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
+                        select new { parent, detail };
+
+            query = query.Where(x => (x.parent.Id.Equals(productParentID.Trim())) && (x.detail.IsSell) && (x.detail.UnitLevel <= unitLevel));
+
+            var data = await query.Select(selector => new ViewProductListModel()
+            {
+                Id = selector.detail.Id,
+                Name = selector.parent.Name,
+                SubCategoryId = selector.parent.SubCategoryId,
+                ManufacturerId = selector.parent.ManufacturerId,
+                IsPrescription = selector.parent.IsPrescription,
+                UnitId = selector.detail.UnitId,
+                UnitLevel = selector.detail.UnitLevel,
+                Quantitative = selector.detail.Quantitative,
+                SellQuantity = selector.detail.SellQuantity,
+                Price = selector.detail.Price,
+                IsSell = selector.detail.IsSell,
+                BarCode = selector.detail.BarCode
+            }).ToListAsync();
+
+            return data;
+        }
+
+        public async Task<List<ViewProductListModel>> GetAllProductForInternal(string productParentID, bool? isSell)
+        {
+            var queryUnit = from parent in context.ProductParents
+                            from detail in context.ProductDetails.Where(details => details.ProductIdParent == parent.Id)
+                            where parent.Id.Equals(productParentID.Trim())
+                            orderby detail.UnitLevel ascending
+                            select detail;
+
+            if(isSell.HasValue)
+            {
+                queryUnit = queryUnit.Where(x => x.IsSell);
+            }
+
+            var unitLevel = await queryUnit.Take(1).Select(x => x.UnitLevel).SingleOrDefaultAsync();
+            
+            var query = from parent in context.ProductParents
+                        from detail in context.ProductDetails.Where(details => details.ProductIdParent == parent.Id)
+                        from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
+                        select new { parent, detail };
+
+            query = query.Where(x => (x.parent.Id.Equals(productParentID.Trim())) && (x.detail.UnitLevel <= unitLevel));
+
+            if(isSell.HasValue)
+            {
+                query = query.Where(x => x.detail.IsSell);
+            }
+
+            var data = await query.Select(selector => new ViewProductListModel()
+            {
+                Id = selector.detail.Id,
+                Name = selector.parent.Name,
+                SubCategoryId = selector.parent.SubCategoryId,
+                ManufacturerId = selector.parent.ManufacturerId,
+                IsPrescription = selector.parent.IsPrescription,
+                UnitId = selector.detail.UnitId,
+                UnitLevel = selector.detail.UnitLevel,
+                Quantitative = selector.detail.Quantitative,
+                SellQuantity = selector.detail.SellQuantity,
+                Price = selector.detail.Price,
+                IsSell = selector.detail.IsSell,
+                BarCode = selector.detail.BarCode
+            }).ToListAsync();
+
+            return data;
         }
     }
 }

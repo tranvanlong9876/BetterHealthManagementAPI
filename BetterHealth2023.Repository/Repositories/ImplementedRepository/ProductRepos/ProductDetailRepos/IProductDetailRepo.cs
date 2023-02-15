@@ -21,6 +21,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         public Task<List<ProductUnitModel>> GetProductLaterUnit(string productID, int unitLevel);
         public Task<List<ProductUnitModel>> GetProductUnitButThis(string productID, int unitLevel);
+        public Task<List<ProductParentDistinct>> GetProductParentDistinct();
+
+        public Task<List<ViewProductListModel>> GetAllProductForInternal(string productParentID, bool? isSell);
+        public Task<List<ViewProductListModel>> GetAllProductWithParent(string productParentID, int loadSellProduct);
 
         public Task<string> GetProductParentID(string productID);
         public Task<List<UpdateProductDetailModel>> GetProductDetailLists(string productParentID);

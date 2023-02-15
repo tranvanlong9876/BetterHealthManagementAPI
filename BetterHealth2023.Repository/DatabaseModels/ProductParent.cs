@@ -34,6 +34,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string ManufacturerId { get; set; }
         [Column("isPrescription")]
         public bool IsPrescription { get; set; }
+        [Column("loadSellProduct")]
+        public int LoadSellProduct { get; set; }
         [Column("isBatches")]
         public bool IsBatches { get; set; }
         [Column("isDelete")]
