@@ -8,7 +8,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Custo
     public class CustomerRegisView
     {
        
-        public string Id { get; set; }
+       
        
         
         public string Fullname { get; set; }

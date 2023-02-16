@@ -16,6 +16,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
         }
 
+        public Task<CustomerAddress> GetAddressCustomer(string id)
+        {
+            //get customeraddress by customerid
+            return context.CustomerAddresses.Where(x => x.CustomerId.Trim().Equals(id.Trim())).FirstOrDefaultAsync();
+        }
+
         public async Task<Customer> getCustomerBasedOnEmail(string Email)
         {
             return await context.Customers.Where(x => x.Email.Trim().Equals(Email.Trim())).FirstOrDefaultAsync();
@@ -26,6 +32,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return await context.Customers.Where(x => x.PhoneNo.Trim().Equals(phoneNo.Trim())).FirstOrDefaultAsync();
         }
 
-     
+      
     }
 }

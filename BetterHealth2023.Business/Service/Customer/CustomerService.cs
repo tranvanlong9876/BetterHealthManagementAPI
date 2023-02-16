@@ -1,5 +1,6 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerPointRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
@@ -18,11 +19,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
     {
         private readonly ICustomerRepo _customerRepo;
         private readonly ICustomerPointRepo _customerpointRepo;
+        private readonly IDynamicAddressRepo _dynamicAdressRepo;
 
-        public CustomerService(ICustomerRepo customerRepo, ICustomerPointRepo customerpointRepo)
+        public CustomerService(ICustomerRepo customerRepo, ICustomerPointRepo customerpointRepo, IDynamicAddressRepo dynamicaddressAdressRepo)
         {
             _customerRepo = customerRepo;
             _customerpointRepo = customerpointRepo;
+            _dynamicAdressRepo = dynamicaddressAdressRepo;
         }
 
         public async Task<Repository.DatabaseModels.Customer> CreateCustomer(CustomerRegisView customerRegisView)
@@ -52,7 +55,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                 Dob = customerRegisView.Dob,
 
         };
-            //sinsert customerpoint
+            //insert customerpoint
             CustomerPoint customerPoint = new()
             {
                 Id = Guid.NewGuid().ToString(),
@@ -123,6 +126,57 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
             checkError.customerToken = customerTokenModel;
             checkError.isError = false;
             return checkError;
+
+        }
+
+        public async  Task<bool> UpdateCustomer(CustomerUpdateMOdel customerUpdateMOdel)
+        {
+            Repository.DatabaseModels.Customer customer = await _customerRepo.Get(customerUpdateMOdel.CustomerId);
+            if (customer == null)
+            {
+                return false;
+            }
+            customer.Fullname = customerUpdateMOdel.CustomerFullName;
+
+            customer.Email = customerUpdateMOdel.CustomerEmail;
+            customer.Gender = customerUpdateMOdel.Gender;
+            customer.Dob = customerUpdateMOdel.Dob;
+            customer.ImageUrl = customerUpdateMOdel.ImageUrl;
+            Repository.DatabaseModels.CustomerAddress cusaddress = await _customerRepo.GetAddressCustomer(customerUpdateMOdel.CustomerId);
+            if (cusaddress == null)
+            {
+                //create new dynamicadress from customeraadress
+                Repository.DatabaseModels.CustomerAddress customerAddress = new()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    CustomerId = customerUpdateMOdel.CustomerId,
+                    AddressId = Guid.NewGuid().ToString(),
+                    MainAddress = true,
+
+                };
+                Repository.DatabaseModels.DynamicAddress dynamicAddress = new()
+                {
+                    Id = customerAddress.AddressId,
+                    CityId = customerUpdateMOdel.CityId,
+                    DistrictId = customerUpdateMOdel.DistrictId,
+                    WardId = customerUpdateMOdel.WardId,
+                };
+            }
+            else
+            {
+                //find customeraddress by customerid
+                Repository.DatabaseModels.CustomerAddress customerAddress = await _customerRepo.GetAddressCustomer(customerUpdateMOdel.CustomerId);
+                //update dynamicaddress
+                Repository.DatabaseModels.DynamicAddress dynamicAddress = await _dynamicAdressRepo.Get(customerAddress.AddressId);
+                dynamicAddress.CityId = customerUpdateMOdel.CityId;
+                dynamicAddress.DistrictId = customerUpdateMOdel.DistrictId;
+                dynamicAddress.WardId = customerUpdateMOdel.WardId;
+
+            }
+            await _customerRepo.Update();
+            await _dynamicAdressRepo.Update();
+
+            return true;
 
         }
     }

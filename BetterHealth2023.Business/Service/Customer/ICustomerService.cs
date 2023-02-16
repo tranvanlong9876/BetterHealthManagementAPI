@@ -14,5 +14,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
         public Task<CustomerLoginStatus> customerLoginPhoneOTP(LoginCustomerModel loginPhoneOTPModel);
         // insert customer
         public Task<Repository.DatabaseModels.Customer> CreateCustomer(CustomerRegisView customerRegisView);
+        // update customer
+        public  Task<bool> UpdateCustomer(CustomerUpdateMOdel customerUpdateMOdel);
     }
 }

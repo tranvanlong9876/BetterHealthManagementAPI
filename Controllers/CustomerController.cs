@@ -102,5 +102,34 @@ namespace BetterHealthManagementAPI.Controllers
                 return StatusCode(500, "Internal server exception");
             }
         }
+
+        //update customer
+        [HttpPut("Update")]
+        [AllowAnonymous]
+        public async Task<IActionResult> UpdateCustomer([FromBody] CustomerUpdateMOdel customerUpdateModel)
+        {
+            try
+            {
+                var customer = await _customerService.UpdateCustomer(customerUpdateModel);
+                if (customer == false) return BadRequest();
+                return Ok("Update Success");
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+            catch (SqlException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+        }
     }
 }
