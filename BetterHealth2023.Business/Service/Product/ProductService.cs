@@ -97,6 +97,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 var productDetailDB = _productDetailRepo.TransferBetweenTwoModels<CreateProductDetailModel, ProductDetail>(product_details);
                 productDetailDB.Id = product_details_id;
                 productDetailDB.ProductIdParent = product_parent_id;
+                productDetailDB.IsVisible = productDetailDB.IsSell ? productDetailDB.IsVisible : false;
                 check = await _productDetailRepo.Insert(productDetailDB);
 
                 //insert Image each time success.
@@ -112,7 +113,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                             Id = product_image_id,
                             ImageUrl = product_images.imageURL,
                             ProductId = product_details_id,
-                            IsFirstImage = product_images.IsFirstImage.HasValue ? false : (bool) product_images.IsFirstImage
+                            IsFirstImage = !(product_images.IsFirstImage.HasValue) ? false : (bool) product_images.IsFirstImage
                         };
                         check = await _productImageRepo.Insert(product_image_db);
                     }
@@ -128,47 +129,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 
         public async Task<PagedResult<ViewProductListModel>> GetAllProduct(ProductPagingRequest pagingRequest, bool isInternal)
         {
-            var productParentList = await _productDetailRepo.GetProductParentDistinct();
-
-            var productModelList = new List<ViewProductListModel>();
-
-            foreach(var productParent in productParentList){
-                if(isInternal)
-                {
-                    productModelList.AddRange(await _productDetailRepo.GetAllProductForInternal(productParent.Id, pagingRequest.isSell));
-                } else
-                {
-                    productModelList.AddRange(await _productDetailRepo.GetAllProductWithParent(productParent.Id, productParent.LoadIsSell));
-                }
-            }
-
-            if (!string.IsNullOrEmpty(pagingRequest.productName))
-            {
-                productModelList = productModelList.Where(x => (x.Name.Contains(pagingRequest.productName.Trim())) || (x.BarCode.Contains(pagingRequest.productName.Trim()))).ToList();
-            }
-
-            if (!string.IsNullOrEmpty(pagingRequest.subCategoryID))
-            {
-                productModelList = productModelList.Where(x => x.SubCategoryId.Equals(pagingRequest.subCategoryID.Trim())).ToList();
-            }
-
-            if (pagingRequest.isPrescription.HasValue)
-            {
-                productModelList = productModelList.Where(x => x.IsPrescription.Equals(pagingRequest.isPrescription)).ToList();
-            }
-
-            if (!string.IsNullOrEmpty(pagingRequest.manufacturerID))
-            {
-                productModelList = productModelList.Where(x => x.ManufacturerId.Equals(pagingRequest.manufacturerID.Trim())).ToList();
-            }
-
-            var totalRow = productModelList.Count();
-
-            productModelList = productModelList.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
-                .Take(pagingRequest.pageItems).ToList();
-
-            var pageResult = new PagedResult<ViewProductListModel>(productModelList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
-
+            //var productParentList = await _productDetailRepo.GetProductParentDistinct();
+            var getType = isInternal ? 2 : 1;
+            //Get Type = 1 => Load At Home For Customer.
+            //Get Type = 2 => Load At Page For Pharmacist And Owner.
+            var pageResult = await _productDetailRepo.GetAllProductsPaging(pagingRequest, getType);
             for (var i = 0; i < pageResult.Items.Count; i++)
             {
                 var image = await _productImageRepo.GetProductImage(pageResult.Items[i].Id);
@@ -178,7 +143,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 pageResult.Items[i].TotalUnitOnly = productUnitName;
                 pageResult.Items[i].NameWithUnit = pageResult.Items[i].Name + " (" + productUnitName + ")";
             }
-
             return pageResult;
         }
 
@@ -258,7 +222,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             productParentModel.Name = updateProductModel.Name;
             productParentModel.SubCategoryId = updateProductModel.subCategoryId;
             productParentModel.ManufacturerId = updateProductModel.manufacturerId;
-            productParentModel.IsPrescription = updateProductModel.isPrescription;
             //done general information
 
             //update specific information
@@ -266,13 +229,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             {
                 var productDetailModelUpdate = updateProductModel.productDetailModel[i];
                 var productDetailDB = await _productDetailRepo.Get(productDetailModelUpdate.Id);
-                productDetailDB.UnitId = productDetailModelUpdate.UnitId;
-                productDetailDB.UnitLevel = productDetailModelUpdate.UnitLevel;
-                productDetailDB.Quantitative = productDetailModelUpdate.Quantitative;
+                //productDetailDB.UnitId = productDetailModelUpdate.UnitId;
+                //productDetailDB.UnitLevel = productDetailModelUpdate.UnitLevel;
+                //productDetailDB.Quantitative = productDetailModelUpdate.Quantitative;
                 productDetailDB.SellQuantity = productDetailModelUpdate.SellQuantity;
                 productDetailDB.Price = productDetailModelUpdate.Price;
                 productDetailDB.IsSell = productDetailModelUpdate.IsSell;
                 productDetailDB.BarCode = productDetailModelUpdate.BarCode;
+                productDetailDB.IsVisible = productDetailModelUpdate.IsSell ? productDetailModelUpdate.IsVisible : false;
 
                 await _productDetailRepo.Update();
 

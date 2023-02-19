@@ -8,7 +8,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Manuf
     public class ViewManufacturerList
     {
         public string Id { get; set; }
-        public string Name { get; set; }
+        public string ManufacturerName { get; set; }
         public string CountryId { get; set; }
         public string CountryName { get; set; }
 

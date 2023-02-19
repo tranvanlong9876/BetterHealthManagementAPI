@@ -10,5 +10,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Manufactur
     public interface IManufactureService
     {
         public Task<PagedResult<ViewManufacturerList>> GetManuFacturers(ManufacturerPagingRequest pagingRequest);
+
+        public Task<ViewManufacturerList> GetManufacturer(string id);
+
+        public Task<bool> CreateManufacturer(CreateNewManufacturer newManufacturer);
+
+        public Task<bool> UpdateManufacturer(UpdateManufacturer updateManufacturer);
     }
 }

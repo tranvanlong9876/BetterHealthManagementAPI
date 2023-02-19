@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels
@@ -17,8 +18,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
 
         public string ManufacturerId { get; set; }
 
-        public int LoadSellProduct { get; set; }
-
         public bool IsPrescription { get; set; }
 
         public bool IsBatches { get; set; }
@@ -31,12 +30,19 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
     public class UpdateProductDetailModel
     {
         public string Id { get; set; }
+
+        [JsonIgnore]
         public string UnitId { get; set; }
+
+        [JsonIgnore]
         public int UnitLevel { get; set; }
+        [JsonIgnore]
         public int Quantitative { get; set; }
         public int SellQuantity { get; set; }
         public double Price { get; set; }
         public bool IsSell { get; set; }
+
+        public bool IsVisible { get; set; }
         public string BarCode { get; set; }
         public List<UpdateProductImageModel> ImageModels { get; set; }
     }

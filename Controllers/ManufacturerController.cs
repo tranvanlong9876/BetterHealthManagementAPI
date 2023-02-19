@@ -32,28 +32,31 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         // GET api/<ManufacturerController>/5
-        //[HttpGet("{id}")]
-        private string Get(int id)
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetManufacturer(string id)
         {
-            return "value";
+            var manuFactModel = await _manufactureService.GetManufacturer(id);
+            if (manuFactModel == null) return NotFound("Không tìm thấy Nhà Sản Xuất.");
+            return Ok(manuFactModel);
         }
 
-        // POST api/<ManufacturerController>
-        //[HttpPost]
-        private void Post()
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> CreateManufacturer(CreateNewManufacturer newManufacturer)
         {
+            var check = await _manufactureService.CreateManufacturer(newManufacturer);
+
+            return check ? Created("", "Nhà sản xuất mới đã tạo thành công!") : BadRequest("Some thing wrong.");
         }
 
-        // PUT api/<ManufacturerController>/5
-        //[HttpPut("{id}")]
-        private void Put()
+        [HttpPut]
+        [AllowAnonymous]
+        public async Task<IActionResult> UpdateManufacturer(UpdateManufacturer updateManufacturer)
         {
-        }
+            var check = await _manufactureService.UpdateManufacturer(updateManufacturer);
 
-        // DELETE api/<ManufacturerController>/5
-        //[HttpDelete("{id}")]
-        private void Delete(int id)
-        {
+            return check ? Ok("Cập nhật thông tin nhà sản xuất thành công.") : BadRequest("Something wrong!");
         }
     }
 }

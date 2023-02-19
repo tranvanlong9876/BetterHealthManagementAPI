@@ -13,7 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
     public interface IProductDetailRepo : IRepository<ProductDetail>
     {
         public Task<bool> UpdateProductDetailRange(List<UpdateProductDetailModel> updateProductDetailModels);
-        public Task<PagedResult<ViewProductListModel>> GetAllProductsPaging(ProductPagingRequest pagingRequest);
+        public Task<PagedResult<ViewProductListModel>> GetAllProductsPaging(ProductPagingRequest pagingRequest, int getType);
         public Task<ViewSpecificProductModel> GetSpecificProduct(string productID, bool isInternal);
         public Task<bool> CheckDuplicateBarCode(string BarCode);
 
@@ -21,8 +21,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         public Task<List<ProductUnitModel>> GetProductLaterUnit(string productID, int unitLevel);
         public Task<List<ProductUnitModel>> GetProductUnitButThis(string productID, int unitLevel);
-        public Task<List<ProductParentDistinct>> GetProductParentDistinct();
-
         public Task<List<ViewProductListModel>> GetAllProductForInternal(string productParentID, bool? isSell);
         public Task<List<ViewProductListModel>> GetAllProductWithParent(string productParentID, int loadSellProduct);
 

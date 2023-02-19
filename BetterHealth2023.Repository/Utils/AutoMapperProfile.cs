@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.MainCategoryModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductImportModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductIngredientModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.SubCategoryModels;
@@ -38,8 +40,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Utils
             CreateMap<ProductParent, UpdateProductViewModel>();
             //Unit
             CreateMap<Unit, ViewUnitModel>();
-            
-            //
+
+            //Product Ingredient
+            CreateMap<ProductIngredient, ViewProductIngredient>();
+
+            //Product Import
+            CreateMap<CreateProductImportModel, ProductImportReceipt>();
+            CreateMap<ProductImportDetails, ProductImportDetail>();
+            CreateMap<ProductImportBatches, ProductImportBatch>();
+            CreateMap<UpdateProductImportDetails, ProductImportDetail>();
+            CreateMap<UpdateProductImportBatches, ProductImportBatch>();
+
+            CreateMap<ProductImportReceipt, ViewSpecificProductImportModel>();
+            CreateMap<ProductImportDetail, ViewSpecificProductImportDetails>();
+            CreateMap<ProductImportBatch, ViewSpecificProductImportBatches>();
         }
     }
 }

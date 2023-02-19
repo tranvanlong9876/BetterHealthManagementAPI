@@ -94,6 +94,40 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             
         }
 
+        public static string GetWorkingSiteFromManagerAndPharmacist(string loginToken)
+        {
+            try
+            {
+                JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+                var payLoadString = tokenHandler.ReadJwtToken(loginToken).Payload.SerializeToJson();
+                dynamic payLoadJson = JObject.Parse(payLoadString);
+                string siteID = payLoadJson.SiteID;
+                return siteID;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static string GetUserID(string loginToken)
+        {
+            if (loginToken == null)
+            {
+                return null;
+            }
+            try
+            {
+                JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+                var claim = tokenHandler.ReadJwtToken(loginToken).Claims.Where(x => x.Type.Equals(ClaimTypes.NameIdentifier)).Select(x => x.Value).FirstOrDefault();
+                return claim;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         public static string DecodeAPITokenToRole(string jwtToken)
         {
             if(jwtToken == null)

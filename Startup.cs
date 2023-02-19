@@ -46,6 +46,14 @@ using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Unit;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UnitRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ManufacturerRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ManufactureService;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CountryRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.CountryServices;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductIngredientService;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductImportService;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos.ProductImportDetailRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos.ProductImportBatchRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos;
 
 namespace BetterHealthManagementAPI
 {
@@ -109,6 +117,9 @@ namespace BetterHealthManagementAPI
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IUnitService, UnitService>();
             services.AddScoped<IManufactureService, ManufactureService>();
+            services.AddScoped<ICountryService, CountryService>();
+            services.AddScoped<IProductIngredientService, ProductIngredientService>();
+            services.AddScoped<IProductImportService, ProductImportService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();
@@ -128,6 +139,11 @@ namespace BetterHealthManagementAPI
             services.AddTransient<ICustomerRepo, CustomerRepo>();
             services.AddTransient<IUnitRepo, UnitRepo>();
             services.AddTransient<IManufacturerRepo, ManufacturerRepo>();
+            services.AddTransient<ICountryRepo, CountryRepo>();
+            services.AddTransient<IProductImportRepo, ProductImportRepo>();
+            services.AddTransient<IProductImportDetailRepo, ProductImportDetailRepo>();
+            services.AddTransient<IProductImportBatchRepo, ProductImportBatchRepo>();
+            services.AddTransient<ISiteInventoryRepo, SiteInventoryRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

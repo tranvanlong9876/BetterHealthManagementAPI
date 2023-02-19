@@ -52,6 +52,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<PurchaseVoucherHistory> PurchaseVoucherHistories { get; set; }
         public virtual DbSet<RoleInternal> RoleInternals { get; set; }
         public virtual DbSet<SiteInformation> SiteInformations { get; set; }
+        public virtual DbSet<SiteInventory> SiteInventories { get; set; }
         public virtual DbSet<SubCategory> SubCategories { get; set; }
         public virtual DbSet<Unit> Units { get; set; }
         public virtual DbSet<Voucher> Vouchers { get; set; }
@@ -455,6 +456,21 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasForeignKey(d => d.AddressId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Site_Information_Dynamic_Address");
+            });
+
+            modelBuilder.Entity<SiteInventory>(entity =>
+            {
+                entity.HasOne(d => d.Product)
+                    .WithMany(p => p.SiteInventories)
+                    .HasForeignKey(d => d.ProductId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Site_Inventory_Product_Details");
+
+                entity.HasOne(d => d.Site)
+                    .WithMany(p => p.SiteInventories)
+                    .HasForeignKey(d => d.SiteId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Site_Inventory_Site_Information");
             });
 
             modelBuilder.Entity<SubCategory>(entity =>

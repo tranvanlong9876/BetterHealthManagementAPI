@@ -14,5 +14,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public Task<PagedResult<ViewManufacturerList>> GetViewManufacturers(ManufacturerPagingRequest pagingRequest);
 
         public Task<int> GetProductUsing(string manufacturerID);
+
+        public Task<ViewManufacturerList> GetViewManufacturer(string id);
     }
 }

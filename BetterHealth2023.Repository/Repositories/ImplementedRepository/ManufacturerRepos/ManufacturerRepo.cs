@@ -31,6 +31,23 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return await query.CountAsync();
         }
 
+        public async Task<ViewManufacturerList> GetViewManufacturer(string id)
+        {
+            var query = from manufact in context.Manufacturers
+                        from country in context.Countries.Where(x => x.Id == manufact.CountryId)
+                        select new { manufact, country };
+
+            var manufactModel = await query.Where(x => x.manufact.Id.Equals(id.Trim())).Select(selector => new ViewManufacturerList()
+            {
+                Id = selector.manufact.Id,
+                ManufacturerName = selector.manufact.ManufacturerName,
+                CountryId = selector.manufact.CountryId,
+                CountryName = selector.country.Name
+            }).FirstOrDefaultAsync();
+
+            return manufactModel;
+        }
+
         public async Task<PagedResult<ViewManufacturerList>> GetViewManufacturers(ManufacturerPagingRequest pagingRequest)
         {
             var query = from manufact in context.Manufacturers
@@ -48,7 +65,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                                   .Take(pagingRequest.pageItems).Select(selector => new ViewManufacturerList()
             {
                 Id = selector.manufact.Id,
-                Name = selector.manufact.ManufacturerName,
+                ManufacturerName = selector.manufact.ManufacturerName,
                 CountryId = selector.manufact.CountryId,
                 CountryName = selector.country.Name
             }).ToListAsync();
@@ -57,5 +74,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             return pagedResult;
         }
+
+        
     }
 }
