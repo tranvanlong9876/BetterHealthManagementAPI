@@ -5,6 +5,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.CustomerErrorModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using FirebaseAdmin.Auth;
 using Newtonsoft.Json.Linq;
 using System;
@@ -127,6 +129,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
             checkError.isError = false;
             return checkError;
 
+        }
+
+        public Task<PagedResult<CustomerViewListModel>> GetAllProduct(ProductPagingRequest pagingRequest)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Repository.DatabaseModels.Customer> GetCustomerById(string id)
+        {
+            return await _customerRepo.Get(id);
         }
 
         public async  Task<bool> UpdateCustomer(CustomerUpdateMOdel customerUpdateMOdel)

@@ -1,6 +1,8 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.CustomerErrorModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using System;
 using System.Collections.Generic;
@@ -16,5 +18,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
         public Task<Repository.DatabaseModels.Customer> CreateCustomer(CustomerRegisView customerRegisView);
         // update customer
         public  Task<bool> UpdateCustomer(CustomerUpdateMOdel customerUpdateMOdel);
+
+        public Task<PagedResult<CustomerViewListModel>> GetAllProduct(ProductPagingRequest pagingRequest);
+
+        public Task<Repository.DatabaseModels.Customer> GetCustomerById(string id);
+
     }
 }
