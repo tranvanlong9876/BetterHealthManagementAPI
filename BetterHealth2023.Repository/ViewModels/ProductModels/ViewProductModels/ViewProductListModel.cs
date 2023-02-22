@@ -26,10 +26,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public int Quantitative { get; set; }
         public int SellQuantity { get; set; }
         public double Price { get; set; }
+        public double PriceAfterDiscount { get; set; }
         public bool IsSell { get; set; }
 
         public string BarCode { get; set; }
         public ProductImageView imageModel { get; set; }
+        public ProductDiscountViewList discountModel { get; set; }
 
     }
 
@@ -37,5 +39,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
     {
         public string Id { get; set; }
         public string ImageURL { get; set; }
+    }
+
+    public class ProductDiscountViewList
+    {
+        public string Title { get; set; }
+        public string Reason { get; set; }
+        public double? DiscountPercent { get; set; }
+        public double? DiscountMoney { get; set; }
+
     }
 }

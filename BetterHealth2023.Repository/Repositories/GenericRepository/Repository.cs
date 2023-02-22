@@ -91,5 +91,19 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
             context.ChangeTracker.Clear();
             context.Entry(dbmodel).State = EntityState.Modified;
         }
+
+        public async Task<bool> InsertRange(List<T> entityList)
+        {
+            await context.AddRangeAsync(entityList);
+            await Update();
+            return true;
+        }
+
+        public async Task<bool> Remove(T entity)
+        {
+            context.Remove(entity);
+            await Update();
+            return true;
+        }
     }
 }

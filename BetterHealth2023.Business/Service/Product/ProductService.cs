@@ -1,4 +1,5 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductDiscountRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDescriptionRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDetailRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductImageRepos;
@@ -23,18 +24,21 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
         private readonly IProductParentRepo _productParentRepo;
         private readonly IProductDetailRepo _productDetailRepo;
         private readonly IProductImageRepo _productImageRepo;
+        private readonly IProductEventDiscountRepo _productEventDiscountRepo;
 
         public ProductService(IProductDescriptionRepo productDescriptionRepo
             , IProductIngredientDescriptionRepo productIngredientDescriptionRepo
             , IProductParentRepo productParentRepo
             , IProductDetailRepo productDetailRepo
-            , IProductImageRepo productImageRepo)
+            , IProductImageRepo productImageRepo
+            , IProductEventDiscountRepo productEventDiscountRepo)
         {
             _productDescriptionRepo = productDescriptionRepo;
             _productIngredientDescriptionRepo = productIngredientDescriptionRepo;
             _productParentRepo = productParentRepo;
             _productDetailRepo = productDetailRepo;
             _productImageRepo = productImageRepo;
+            _productEventDiscountRepo = productEventDiscountRepo;
         }
         public async Task<CreateProductErrorModel> CreateProduct(CreateProductModel createProductModel)
         {
@@ -142,6 +146,25 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 pageResult.Items[i].imageModel = image;
                 pageResult.Items[i].TotalUnitOnly = productUnitName;
                 pageResult.Items[i].NameWithUnit = pageResult.Items[i].Name + " (" + productUnitName + ")";
+
+                var productDiscount = await _productEventDiscountRepo.GetProductDiscount(pageResult.Items[i].Id);
+                if(productDiscount != null)
+                {
+                    if (productDiscount.DiscountMoney.HasValue)
+                    {
+                        pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - productDiscount.DiscountMoney.Value;
+                    }
+
+                    if (productDiscount.DiscountPercent.HasValue)
+                    {
+                        pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - (pageResult.Items[i].Price * productDiscount.DiscountPercent.Value / 100);
+                    }
+                    pageResult.Items[i].discountModel = productDiscount;
+                } else
+                {
+                    pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price;
+                }
+                
             }
             return pageResult;
         }
@@ -157,6 +180,27 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             productModel.NameWithUnit = productModel.Name + " (" + productUnitName + ")";
             productModel.TotalUnitOnly = productUnitName;
             productModel.productUnitReferences = productUnitPreferences;
+
+            var productDiscount = await _productEventDiscountRepo.GetProductDiscount(productId);
+
+            if (productDiscount != null)
+            {
+                if (productDiscount.DiscountMoney.HasValue)
+                {
+                    productModel.PriceAfterDiscount = productModel.Price - productDiscount.DiscountMoney.Value;
+                }
+
+                if (productDiscount.DiscountPercent.HasValue)
+                {
+                    productModel.PriceAfterDiscount = productModel.Price - (productModel.Price * productDiscount.DiscountPercent.Value / 100);
+                }
+                productModel.discountModel = _productEventDiscountRepo.TransferBetweenTwoModels<ProductDiscountViewList, ProductDiscountViewSpecific>(productDiscount);
+            }
+            else
+            {
+                productModel.PriceAfterDiscount = productModel.Price;
+            }
+
             return productModel;
         }
 

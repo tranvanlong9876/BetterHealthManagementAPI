@@ -54,6 +54,9 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos.ProductImportBatchRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.VNPay;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductDiscountRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDiscountServices;
 
 namespace BetterHealthManagementAPI
 {
@@ -120,6 +123,8 @@ namespace BetterHealthManagementAPI
             services.AddScoped<ICountryService, CountryService>();
             services.AddScoped<IProductIngredientService, ProductIngredientService>();
             services.AddScoped<IProductImportService, ProductImportService>();
+            services.AddScoped<IVNPayService, VNPayService>();
+            services.AddScoped<IProductDiscountService, ProductDiscountService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();
@@ -144,6 +149,8 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IProductImportDetailRepo, ProductImportDetailRepo>();
             services.AddTransient<IProductImportBatchRepo, ProductImportBatchRepo>();
             services.AddTransient<ISiteInventoryRepo, SiteInventoryRepo>();
+            services.AddTransient<IProductDiscountRepo, ProductDiscountRepo>();
+            services.AddTransient<IProductEventDiscountRepo, ProductEventDiscountRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

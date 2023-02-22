@@ -25,9 +25,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public string UnitName { get; set; }
         public int UnitLevel { get; set; }
         public double Price { get; set; }
+        public double PriceAfterDiscount { get; set; }
 
         public ProductDescriptionModel descriptionModels { get; set; }
         public List<ProductImageView> imageModels { get; set; }
         public List<ProductUnitModel> productUnitReferences { get; set; }
+        public ProductDiscountViewSpecific discountModel { get; set; }
+    }
+
+    public class ProductDiscountViewSpecific
+    {
+        public string Title { get; set; }
+        public string Reason { get; set; }
+        public double? DiscountPercent { get; set; }
+        public double? DiscountMoney { get; set; }
+
     }
 }

@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.MainCategoryModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductDiscountModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductImportModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductIngredientModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.SubCategoryModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.UnitModels;
 using System;
@@ -54,6 +56,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Utils
             CreateMap<ProductImportReceipt, ViewSpecificProductImportModel>();
             CreateMap<ProductImportDetail, ViewSpecificProductImportDetails>();
             CreateMap<ProductImportBatch, ViewSpecificProductImportBatches>();
+
+            //Product Discount
+            CreateMap<CreateProductDiscountModel, ProductDiscount>();
+            CreateMap<ProductDiscountViewList, ProductDiscountViewSpecific>();
         }
     }
 }

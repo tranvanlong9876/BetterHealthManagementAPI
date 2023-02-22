@@ -386,13 +386,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .WithMany(p => p.ProductImportReceipts)
                     .HasForeignKey(d => d.ManagerId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_WarehouseEntry_Receipt_Employee");
+                    .HasConstraintName("FK_ProductImport_Receipt_Internal_User");
 
                 entity.HasOne(d => d.Site)
                     .WithMany(p => p.ProductImportReceipts)
                     .HasForeignKey(d => d.SiteId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_WarehouseEntry_Receipt_Site_Information");
+                    .HasConstraintName("FK_ProductImport_Receipt_Site_Information");
             });
 
             modelBuilder.Entity<ProductIngredientDescription>(entity =>

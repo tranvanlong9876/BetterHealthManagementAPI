@@ -37,6 +37,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 ImageURL = selector.ImageUrl
             }).FirstOrDefaultAsync();
 
+            if(image == null)
+            {
+                image = await context.ProductImages.Where(x => x.ProductId.Equals(productId.Trim())).Select(selector => new ProductImageView() {
+                    Id = selector.Id,
+                    ImageURL = selector.ImageUrl
+                }).FirstOrDefaultAsync();
+            }
+
             return image;
         }
 
