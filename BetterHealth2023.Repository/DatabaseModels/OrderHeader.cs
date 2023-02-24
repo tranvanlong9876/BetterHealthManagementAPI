@@ -16,17 +16,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
             OrderBatches = new HashSet<OrderBatch>();
             OrderDetails = new HashSet<OrderDetail>();
             OrderExecutions = new HashSet<OrderExecution>();
+            OrderShipments = new HashSet<OrderShipment>();
+            OrderVouchers = new HashSet<OrderVoucher>();
         }
 
         [Key]
         [StringLength(50)]
         public string Id { get; set; }
-        [Column(TypeName = "datetime")]
-        public DateTime? CreateDate { get; set; }
-        [Column("isApproved")]
-        public bool IsApproved { get; set; }
-        [Column(TypeName = "datetime")]
-        public DateTime? ApprovedDate { get; set; }
         [Column("CustomerID")]
         [StringLength(50)]
         public string CustomerId { get; set; }
@@ -34,6 +30,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Column("EmployeeID")]
         [StringLength(50)]
         public string EmployeeId { get; set; }
+        [Column("OrderTypeID")]
+        public int OrderTypeId { get; set; }
         [Required]
         [Column("SiteID")]
         [StringLength(50)]
@@ -41,18 +39,21 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Required]
         [StringLength(50)]
         public string OrderStatus { get; set; }
-        [Column(TypeName = "money")]
-        public decimal TotalPrice { get; set; }
-        [Column(TypeName = "money")]
-        public decimal ShippingFee { get; set; }
+        [StringLength(10)]
+        public string SubTotalPrice { get; set; }
+        [StringLength(10)]
+        public string DiscountPrice { get; set; }
+        public double TotalPrice { get; set; }
         public int UsedPoint { get; set; }
         public int PayType { get; set; }
-        [Column("OrderType_ID")]
-        public int OrderTypeId { get; set; }
-        [StringLength(50)]
-        public string VoucherCode { get; set; }
         [StringLength(500)]
         public string Note { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime CreatedDate { get; set; }
+        [Column("isApproved")]
+        public bool IsApproved { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? ApprovedDate { get; set; }
 
         [ForeignKey(nameof(CustomerId))]
         [InverseProperty("OrderHeaders")]
@@ -69,14 +70,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [ForeignKey(nameof(SiteId))]
         [InverseProperty(nameof(SiteInformation.OrderHeaders))]
         public virtual SiteInformation Site { get; set; }
-        [ForeignKey(nameof(VoucherCode))]
-        [InverseProperty(nameof(Voucher.OrderHeaders))]
-        public virtual Voucher VoucherCodeNavigation { get; set; }
         [InverseProperty(nameof(OrderBatch.Order))]
         public virtual ICollection<OrderBatch> OrderBatches { get; set; }
         [InverseProperty(nameof(OrderDetail.Order))]
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
         [InverseProperty(nameof(OrderExecution.Order))]
         public virtual ICollection<OrderExecution> OrderExecutions { get; set; }
+        [InverseProperty(nameof(OrderShipment.Order))]
+        public virtual ICollection<OrderShipment> OrderShipments { get; set; }
+        [InverseProperty(nameof(OrderVoucher.Order))]
+        public virtual ICollection<OrderVoucher> OrderVouchers { get; set; }
     }
 }

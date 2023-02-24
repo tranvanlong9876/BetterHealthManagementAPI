@@ -22,6 +22,26 @@ namespace BetterHealthManagementAPI.Controllers
             _productDiscountService = productDiscountService;
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllProductDiscount([FromQuery] GetProductDiscountPagingRequest pagingRequest)
+        {
+            var pagedResult = await _productDiscountService.GetAllProductDiscountPaging(pagingRequest);
+
+            return Ok(pagedResult);
+        }
+
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllProductDiscount(string id)
+        {
+            var productDiscount = await _productDiscountService.GetProductDiscount(id);
+
+            if (productDiscount == null) return NotFound("Không tìm thấy Khuyến Mãi theo Id.");
+
+            return Ok(productDiscount);
+        }
+
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> CreateProductDiscount(CreateProductDiscountModel discountModel)

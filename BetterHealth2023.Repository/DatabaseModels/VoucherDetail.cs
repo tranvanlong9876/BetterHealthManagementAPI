@@ -16,7 +16,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string Id { get; set; }
         [Required]
         [StringLength(50)]
-        public string VoucherCode { get; set; }
+        public string VoucherId { get; set; }
         public double? MinOrderAmount { get; set; }
         public double? MaxOrderAmount { get; set; }
         public int? MinPoint { get; set; }
@@ -24,8 +24,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public double? DiscountMoney { get; set; }
         public double? DiscountMaxMoney { get; set; }
 
-        [ForeignKey(nameof(VoucherCode))]
-        [InverseProperty(nameof(Voucher.VoucherDetails))]
-        public virtual Voucher VoucherCodeNavigation { get; set; }
+        [ForeignKey(nameof(VoucherId))]
+        [InverseProperty("VoucherDetails")]
+        public virtual Voucher Voucher { get; set; }
     }
 }

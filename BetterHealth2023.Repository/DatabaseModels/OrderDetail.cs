@@ -23,7 +23,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [StringLength(50)]
         public string ProductId { get; set; }
         public int Quantity { get; set; }
-        public double PriceEachOne { get; set; }
+        public double OriginalPrice { get; set; }
+        public double DiscountPrice { get; set; }
         public double PriceTotal { get; set; }
         [StringLength(500)]
         public string Note { get; set; }

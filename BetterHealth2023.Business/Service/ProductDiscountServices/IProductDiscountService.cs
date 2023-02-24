@@ -1,4 +1,5 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductDiscountModels;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductDiscountModels;
 using BetterHealthManagementAPI.Controllers;
 using System;
 using System.Collections.Generic;
@@ -16,5 +17,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDis
         public Task<bool> AddProductToExistingDiscount(string discountId, ProductModel product);
 
         public Task<bool> RemoveProductFromExistingDiscount(string product);
+
+        public Task<PagedResult<ViewProductDiscountList>> GetAllProductDiscountPaging(GetProductDiscountPagingRequest pagingRequest);
+
+        public Task<ViewProductDiscountSpecific> GetProductDiscount(string discountId);
+
     }
 }

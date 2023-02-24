@@ -57,6 +57,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.VNPay;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductDiscountRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDiscountServices;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServices;
 
 namespace BetterHealthManagementAPI
 {
@@ -125,6 +126,7 @@ namespace BetterHealthManagementAPI
             services.AddScoped<IProductImportService, ProductImportService>();
             services.AddScoped<IVNPayService, VNPayService>();
             services.AddScoped<IProductDiscountService, ProductDiscountService>();
+            services.AddScoped<IOrderService, OrderService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();

@@ -2,6 +2,7 @@
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductDiscountModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -66,6 +67,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             query = query.Where(x => x.eventDiscount.ProductId.Equals(productId) && x.discount.StartDate < currentTime && x.discount.EndDate > currentTime && !x.discount.IsDelete);
 
             return await query.Select(selector => selector.eventDiscount.Id).FirstOrDefaultAsync();
+        }
+
+        public async Task<int> GetTotalProductDiscountId(string discountId)
+        {
+            return await context.EventProductDiscounts.Where(x => x.DiscountId.Equals(discountId)).CountAsync();
+        }
+
+        public async Task<List<ProductDiscountView>> GetAllProductDiscountId(string discountId)
+        {
+            return await context.EventProductDiscounts.Where(x => x.DiscountId.Equals(discountId)).Select(x => new ProductDiscountView()
+            {
+                Id = x.Id,
+                ProductId = x.ProductId
+            }).ToListAsync();
         }
     }
 }

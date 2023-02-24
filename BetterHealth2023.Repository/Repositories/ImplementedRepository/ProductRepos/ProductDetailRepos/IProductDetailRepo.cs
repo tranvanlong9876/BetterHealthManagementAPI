@@ -17,6 +17,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public Task<ViewSpecificProductModel> GetSpecificProduct(string productID, bool isInternal);
         public Task<bool> CheckDuplicateBarCode(string BarCode);
 
+        public Task<ProductUnitModelForDiscount> GetProductNameAndCurrentUnit(string productId);
+
         public Task<bool> CheckDuplicateBarCodeUpdate(string BarCode, string productID);
 
         public Task<List<ProductUnitModel>> GetProductLaterUnit(string productID, int unitLevel);
@@ -26,5 +28,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         public Task<string> GetProductParentID(string productID);
         public Task<List<UpdateProductDetailModel>> GetProductDetailLists(string productParentID);
+    }
+
+    public class ProductUnitModelForDiscount
+    {
+        public string Name { get; set; }
+        public int UnitLevel { get; set; }
+        public double Price { get; set; }
     }
 }

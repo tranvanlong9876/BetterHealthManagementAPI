@@ -60,6 +60,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Utils
             //Product Discount
             CreateMap<CreateProductDiscountModel, ProductDiscount>();
             CreateMap<ProductDiscountViewList, ProductDiscountViewSpecific>();
+            CreateMap<ProductDiscount, ViewProductDiscountSpecific>();
+            CreateMap<EventProductDiscount, ProductDiscountView>();
         }
     }
 }

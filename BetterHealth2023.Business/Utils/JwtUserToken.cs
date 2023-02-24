@@ -87,7 +87,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
                 dynamic payLoadJson = JObject.Parse(payLoadString);
                 string phoneNo = payLoadJson.phone_number;
                 return "0" + phoneNo.Substring(3);
-            } catch(Exception ex)
+            } catch
             {
                 return null;
             }

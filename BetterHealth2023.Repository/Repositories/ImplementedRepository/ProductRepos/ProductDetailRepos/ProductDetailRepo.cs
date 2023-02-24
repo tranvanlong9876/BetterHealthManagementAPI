@@ -282,5 +282,21 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             return data;
         }
+
+        public async Task<ProductUnitModelForDiscount> GetProductNameAndCurrentUnit(string productId)
+        {
+            var query = from detail in context.ProductDetails
+                        from parent in context.ProductParents.Where(x => x.Id == detail.ProductIdParent)
+                        select new { detail, parent };
+
+            query = query.Where(x => x.detail.Id.Equals(productId));
+
+            return await query.Select(x => new ProductUnitModelForDiscount()
+            {
+                Name = x.parent.Name,
+                UnitLevel = x.detail.UnitLevel,
+                Price = x.detail.Price
+            }).FirstOrDefaultAsync();
+        }
     }
 }
