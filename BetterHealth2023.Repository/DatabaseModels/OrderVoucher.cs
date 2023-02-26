@@ -20,6 +20,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Required]
         [StringLength(50)]
         public string VoucherId { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime CreatedDate { get; set; }
 
         [ForeignKey(nameof(OrderId))]
         [InverseProperty(nameof(OrderHeader.OrderVouchers))]

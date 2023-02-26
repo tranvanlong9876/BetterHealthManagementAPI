@@ -34,6 +34,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<InternalUserWorkingSite> InternalUserWorkingSites { get; set; }
         public virtual DbSet<Manufacturer> Manufacturers { get; set; }
         public virtual DbSet<OrderBatch> OrderBatches { get; set; }
+        public virtual DbSet<OrderContactInfo> OrderContactInfos { get; set; }
         public virtual DbSet<OrderDetail> OrderDetails { get; set; }
         public virtual DbSet<OrderExecution> OrderExecutions { get; set; }
         public virtual DbSet<OrderHeader> OrderHeaders { get; set; }
@@ -239,6 +240,25 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasConstraintName("FK_Order_Batches_OrderHeader");
             });
 
+            modelBuilder.Entity<OrderContactInfo>(entity =>
+            {
+                entity.HasOne(d => d.Address)
+                    .WithMany(p => p.OrderContactInfos)
+                    .HasForeignKey(d => d.AddressId)
+                    .HasConstraintName("FK_Order_ContactInfo_Dynamic_Address");
+
+                entity.HasOne(d => d.Customer)
+                    .WithMany(p => p.OrderContactInfos)
+                    .HasForeignKey(d => d.CustomerId)
+                    .HasConstraintName("FK_Order_ContactInfo_Customer");
+
+                entity.HasOne(d => d.Order)
+                    .WithMany(p => p.OrderContactInfos)
+                    .HasForeignKey(d => d.OrderId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Order_ContactInfo_OrderHeader");
+            });
+
             modelBuilder.Entity<OrderDetail>(entity =>
             {
                 entity.HasOne(d => d.Order)
@@ -283,21 +303,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
 
             modelBuilder.Entity<OrderHeader>(entity =>
             {
-                entity.Property(e => e.DiscountPrice).IsFixedLength(true);
-
-                entity.Property(e => e.SubTotalPrice).IsFixedLength(true);
-
-                entity.HasOne(d => d.Customer)
-                    .WithMany(p => p.OrderHeaders)
-                    .HasForeignKey(d => d.CustomerId)
-                    .HasConstraintName("FK_OrderHeader_Customer");
-
-                entity.HasOne(d => d.Employee)
-                    .WithMany(p => p.OrderHeaders)
-                    .HasForeignKey(d => d.EmployeeId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_OrderHeader_Employee");
-
                 entity.HasOne(d => d.OrderStatusNavigation)
                     .WithMany(p => p.OrderHeaders)
                     .HasForeignKey(d => d.OrderStatus)
@@ -309,6 +314,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasForeignKey(d => d.OrderTypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_OrderHeader_Order_Type");
+
+                entity.HasOne(d => d.Pharmacist)
+                    .WithMany(p => p.OrderHeaders)
+                    .HasForeignKey(d => d.PharmacistId)
+                    .HasConstraintName("FK_OrderHeader_Employee");
 
                 entity.HasOne(d => d.Site)
                     .WithMany(p => p.OrderHeaders)

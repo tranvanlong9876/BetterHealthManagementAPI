@@ -37,6 +37,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Commons
             ADMIN
         };
 
+        public const string CHECKOUT_ORDER_DIRECTLY_ID = "1";
+        public const string CHECKOUT_ORDER_PICKUP_ID = "2";
+        public const string CHECKOUT_ORDER_DELIVERY_ID = "5";
+
+        public const int ORDER_TYPE_DIRECTLY = 1;
+        public const int ORDER_TYPE_PICKUP = 2;
+        public const int ORDER_TYPE_DELIVERY = 3;
+
         //-Local
         public static readonly string LOCAL_HUB = "https://localhost:7042/notifyhub";
         //-Server
