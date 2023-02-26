@@ -11,11 +11,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 {
     public class CustomerAddressRepo : Repository<CustomerAddress>, ICustomerAddressRepo
     {
-        public CustomerAddressRepo(BetterHealthManagementContext context, IMapper mapper) : base(context, mapper)
+        public CustomerAddressRepo(BetterHealthManagementContext context) : base(context)
         {
         }
 
-     
+        public CustomerAddressRepo(BetterHealthManagementContext context, IMapper mapper) : base(context, mapper)
+        {
+        }
 
         public async Task<bool> RemoveAllAddressCustomerbyID(string id)
         {

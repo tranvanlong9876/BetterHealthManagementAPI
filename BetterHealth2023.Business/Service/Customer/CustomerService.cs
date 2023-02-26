@@ -70,8 +70,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                 IsPlus = true,
                 Description = "Tạo tài khoản thành công",
                 CreateDate = DateTime.Now,
-
-
             };
             await _customerpointRepo.Insert(customerPoint);
             //insert customeraddress and dynamicaddress

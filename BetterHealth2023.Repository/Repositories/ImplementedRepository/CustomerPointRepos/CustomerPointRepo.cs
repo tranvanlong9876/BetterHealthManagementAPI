@@ -1,4 +1,5 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
+﻿using AutoMapper;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
@@ -10,6 +11,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public CustomerPointRepo(BetterHealthManagementContext context) : base(context)
         {
 
+        }
+
+        public CustomerPointRepo(BetterHealthManagementContext context, IMapper mapper) : base(context, mapper)
+        {
         }
     }
 }
