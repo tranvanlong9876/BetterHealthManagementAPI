@@ -18,6 +18,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
             OrderDetails = new HashSet<OrderDetail>();
             ProductImages = new HashSet<ProductImage>();
             ProductImportDetails = new HashSet<ProductImportDetail>();
+            SiteInventories = new HashSet<SiteInventory>();
         }
 
         [Key]
@@ -39,6 +40,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public double Price { get; set; }
         [Column("isSell")]
         public bool IsSell { get; set; }
+        [Column("isVisible")]
+        public bool IsVisible { get; set; }
         [StringLength(50)]
         public string BarCode { get; set; }
 
@@ -58,5 +61,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public virtual ICollection<ProductImage> ProductImages { get; set; }
         [InverseProperty(nameof(ProductImportDetail.Product))]
         public virtual ICollection<ProductImportDetail> ProductImportDetails { get; set; }
+        [InverseProperty(nameof(SiteInventory.Product))]
+        public virtual ICollection<SiteInventory> SiteInventories { get; set; }
     }
 }

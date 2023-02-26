@@ -24,11 +24,11 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllMainCategory()
+        public async Task<IActionResult> GetAllMainCategory([FromQuery] MainCategoryPagingRequest pagingRequest)
         {
-            var listMainCategory = await _mainCategoryService.GetAll();
+            var listMainCategory = await _mainCategoryService.GetAllPaging(pagingRequest);
 
-            if (listMainCategory == null) return NotFound();
+            if (listMainCategory.Items.Count == 0) return NotFound();
 
             return Ok(listMainCategory);
         }

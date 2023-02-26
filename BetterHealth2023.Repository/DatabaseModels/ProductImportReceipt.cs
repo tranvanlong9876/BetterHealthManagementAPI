@@ -31,8 +31,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public DateTime ImportDate { get; set; }
         [Required]
         public string Note { get; set; }
-        [Column("totalPrice", TypeName = "money")]
-        public decimal TotalPrice { get; set; }
+        [Column("totalProductPrice")]
+        public double TotalProductPrice { get; set; }
+        [Column("taxPrice")]
+        public double TaxPrice { get; set; }
+        [Column("totalShippingFee")]
+        public double TotalShippingFee { get; set; }
+        [Column("totalPrice")]
+        public double TotalPrice { get; set; }
         [Column("isReleased")]
         public bool IsReleased { get; set; }
 

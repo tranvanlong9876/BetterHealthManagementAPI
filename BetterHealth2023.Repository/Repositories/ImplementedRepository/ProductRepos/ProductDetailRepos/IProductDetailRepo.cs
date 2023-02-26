@@ -1,6 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,28 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 {
     public interface IProductDetailRepo : IRepository<ProductDetail>
     {
-        public Task<PagedResult<ViewProductListModel>> GetAllProductsPaging(ProductPagingRequest pagingRequest);
+        public Task<bool> UpdateProductDetailRange(List<UpdateProductDetailModel> updateProductDetailModels);
+        public Task<PagedResult<ViewProductListModel>> GetAllProductsPaging(ProductPagingRequest pagingRequest, int getType);
+        public Task<ViewSpecificProductModel> GetSpecificProduct(string productID, bool isInternal);
         public Task<bool> CheckDuplicateBarCode(string BarCode);
+
+        public Task<ProductUnitModelForDiscount> GetProductNameAndCurrentUnit(string productId);
+
+        public Task<bool> CheckDuplicateBarCodeUpdate(string BarCode, string productID);
+
+        public Task<List<ProductUnitModel>> GetProductLaterUnit(string productID, int unitLevel);
+        public Task<List<ProductUnitModel>> GetProductUnitButThis(string productID, int unitLevel);
+        public Task<List<ViewProductListModel>> GetAllProductForInternal(string productParentID, bool? isSell);
+        public Task<List<ViewProductListModel>> GetAllProductWithParent(string productParentID, int loadSellProduct);
+
+        public Task<string> GetProductParentID(string productID);
+        public Task<List<UpdateProductDetailModel>> GetProductDetailLists(string productParentID);
+    }
+
+    public class ProductUnitModelForDiscount
+    {
+        public string Name { get; set; }
+        public int UnitLevel { get; set; }
+        public double Price { get; set; }
     }
 }

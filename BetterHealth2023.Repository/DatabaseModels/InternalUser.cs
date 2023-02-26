@@ -72,7 +72,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public virtual ICollection<InternalUserWorkingSite> InternalUserWorkingSites { get; set; }
         [InverseProperty(nameof(OrderExecution.User))]
         public virtual ICollection<OrderExecution> OrderExecutions { get; set; }
-        [InverseProperty(nameof(OrderHeader.Employee))]
+        [InverseProperty(nameof(OrderHeader.Pharmacist))]
         public virtual ICollection<OrderHeader> OrderHeaders { get; set; }
         [InverseProperty(nameof(ProductImportReceipt.Manager))]
         public virtual ICollection<ProductImportReceipt> ProductImportReceipts { get; set; }

@@ -13,12 +13,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
     {
         public Voucher()
         {
-            OrderHeaders = new HashSet<OrderHeader>();
+            OrderVouchers = new HashSet<OrderVoucher>();
             VoucherCustomerRestrictions = new HashSet<VoucherCustomerRestriction>();
             VoucherDetails = new HashSet<VoucherDetail>();
         }
 
         [Key]
+        [StringLength(50)]
+        public string Id { get; set; }
+        [Required]
         [StringLength(50)]
         public string VoucherCode { get; set; }
         [Required]
@@ -33,13 +36,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public int UsedQuantity { get; set; }
         public bool Activate { get; set; }
         public bool ShowVoucherBar { get; set; }
-        public bool ApplyForSpecific { get; set; }
+        public bool ApplyForAll { get; set; }
 
-        [InverseProperty(nameof(OrderHeader.VoucherCodeNavigation))]
-        public virtual ICollection<OrderHeader> OrderHeaders { get; set; }
-        [InverseProperty(nameof(VoucherCustomerRestriction.VoucherCodeNavigation))]
+        [InverseProperty(nameof(OrderVoucher.Voucher))]
+        public virtual ICollection<OrderVoucher> OrderVouchers { get; set; }
+        [InverseProperty(nameof(VoucherCustomerRestriction.Voucher))]
         public virtual ICollection<VoucherCustomerRestriction> VoucherCustomerRestrictions { get; set; }
-        [InverseProperty(nameof(VoucherDetail.VoucherCodeNavigation))]
+        [InverseProperty(nameof(VoucherDetail.Voucher))]
         public virtual ICollection<VoucherDetail> VoucherDetails { get; set; }
     }
 }

@@ -16,7 +16,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string Id { get; set; }
         [Required]
         [StringLength(50)]
-        public string VoucherCode { get; set; }
+        public string VoucherId { get; set; }
         [Required]
         [Column("Customer_ID")]
         [StringLength(50)]
@@ -25,8 +25,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [ForeignKey(nameof(CustomerId))]
         [InverseProperty("VoucherCustomerRestrictions")]
         public virtual Customer Customer { get; set; }
-        [ForeignKey(nameof(VoucherCode))]
-        [InverseProperty(nameof(Voucher.VoucherCustomerRestrictions))]
-        public virtual Voucher VoucherCodeNavigation { get; set; }
+        [ForeignKey(nameof(VoucherId))]
+        [InverseProperty("VoucherCustomerRestrictions")]
+        public virtual Voucher Voucher { get; set; }
     }
 }

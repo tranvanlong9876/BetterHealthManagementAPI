@@ -13,7 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
     {
         protected readonly BetterHealthManagementContext context;
         private DbSet<T> _entities;
-        private readonly IMapper mapper;
+        protected readonly IMapper mapper;
 
         public Repository(BetterHealthManagementContext context, IMapper mapper)
         {
@@ -90,6 +90,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
             dbmodel = mapper.Map<TOut>(model);
             context.ChangeTracker.Clear();
             context.Entry(dbmodel).State = EntityState.Modified;
+        }
+
+        public async Task<bool> InsertRange(List<T> entityList)
+        {
+            await context.AddRangeAsync(entityList);
+            await Update();
+            return true;
+        }
+
+        public async Task<bool> Remove(T entity)
+        {
+            context.Remove(entity);
+            await Update();
+            return true;
         }
     }
 }

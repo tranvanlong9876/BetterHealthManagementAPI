@@ -23,9 +23,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Column("Manufacturer_Name")]
         [StringLength(500)]
         public string ManufacturerName { get; set; }
+        [Column("CountryID")]
         [StringLength(50)]
-        public string Country { get; set; }
+        public string CountryId { get; set; }
 
+        [ForeignKey(nameof(CountryId))]
+        [InverseProperty("Manufacturers")]
+        public virtual Country Country { get; set; }
         [InverseProperty(nameof(ProductParent.Manufacturer))]
         public virtual ICollection<ProductParent> ProductParents { get; set; }
     }

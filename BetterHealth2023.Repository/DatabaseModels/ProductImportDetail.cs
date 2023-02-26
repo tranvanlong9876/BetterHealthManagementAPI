@@ -28,8 +28,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [StringLength(50)]
         public string ProductId { get; set; }
         public int Quantity { get; set; }
-        [Column("importPrice", TypeName = "money")]
-        public decimal ImportPrice { get; set; }
+        [Column("importPrice")]
+        public double ImportPrice { get; set; }
 
         [ForeignKey(nameof(ProductId))]
         [InverseProperty(nameof(ProductDetail.ProductImportDetails))]

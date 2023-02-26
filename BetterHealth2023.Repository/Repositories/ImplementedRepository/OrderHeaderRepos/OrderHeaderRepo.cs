@@ -20,7 +20,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             //pick up order are executing by pharmacist ID
             var query = from order in context.OrderHeaders
                         where (order.OrderStatus.Equals("2") || order.OrderStatus.Equals("3") || order.OrderStatus.Equals("5") || order.OrderStatus.Equals("6") || order.OrderStatus.Equals("7"))
-                        && (order.EmployeeId.Trim().Equals(pharID.Trim()))
+                        && (order.PharmacistId.Trim().Equals(pharID.Trim()))
                         select new { order };
             var orders = await query.Select(selector => new OrderHeader()).ToListAsync();
             

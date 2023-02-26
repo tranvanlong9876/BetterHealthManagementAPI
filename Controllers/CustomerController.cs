@@ -32,39 +32,6 @@ namespace BetterHealthManagementAPI.Controllers
       
 
         // POST api/<CustomerController>
-        [HttpPost("Login")]
-        public async Task<IActionResult> LoginCustomer([FromBody] LoginCustomerModel loginCustomerModel)
-        {
-            try
-            {
-                var loginStatusModel = await _customerService.customerLoginPhoneOTP(loginCustomerModel);
-                if (loginStatusModel.isError)
-                {
-                    if (loginStatusModel.InvalidPhoneOTP != null) return BadRequest(loginStatusModel);
-                    if (loginStatusModel.CustomerNotFound != null) return NotFound();
-                    if (loginStatusModel.CustomerInactive != null) return BadRequest(loginStatusModel);
-                    else return BadRequest(loginStatusModel);
-                }
-                return Ok(loginStatusModel.customerToken);
-            }
-            catch (ArgumentNullException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (DbUpdateException)
-            {
-                return StatusCode(500, "Internal server exception");
-            }
-            catch (SqlException)
-            {
-                return StatusCode(500, "Internal server exception");
-            }
-
-        }
 
         
     
