@@ -1,7 +1,10 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,32 +26,105 @@ namespace BetterHealthManagementAPI.Controllers
             _customerService = customerService;
         }
         // GET: api/<CustomerController>
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
+     
 
         // GET api/<CustomerController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
+      
 
         // POST api/<CustomerController>
-        
 
-        // PUT api/<CustomerController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        
+    
+        [HttpPost("Register")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RegisterCustomer([FromBody] CustomerRegisView customerRegisView)
         {
+            try
+            {
+                var customer = await _customerService.CreateCustomer(customerRegisView);
+                if (customer == null) return BadRequest();
+                return Ok(customer);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+            catch (SqlException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
         }
 
-        // DELETE api/<CustomerController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        //update customer
+        [HttpPut("Update")]
+        [Authorize(Roles = "Customers")]
+        [AllowAnonymous]
+        public async Task<IActionResult> UpdateCustomer([FromBody] CustomerUpdateMOdel customerUpdateModel)
         {
+            try
+            {
+                var customer = await _customerService.UpdateCustomer(customerUpdateModel);
+                if (customer == false) return BadRequest();
+                return Ok("Update Success");
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+            catch (SqlException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetAllCustomer([FromQuery] ProductPagingRequest pagingRequest)
+        {
+
+            return Ok();
+        }
+
+        [HttpGet("{id}")]
+        //find customer by customerid
+        public async Task<IActionResult> GetCustomerById([FromBody] string id)
+        {
+            try
+            {
+                var customer = await _customerService.GetCustomerById(id);
+                if (customer == null) return NotFound();
+                return Ok(customer);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+            catch (SqlException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
         }
     }
 }

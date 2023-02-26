@@ -42,6 +42,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerPointRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerAddressRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Unit;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UnitRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ManufacturerRepos;
@@ -144,6 +146,8 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IProductIngredientRepo, ProductIngredientRepo>();
             services.AddTransient<IProductParentRepo, ProductParentRepo>();
             services.AddTransient<ICustomerRepo, CustomerRepo>();
+            services.AddTransient<ICustomerPointRepo, CustomerPointRepo>();
+            services.AddTransient<ICustomerAddressRepo, CustomerAddressRepo>();
             services.AddTransient<IUnitRepo, UnitRepo>();
             services.AddTransient<IManufacturerRepo, ManufacturerRepo>();
             services.AddTransient<ICountryRepo, CountryRepo>();
