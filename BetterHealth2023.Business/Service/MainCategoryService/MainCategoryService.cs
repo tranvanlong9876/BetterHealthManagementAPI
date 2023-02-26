@@ -39,6 +39,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.MainCatego
             return await _mainCategoryRepo.GetAll<MainCategoryViewModel>();
         }
 
+        public async Task<PagedResult<MainCategoryViewModel>> GetAllPaging(MainCategoryPagingRequest pagingRequest)
+        {
+            return await _mainCategoryRepo.GetAllPaging(pagingRequest);
+        }
+
         public async Task<bool> Update(UpdateCategoryModel updateCategoryModel)
         {
             var categoryMain = await _mainCategoryRepo.Get(updateCategoryModel.Id);

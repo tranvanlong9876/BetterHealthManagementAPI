@@ -16,10 +16,10 @@ namespace BetterHealthManagementAPI.Controllers
     [Route("api/v1/User")]
     [ApiController]
     [AllowAnonymous]
-    public class InternalUserAuthController : ControllerBase
+    public class InternalUserController : ControllerBase
     {
         private IInternalUserAuthService _employeeAuthService;
-        public InternalUserAuthController(IInternalUserAuthService employeeAuthService)
+        public InternalUserController(IInternalUserAuthService employeeAuthService)
         {
             _employeeAuthService = employeeAuthService;
         }
@@ -42,29 +42,6 @@ namespace BetterHealthManagementAPI.Controllers
             if (userInfo == null) return NotFound("Không tìm thấy thông tin nhân viên.");
 
             return Ok(userInfo);
-        }
-
-        [HttpPost("Login")]
-        [AllowAnonymous]
-        public async Task<IActionResult> LoginInternal(LoginInternalUser loginEmployee) {
-            try
-            {
-                var userStatusModel = await _employeeAuthService.Login(loginEmployee);
-
-                if(userStatusModel.isError)
-                {
-                    if (userStatusModel.UserInactive != null) return BadRequest(userStatusModel);
-                    if (userStatusModel.UserNotFound != null) return NotFound(userStatusModel);
-                    if (userStatusModel.WrongPassword != null) return Unauthorized(userStatusModel);
-                }
-
-                if (userStatusModel.userToken == null) return BadRequest("Lỗi tạo token JWT, vui lòng thử lại sau.");
-
-                return Ok(userStatusModel.userToken);
-            } catch(Exception ex)
-            {
-                return BadRequest(ex.ToString());
-            }
         }
 
         [HttpPost("Register"), Authorize(Roles = "Admin")]

@@ -24,14 +24,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string Title { get; set; }
         [Required]
         public string Reason { get; set; }
-        public double DiscountPercent { get; set; }
+        public double? DiscountPercent { get; set; }
+        public double? DiscountMoney { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime StartDate { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime EndDate { get; set; }
-        public TimeSpan StartTime { get; set; }
-        public TimeSpan EndTime { get; set; }
-        public int Priority { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime CreatedDate { get; set; }
+        public bool IsDelete { get; set; }
 
         [InverseProperty(nameof(EventProductDiscount.Discount))]
         public virtual ICollection<EventProductDiscount> EventProductDiscounts { get; set; }

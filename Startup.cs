@@ -42,6 +42,22 @@ using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Unit;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UnitRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ManufacturerRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ManufactureService;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CountryRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.CountryServices;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductIngredientService;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductImportService;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos.ProductImportDetailRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos.ProductImportBatchRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.VNPay;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductDiscountRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDiscountServices;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServices;
 
 namespace BetterHealthManagementAPI
 {
@@ -88,7 +104,7 @@ namespace BetterHealthManagementAPI
                     });
             JwtUserToken.Initialize(Configuration);
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
-            services.AddDbContext<BetterHealthManagementContext>();
+            services.AddDbContext<BetterHealthManagementContext>();            
             services.AddCors(p => p.AddPolicy("MyCors", build =>
             {
                 build.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
@@ -103,6 +119,14 @@ namespace BetterHealthManagementAPI
             services.AddScoped<ISubCategoryService, SubCategoryService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<IUnitService, UnitService>();
+            services.AddScoped<IManufactureService, ManufactureService>();
+            services.AddScoped<ICountryService, CountryService>();
+            services.AddScoped<IProductIngredientService, ProductIngredientService>();
+            services.AddScoped<IProductImportService, ProductImportService>();
+            services.AddScoped<IVNPayService, VNPayService>();
+            services.AddScoped<IProductDiscountService, ProductDiscountService>();
+            services.AddScoped<IOrderService, OrderService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();
@@ -120,6 +144,15 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IProductIngredientRepo, ProductIngredientRepo>();
             services.AddTransient<IProductParentRepo, ProductParentRepo>();
             services.AddTransient<ICustomerRepo, CustomerRepo>();
+            services.AddTransient<IUnitRepo, UnitRepo>();
+            services.AddTransient<IManufacturerRepo, ManufacturerRepo>();
+            services.AddTransient<ICountryRepo, CountryRepo>();
+            services.AddTransient<IProductImportRepo, ProductImportRepo>();
+            services.AddTransient<IProductImportDetailRepo, ProductImportDetailRepo>();
+            services.AddTransient<IProductImportBatchRepo, ProductImportBatchRepo>();
+            services.AddTransient<ISiteInventoryRepo, SiteInventoryRepo>();
+            services.AddTransient<IProductDiscountRepo, ProductDiscountRepo>();
+            services.AddTransient<IProductEventDiscountRepo, ProductEventDiscountRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -130,8 +163,12 @@ namespace BetterHealthManagementAPI
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BetterHealthManagementAPI v1"));
+            } else
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BetterHealthManagementAPI v1"));
             }
-
             app.UseHttpsRedirection();
 
             app.UseCors("MyCors");
@@ -145,6 +182,8 @@ namespace BetterHealthManagementAPI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.Map("/", context => Task.Run((() =>
+                    context.Response.Redirect("/swagger/index.html"))));
             });
         }
     }
