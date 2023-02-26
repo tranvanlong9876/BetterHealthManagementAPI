@@ -1,6 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.AddressModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DynamicAddressViewModel;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
 using System;
 using System.Collections.Generic;
@@ -22,5 +23,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public Task<CityModel> GetSpecificCity(string cityID);
         public Task<DistrictModel> GetSpecificDistrict(string districtID);
         public Task<WardModel> GetSpecificWard(string wardID);
+        public Task<bool> CheckAddressChangeById(AddressUpdateModel addressUpdateModel);
     }
 }

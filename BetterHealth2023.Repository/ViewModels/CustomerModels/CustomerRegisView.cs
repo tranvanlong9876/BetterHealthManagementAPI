@@ -24,6 +24,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Custo
         public string ImageUrl { get; set; }
 
         public DateTime? Dob { get; set; }
-       
+
+        public string CityId { get; set; }
+
+        public string DistrictId { get; set; }
+
+        public string WardId { get; set; }
+
+        public string HomeAddress { get; set; }
+        
+      
+
     }
 }

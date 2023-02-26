@@ -1,6 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerAddressRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerPointRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
@@ -8,6 +9,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorMode
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using FirebaseAdmin.Auth;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -22,12 +24,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
         private readonly ICustomerRepo _customerRepo;
         private readonly ICustomerPointRepo _customerpointRepo;
         private readonly IDynamicAddressRepo _dynamicAdressRepo;
-
-        public CustomerService(ICustomerRepo customerRepo, ICustomerPointRepo customerpointRepo, IDynamicAddressRepo dynamicaddressAdressRepo)
+        private readonly ICustomerAddressRepo _customerAddressRepo;
+        public CustomerService(ICustomerRepo customerRepo, ICustomerPointRepo customerpointRepo, IDynamicAddressRepo dynamicaddressAdressRepo, ICustomerAddressRepo customerAddressRepo)
         {
             _customerRepo = customerRepo;
             _customerpointRepo = customerpointRepo;
             _dynamicAdressRepo = dynamicaddressAdressRepo;
+            _customerAddressRepo = customerAddressRepo;
         }
 
         public async Task<Repository.DatabaseModels.Customer> CreateCustomer(CustomerRegisView customerRegisView)
@@ -57,21 +60,48 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                 Dob = customerRegisView.Dob,
 
         };
-            //insert customerpoint
+            await _customerRepo.Insert(customer);
+            //insert customer poitn
             CustomerPoint customerPoint = new()
             {
                 Id = Guid.NewGuid().ToString(),
                 CustomerId = customer.Id,
                 Point = 0,
-                IsPlus =true,
+                IsPlus = true,
                 Description = "Tạo tài khoản thành công",
                 CreateDate = DateTime.Now,
-                
+
 
             };
-            //add customer to database
-            await _customerRepo.Insert(customer);
             await _customerpointRepo.Insert(customerPoint);
+            //insert customeraddress and dynamicaddress
+
+            //insert dynamicaddress
+            DynamicAddress dynamicAddress = new()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    CityId = customerRegisView.CityId,
+                    DistrictId = customerRegisView.DistrictId,
+                    WardId = customerRegisView.WardId,
+                    HomeAddress = customerRegisView.HomeAddress,
+                   
+                };
+            await _dynamicAdressRepo.Insert(dynamicAddress);
+
+            //insert customeraddress
+            CustomerAddress customerAddress = new()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    CustomerId = customer.Id,
+                    AddressId = dynamicAddress.Id,
+                    MainAddress = true,
+                };
+            await _customerAddressRepo.Insert(customerAddress);
+
+
+        
+            //add customer to database
+          
             return await Task.FromResult(customer);
         }
 
@@ -143,52 +173,23 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
 
         public async  Task<bool> UpdateCustomer(CustomerUpdateMOdel customerUpdateMOdel)
         {
-            Repository.DatabaseModels.Customer customer = await _customerRepo.Get(customerUpdateMOdel.CustomerId);
+            var customer = await _customerRepo.Get(customerUpdateMOdel.CustomerId);
             if (customer == null)
             {
                 return false;
             }
-            customer.Fullname = customerUpdateMOdel.CustomerFullName;
-
-            customer.Email = customerUpdateMOdel.CustomerEmail;
-            customer.Gender = customerUpdateMOdel.Gender;
+            customer.Fullname = customerUpdateMOdel.FullName;
+            customer.Email = customerUpdateMOdel.Email;
             customer.Dob = customerUpdateMOdel.Dob;
             customer.ImageUrl = customerUpdateMOdel.ImageUrl;
-            Repository.DatabaseModels.CustomerAddress cusaddress = await _customerRepo.GetAddressCustomer(customerUpdateMOdel.CustomerId);
-            if (cusaddress == null)
-            {
-                //create new dynamicadress from customeraadress
-                Repository.DatabaseModels.CustomerAddress customerAddress = new()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    CustomerId = customerUpdateMOdel.CustomerId,
-                    AddressId = Guid.NewGuid().ToString(),
-                    MainAddress = true,
-
-                };
-                Repository.DatabaseModels.DynamicAddress dynamicAddress = new()
-                {
-                    Id = customerAddress.AddressId,
-                    CityId = customerUpdateMOdel.CityId,
-                    DistrictId = customerUpdateMOdel.DistrictId,
-                    WardId = customerUpdateMOdel.WardId,
-                };
-            }
-            else
-            {
-                //find customeraddress by customerid
-                Repository.DatabaseModels.CustomerAddress customerAddress = await _customerRepo.GetAddressCustomer(customerUpdateMOdel.CustomerId);
-                //update dynamicaddress
-                Repository.DatabaseModels.DynamicAddress dynamicAddress = await _dynamicAdressRepo.Get(customerAddress.AddressId);
-                dynamicAddress.CityId = customerUpdateMOdel.CityId;
-                dynamicAddress.DistrictId = customerUpdateMOdel.DistrictId;
-                dynamicAddress.WardId = customerUpdateMOdel.WardId;
-
-            }
+            customer.Gender = customerUpdateMOdel.Gender;
+           
             await _customerRepo.Update();
-            await _dynamicAdressRepo.Update();
-
             return true;
+
+
+
+
 
         }
     }
