@@ -15,5 +15,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public Task<List<ViewSpecificProductImportBatches>> GetProductImportBatchesViewModel(string importDetailID);
 
         public Task<bool> RemoveBatchesRange(List<ProductImportBatch> importBatches);
+
+        public Task<List<ProductImportBatch>> GetAllProductBatchesAvailable(string productId);
     }
 }

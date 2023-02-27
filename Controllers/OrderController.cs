@@ -94,31 +94,30 @@ namespace BetterHealthManagementAPI.Controllers
             //return Ok(currentTime);
         }
 
-        [HttpPost]
+        [HttpPost("Checkout")]
         [AllowAnonymous]
         public async Task<IActionResult> CheckOutOrder(CheckOutOrderModel checkOutOrderModel)
         {
-            var isGuest = CheckGuestUser(); //true is guest
+            var check = await _orderService.CheckOutOrder(checkOutOrderModel, GetCustomerId());
 
-            return Ok();
+            if (check.isError)
+            {
+                return BadRequest(check);
+            }
+            return Ok("Đặt hàng thành công!");
         }
 
-        private bool CheckGuestUser()
+        private string GetCustomerId()
         {
             if (Request.Headers.ContainsKey("Authorization"))
             {
                 string token = (Request.Headers)["Authorization"].ToString().Split(" ")[1];
-                if (JwtUserToken.DecodeAPITokenToRole(token) == "Customer")
-                {
-                    return false;
-                }
+                return JwtUserToken.GetUserID(token);
             }
             else
             {
-                return true;
+                return null;
             }
-
-            return true;
         }
 
         private string GetVietnamDayOfWeek(int dayOfWeek)

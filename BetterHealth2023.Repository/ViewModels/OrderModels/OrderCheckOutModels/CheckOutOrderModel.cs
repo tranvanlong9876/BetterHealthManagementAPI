@@ -25,6 +25,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         public int UsedPoint { get; set; }
         [Required]
         public int PayType { get; set; }
+        [Required]
+        public bool isPaid { get; set; }
         public string Note { get; set; }
         public List<OrderVoucher> Vouchers { get; set; }
         [Required]
@@ -75,8 +77,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         public string PhoneNumber { get; set; }
         [Required]
         public string Email { get; set; }
-        [Required]
-        public string Gender { get; set; }
+        public bool Gender { get; set; }
         public string CityId { get; set; }
         public string DistrictId { get; set; }
         public string WardId { get; set; }

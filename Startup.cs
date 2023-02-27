@@ -60,6 +60,11 @@ using BetterHealthManagementAPI.BetterHealth2023.Business.Service.VNPay;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductDiscountRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDiscountServices;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServices;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderShipmentRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderPickupRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderBatchRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderDetailRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderContactInfoRepos;
 
 namespace BetterHealthManagementAPI
 {
@@ -157,6 +162,11 @@ namespace BetterHealthManagementAPI
             services.AddTransient<ISiteInventoryRepo, SiteInventoryRepo>();
             services.AddTransient<IProductDiscountRepo, ProductDiscountRepo>();
             services.AddTransient<IProductEventDiscountRepo, ProductEventDiscountRepo>();
+            services.AddTransient<IOrderShipmentRepo, OrderShipmentRepo>();
+            services.AddTransient<IOrderPickUpRepo, OrderPickUpRepo>();
+            services.AddTransient<IOrderBatchRepo, OrderBatchRepo>();
+            services.AddTransient<IOrderDetailRepo, OrderDetailRepo>();
+            services.AddTransient<IOrderContactInfoRepo, OrderContactInfoRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

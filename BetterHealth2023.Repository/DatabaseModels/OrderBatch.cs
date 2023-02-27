@@ -22,9 +22,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Column("Order_ID")]
         [StringLength(50)]
         public string OrderId { get; set; }
-        [Required]
-        [StringLength(50)]
-        public string SoldQuantity { get; set; }
+        public int SoldQuantity { get; set; }
 
         [ForeignKey(nameof(BatchId))]
         [InverseProperty(nameof(ProductImportBatch.OrderBatches))]

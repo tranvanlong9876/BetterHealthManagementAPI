@@ -107,6 +107,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             return pageResult;
         }
+
+        public Task<string> GetSiteAddressId(string siteId)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }
