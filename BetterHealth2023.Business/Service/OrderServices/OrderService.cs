@@ -1,5 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerPointRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
@@ -13,6 +15,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
     public class OrderService : IOrderService
     {
         private readonly ISiteInventoryRepo _siteInventoryRepo;
+        private readonly ICustomerPointRepo _customerPointRepo;
+        private readonly ICustomerRepo _customerRepo;
 
         public OrderService(ISiteInventoryRepo siteInventoryRepo)
         {
@@ -37,9 +41,42 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 return checkError;
             }
             //Trừ điểm tích lũy
+            var isUseSuccessfully = false;
+            
             if (checkOutOrderModel.UsedPoint > 0)
             {
-                //Đợi Nguyên xong.
+                var checkType = 0;
+                int? customerPoint = null;
+                if (!String.IsNullOrEmpty(CustomerId))
+                {
+                    customerPoint = await _customerPointRepo.GetCustomerPointBasedOnCustomerId(CustomerId);
+                    checkType = 1;
+                } else if(!String.IsNullOrEmpty(checkOutOrderModel.ReveicerInformation.PhoneNumber))
+                {
+                    customerPoint = await _customerPointRepo.GetCustomerPointBasedOnPhoneNumber(checkOutOrderModel.ReveicerInformation.PhoneNumber);
+                    checkType = 2;
+                } else
+                {
+                    customerPoint = null;
+                }
+
+                if (customerPoint.HasValue)
+                {
+                    if (customerPoint >= checkOutOrderModel.UsedPoint)
+                    {
+                        var customerPointModel = new CustomerPoint()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            IsPlus = false,
+                            CreateDate = DateTime.Now,
+                            CustomerId = checkType == 1 ? CustomerId : await _customerRepo.GetCustomerIdBasedOnPhoneNo(checkOutOrderModel.ReveicerInformation.PhoneNumber),
+                            Point = checkOutOrderModel.UsedPoint,
+                            Description = $"Sử dụng {checkOutOrderModel.UsedPoint} điểm cho đơn hàng {checkOutOrderModel.OrderId} vào lúc {DateTime.Now}"
+                        };
+                        await _customerPointRepo.Insert(customerPointModel);
+                        isUseSuccessfully = true;
+                    }
+                }
             }
             //OrderType = 1 : Bán tại chỗ, 2: Nhận tại cửa hàng, 3: Giao hàng
             var orderHeaderDB = new OrderHeader()
@@ -49,7 +86,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 SubTotalPrice = checkOutOrderModel.SubTotalPrice,
                 DiscountPrice = checkOutOrderModel.DiscountPrice,
                 TotalPrice = checkOutOrderModel.TotalPrice,
-                UsedPoint = checkOutOrderModel.UsedPoint,
+                UsedPoint = isUseSuccessfully ? checkOutOrderModel.UsedPoint : 0,
                 PayType = checkOutOrderModel.PayType,
                 Note = checkOutOrderModel.Note,
                 CreatedDate = DateTime.Now,
@@ -58,7 +95,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 SiteId = checkOutOrderModel.OrderTypeId == 3 ? null : checkOutOrderModel.SiteId
             };
 
-            if(orderHeaderDB.OrderTypeId == 3)
+            if(orderHeaderDB.OrderTypeId == Commons.ORDER_TYPE_DELIVERY)
             {
                 var orderShipmentDB = new OrderShipment()
                 {
@@ -67,6 +104,17 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     //StartAddressId = Get Current Site AddressId
                     //DestinationId = From Order Contact,
                     ShippingFee = checkOutOrderModel.ShippingPrice,
+                };
+            }
+
+            if(orderHeaderDB.OrderTypeId == Commons.ORDER_TYPE_PICKUP)
+            {
+                var orderPickUpDB = new Repository.DatabaseModels.OrderPickUp()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    OrderId = orderHeaderDB.Id,
+                    DatePickUp = checkOutOrderModel.OrderPickUp.DatePickUp,
+                    TimePickUp = checkOutOrderModel.OrderPickUp.TimePickUp
                 };
             }
 

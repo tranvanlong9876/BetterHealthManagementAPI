@@ -8,6 +8,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
 {
     public class CheckOutOrderModel
     {
+        public string OrderId { get; set; }
         [Required]
         public int OrderTypeId { get; set; }
         public string SiteId { get; set; }
@@ -25,14 +26,25 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         [Required]
         public int PayType { get; set; }
         public string Note { get; set; }
-
+        public List<OrderVoucher> Vouchers { get; set; }
+        [Required]
+        public List<OrderProduct> Products { get; set; }
         [Required]
         public ReveicerInformation ReveicerInformation { get; set; }
 
-        public List<OrderVoucher> Vouchers { get; set; }
-
-        public List<OrderProduct> Products { get; set; }
+        public OrderPickUp OrderPickUp { get; set; }
         
+
+    }
+
+    public class OrderPickUp
+    {
+        [Required]
+        [StringLength(50)]
+        public string DatePickUp { get; set; }
+        [Required]
+        [StringLength(50)]
+        public string TimePickUp { get; set; }
     }
 
     public class OrderProduct
@@ -51,6 +63,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
 
     public class OrderVoucher
     {
+        [Required]
         public string VoucherId { get; set; }
     }
 

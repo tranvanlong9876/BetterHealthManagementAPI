@@ -38,6 +38,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<OrderDetail> OrderDetails { get; set; }
         public virtual DbSet<OrderExecution> OrderExecutions { get; set; }
         public virtual DbSet<OrderHeader> OrderHeaders { get; set; }
+        public virtual DbSet<OrderPickUp> OrderPickUps { get; set; }
         public virtual DbSet<OrderShipment> OrderShipments { get; set; }
         public virtual DbSet<OrderStatus> OrderStatuses { get; set; }
         public virtual DbSet<OrderType> OrderTypes { get; set; }
@@ -325,6 +326,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasForeignKey(d => d.SiteId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_OrderHeader_Site_Information");
+            });
+
+            modelBuilder.Entity<OrderPickUp>(entity =>
+            {
+                entity.HasOne(d => d.Order)
+                    .WithMany(p => p.OrderPickUps)
+                    .HasForeignKey(d => d.OrderId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Order_PickUp_OrderHeader");
             });
 
             modelBuilder.Entity<OrderShipment>(entity =>

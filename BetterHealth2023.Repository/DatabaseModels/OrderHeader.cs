@@ -17,6 +17,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
             OrderContactInfos = new HashSet<OrderContactInfo>();
             OrderDetails = new HashSet<OrderDetail>();
             OrderExecutions = new HashSet<OrderExecution>();
+            OrderPickUps = new HashSet<OrderPickUp>();
             OrderShipments = new HashSet<OrderShipment>();
             OrderVouchers = new HashSet<OrderVoucher>();
         }
@@ -41,6 +42,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public double TotalPrice { get; set; }
         public int UsedPoint { get; set; }
         public int PayType { get; set; }
+        public bool IsPaid { get; set; }
         [StringLength(500)]
         public string Note { get; set; }
         [Column(TypeName = "datetime")]
@@ -70,6 +72,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
         [InverseProperty(nameof(OrderExecution.Order))]
         public virtual ICollection<OrderExecution> OrderExecutions { get; set; }
+        [InverseProperty(nameof(OrderPickUp.Order))]
+        public virtual ICollection<OrderPickUp> OrderPickUps { get; set; }
         [InverseProperty(nameof(OrderShipment.Order))]
         public virtual ICollection<OrderShipment> OrderShipments { get; set; }
         [InverseProperty(nameof(OrderVoucher.Order))]
