@@ -160,7 +160,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
 
             string addressId = null;
 
-            if (checkOutOrderModel.ReveicerInformation.CityId == null || checkOutOrderModel.ReveicerInformation.DistrictId == null || checkOutOrderModel.ReveicerInformation.WardId == null || checkOutOrderModel.ReveicerInformation.HomeAddress == null)
+            if (checkOutOrderModel.ReveicerInformation.CityId != null && checkOutOrderModel.ReveicerInformation.DistrictId != null && checkOutOrderModel.ReveicerInformation.WardId != null && checkOutOrderModel.ReveicerInformation.HomeAddress != null)
             {
                 addressId = Guid.NewGuid().ToString();
                 var dynamicAddressDB = new DynamicAddress()
@@ -321,7 +321,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 {
                     //Get Customer Address
                     string address = await _dynamicAddressRepo.GetFullAddressFromAddressId(addressId);
-                    await EmailService.SendCustomerInvoiceEmail(productSendingEmailModels, checkOutOrderModel, address);
+                    _ = Task.Run(() => EmailService.SendCustomerInvoiceEmail(productSendingEmailModels, checkOutOrderModel, address)).ConfigureAwait(false);
                 }
             }
 

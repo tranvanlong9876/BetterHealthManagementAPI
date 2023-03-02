@@ -4,13 +4,10 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderMode
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Net.Mime;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -52,7 +49,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             }
         }
 
-        public static async Task<bool> SendCustomerInvoiceEmail(List<SendingEmailProductModel> sendingEmailProductModels, CheckOutOrderModel checkOutOrderModel, string address)
+        public static async Task SendCustomerInvoiceEmail(List<SendingEmailProductModel> sendingEmailProductModels, CheckOutOrderModel checkOutOrderModel, string address)
         {
             DateTime createdDate = DateTime.Now;
             string cartHtml = string.Empty;
@@ -112,6 +109,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             body = body.Replace("{{total_order}}", ConvertToVietNamCurrency(checkOutOrderModel.TotalPrice));
             body = body.Replace("{{login_url}}", _configuration.GetSection("SendEmail:LoginURL").Value);
             body = body.Replace("{{hotline_phone}}", _configuration.GetSection("SendEmail:HotlineNumber").Value);
+            body = body.Replace("{{support_email}}", _configuration.GetSection("SendEmail:SupportEmail").Value);
 
 
             var webClient = new WebClient();
@@ -124,7 +122,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
                 alternateView.LinkedResources.Add(linkedResource);
             }
 
-            return await EmailService.SendEmailAsync(checkOutOrderModel.ReveicerInformation.Email, "BetterHealth: Xác nhận đơn hàng #" + checkOutOrderModel.OrderId, true, alternateView);
+            await EmailService.SendEmailAsync(checkOutOrderModel.ReveicerInformation.Email, "BetterHealth: Xác nhận đơn hàng #" + checkOutOrderModel.OrderId, true, alternateView);
         }
 
         private static string ConvertToVietNamCurrency(double price)
@@ -141,10 +139,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             }
             else if(createdOrderTime.Minute > 30)
             {
-                return "Dự kiến giao từ " + createdOrderTime.Hour + 2 + ":00 " + "- " + createdOrderTime.Hour + 3 + ":00 " + "trong ngày hôm nay";
+                return "Dự kiến giao từ " + (createdOrderTime.Hour + 2) + ":00 " + "- " + (createdOrderTime.Hour + 3) + ":00 " + "trong ngày hôm nay";
             } else
             {
-                return "Dự kiến giao từ " + createdOrderTime.Hour + 1 + ":00 " + "- " + createdOrderTime.Hour + 2 + ":00 " + "trong ngày hôm nay";
+                return "Dự kiến giao từ " + (createdOrderTime.Hour + 1) + ":00 " + "- " + (createdOrderTime.Hour + 2) + ":00 " + "trong ngày hôm nay";
             }
         }
 
@@ -163,7 +161,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             }
         }
 
-        public static async Task<bool> SendWelcomeEmail(RegisterInternalUser registerEmployee, string randomPassword, string subject, bool isHtml)
+        public static async Task SendWelcomeEmailAsync(RegisterInternalUser registerEmployee, string randomPassword, string subject, bool isHtml)
         {
             string roleName = String.Empty;
             string imageURL = registerEmployee.ImageUrl;
@@ -171,37 +169,19 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             if (registerEmployee.RoleId == Commons.MANAGER)
             {
                 roleName = "Quản Lý chi nhánh";
-            } else if(registerEmployee.RoleId == Commons.PHARMACIST)
+            }
+            else if (registerEmployee.RoleId == Commons.PHARMACIST)
             {
                 roleName = "Dược sĩ";
-            } else if (registerEmployee.RoleId == Commons.OWNER)
+            }
+            else if (registerEmployee.RoleId == Commons.OWNER)
             {
                 roleName = "Chủ sở hữu";
-            } else if (registerEmployee.RoleId == Commons.ADMIN)
+            }
+            else if (registerEmployee.RoleId == Commons.ADMIN)
             {
                 roleName = "Quản lý tài khoản";
             }
-            else
-            {
-                return false;
-            }
-            /*emailService._body.Append("<html>");
-            emailService._body.Append($"<p1>Xin chào <b> {registerEmployee.Fullname} </b>,</p1> <br/> <br/>");
-            emailService._body.Append("Chúc mừng, hôm nay là một ngày bạn đã về đội đồng hành của chúng tôi. <br/>");
-            emailService._body.Append("Hiện tại ban quản lý cũng như đại diện cho toàn hệ thống BetterHealth xin phép cung cấp tài khoản đăng nhập của bạn. <br/>");
-            emailService._body.Append($"<img src='cid:image1' width=\"200\" height=\"200\">");
-            emailService._body.Append("<br/>");
-            emailService._body.Append($"<b>Tài khoản đăng nhập: </b> {registerEmployee.Username}");
-            emailService._body.Append("<br/>");
-            emailService._body.Append($"<b>Mật khẩu đăng nhập: </b> {randomPassword}");
-            emailService._body.Append("<br/>");
-            emailService._body.Append($"<b>Chức vụ của bạn là: </b> {roleName}");
-            emailService._body.Append("<br/>");
-            emailService._body.Append("<br/>");
-            emailService._body.Append("Đây sẽ là tài khoản đăng nhập nội bộ của bạn, đừng quên thay đổi lại mật khẩu để đảm bảo an toàn bảo mật cho tài khoản. Cảm ơn bạn đã hợp tác cùng chuỗi cửa hàng dược phẩm BetterHealth! <br/><br/>");
-            emailService._body.Append("Trân trọng. BetterHealth Company!");
-            emailService._body.Append("</html>");
-            */
             body = File.ReadAllText(Directory.GetCurrentDirectory() + @"\Assets\WebTemplate\InternalUserRegisteration.html");
             body = body.Replace("{{name}}", registerEmployee.Fullname);
             body = body.Replace("{{username}}", registerEmployee.Username);
@@ -216,7 +196,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             LinkedResource linkedResource = AddImagesToEmail(imageURL, "image1", webClient);
             alternateView.LinkedResources.Add(linkedResource);
 
-            return await EmailService.SendEmailAsync(registerEmployee.Email, subject, isHtml, alternateView);
+            await EmailService.SendEmailAsync(registerEmployee.Email, subject, isHtml, alternateView);
         }
 
         private static LinkedResource AddImagesToEmail(string imageURL, string contentId, WebClient webClient)

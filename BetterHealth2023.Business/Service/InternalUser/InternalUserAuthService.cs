@@ -212,7 +212,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
 
             if (check) {
                 checkError.isError = false;
-                await EmailService.SendWelcomeEmail(internalUser, randomPassword.Trim(), $"Chào mừng {internalUser.Fullname} về đội của chúng tôi.", true);
+                _ = Task.Run(() => EmailService.SendWelcomeEmailAsync(internalUser, randomPassword.Trim(), $"Chào mừng {internalUser.Fullname} về đội của chúng tôi.", true)).ConfigureAwait(false);
                 //send account information via email for new internal user.
             }
             else
