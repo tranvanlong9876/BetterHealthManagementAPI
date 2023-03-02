@@ -30,7 +30,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string PharmacistId { get; set; }
         [Column("OrderTypeID")]
         public int OrderTypeId { get; set; }
-        [Required]
         [Column("SiteID")]
         [StringLength(50)]
         public string SiteId { get; set; }

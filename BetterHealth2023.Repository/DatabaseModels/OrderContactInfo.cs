@@ -28,7 +28,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string PhoneNo { get; set; }
         [StringLength(50)]
         public string Email { get; set; }
-        public bool Gender { get; set; }
+        public bool? Gender { get; set; }
 
         [ForeignKey(nameof(AddressId))]
         [InverseProperty(nameof(DynamicAddress.OrderContactInfos))]

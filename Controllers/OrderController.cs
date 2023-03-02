@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.Controllers
@@ -26,13 +28,6 @@ namespace BetterHealthManagementAPI.Controllers
             _orderService = orderService;
         }
 
-        [HttpGet]
-        [Authorize(Roles = "Pharmacist")]
-        public async Task<IActionResult> GetAllOrders()
-        {
-            return Ok("Test");
-        }
-
         [HttpGet("PickUp/Site")]
         [AllowAnonymous]
         public async Task<IActionResult> GetSiteListPickUp([FromQuery] CartEntrance productEntrance)
@@ -44,6 +39,15 @@ namespace BetterHealthManagementAPI.Controllers
             }
 
             return Ok(check.siteListPickUp);
+        }
+
+        [HttpGet("GenerateOrderId")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetRandomOrderId()
+        {
+            var orderId = await _orderService.GenerateOrderId();
+            if (orderId == null) return BadRequest("Service Not Available");
+            return Ok(orderId);
         }
 
         [HttpGet("PickUp/DateAvailable")]

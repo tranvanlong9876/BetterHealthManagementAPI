@@ -10,5 +10,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public Task<List<OrderHeader>> GetOrderHeadersBySiteId(string siteId);
 
         public Task<List<OrderHeader>> GetExecutingOrdersByPharmacistId(string pharID);
+
+        public Task<bool> CheckDuplicateOrderId(string orderId);
     }
 }

@@ -324,7 +324,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                 entity.HasOne(d => d.Site)
                     .WithMany(p => p.OrderHeaders)
                     .HasForeignKey(d => d.SiteId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_OrderHeader_Site_Information");
             });
 

@@ -54,6 +54,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         [Required]
         public string ProductId { get; set; }
         [Required]
+        public string ProductName { get; set; }
+        [Required]
+        public string ProductImageUrl { get; set; }
+        [Required]
         public int Quantity { get; set; }
         [Required]
         public double OriginalPrice { get; set; }
@@ -73,9 +77,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
     {
         [Required]
         public string Fullname { get; set; }
-        [Required]
+        [DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }
-        [Required]
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
         public bool Gender { get; set; }
         public string CityId { get; set; }

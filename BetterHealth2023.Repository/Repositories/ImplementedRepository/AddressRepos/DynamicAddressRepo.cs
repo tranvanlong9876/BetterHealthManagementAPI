@@ -127,6 +127,17 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return wards;
         }
 
+        public async Task<string> GetFullAddressFromAddressId(string addressId)
+        {
+            var query = from dynamic in context.DynamicAddresses
+                        from city in context.Cities.Where(x => x.Id == dynamic.CityId).DefaultIfEmpty()
+                        from district in context.Districts.Where(x => x.Id == dynamic.DistrictId).DefaultIfEmpty()
+                        from ward in context.Wards.Where(x => x.Id == dynamic.WardId).DefaultIfEmpty()
+                        select new { dynamic, city, district, ward };
+
+            return await query.Where(x => x.dynamic.Id.Equals(addressId)).Select(x => new string(x.dynamic.HomeAddress + ", Phường " + x.ward.WardName + ", " + x.district.DistrictName + ", " + x.city.CityName)).FirstOrDefaultAsync();
+        }
+
         public async Task<CityModel> GetSpecificCity(string cityID)
         {
             var city = await context.Cities.FindAsync(cityID);

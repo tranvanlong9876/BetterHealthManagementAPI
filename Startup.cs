@@ -110,6 +110,7 @@ namespace BetterHealthManagementAPI
                         };
                     });
             JwtUserToken.Initialize(Configuration);
+            EmailService.Initialize(Configuration);
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddDbContext<BetterHealthManagementContext>();            
             services.AddCors(p => p.AddPolicy("MyCors", build =>

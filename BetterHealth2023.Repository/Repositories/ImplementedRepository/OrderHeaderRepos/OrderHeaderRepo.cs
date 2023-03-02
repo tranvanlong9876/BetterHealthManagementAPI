@@ -15,6 +15,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
         }
 
+        public async Task<bool> CheckDuplicateOrderId(string orderId)
+        {
+            return await context.OrderHeaders.Where(x => x.Id.Equals(orderId)).CountAsync() >= 1 ? true : false;
+        }
+
         public async Task<List<OrderHeader>> GetExecutingOrdersByPharmacistId(string pharID)
         {
             //pick up order are executing by pharmacist ID

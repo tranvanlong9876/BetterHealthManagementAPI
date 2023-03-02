@@ -1,4 +1,5 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerPointRepos;
@@ -218,8 +219,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 
             }
             //Insert Xong Header.
-
-            for(int i = 0; i < checkOutOrderModel.Products.Count; i++)
+            List<SendingEmailProductModel> productSendingEmailModels = new List<SendingEmailProductModel>();
+            for (int i = 0; i < checkOutOrderModel.Products.Count; i++)
             {
                 var productModel = checkOutOrderModel.Products[i];
 
@@ -236,7 +237,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                         while (currentQuantity > 0)
                         {
                             int loopBatch = 0;
-                            if (availableBatches[loopBatch].Quantity >= currentQuantity)
+                            if (availableBatches[loopBatch].Quantity > currentQuantity)
                             {
                                 listOfProductBatches.Add(new OrderBatch()
                                 {
@@ -256,8 +257,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                                     OrderId = checkOutOrderModel.OrderId,
                                     SoldQuantity = availableBatches[loopBatch].Quantity
                                 });
+                                
                                 currentQuantity = currentQuantity - availableBatches[loopBatch].Quantity;
+                                //Set Out Of Stock
+                                var batchDB = await _productImportBatchRepo.Get(availableBatches[loopBatch].Id);
+                                batchDB.IsOutOfStock = true;
+                                await _productImportBatchRepo.Update();
                                 loopBatch++;
+                                
                             }
                         }
 
@@ -267,6 +274,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     //thêm lô hàng đã xong
                 }
                 //Đưa hàng cần mua xuống Database
+                //Also Generate List Of Product with A Lot of detail.
+
                 var orderProductModelDB = new OrderDetail()
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -277,6 +286,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     Quantity = productModel.Quantity,
                     PriceTotal = productModel.DiscountPrice * productModel.Quantity,
                 };
+                if(checkOutOrderModel.OrderTypeId != Commons.ORDER_TYPE_DIRECTLY)
+                {
+                    var productSendingEmailModel = _customerPointRepo.TransferBetweenTwoModels<OrderDetail, SendingEmailProductModel>(orderProductModelDB);
+                    productSendingEmailModel.TotalPrice = orderProductModelDB.PriceTotal;
+                    productSendingEmailModel.imageUrl = productModel.ProductImageUrl;
+                    productSendingEmailModel.ProductName = productModel.ProductName;
+                    productSendingEmailModels.Add(productSendingEmailModel);
+                }
                 await _orderDetailRepo.Insert(orderProductModelDB);
                 //Trừ tồn kho đối với đơn không phải giao hàng
                 if (!checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_DELIVERY))
@@ -288,6 +305,27 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 }
             }
 
+            //Khi hoàn thành đơn mới cộng điểm tích lũy, checkout xong không cộng.
+
+            //Generate List Of Product With More Information
+            if(checkOutOrderModel.OrderTypeId != Commons.ORDER_TYPE_DIRECTLY && !String.IsNullOrWhiteSpace(checkOutOrderModel.ReveicerInformation.Email))
+            {
+                if (checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_PICKUP))
+                {
+                    //Get Site Address
+                    var SiteDB = await _siteRepo.Get(checkOutOrderModel.SiteId);
+                    string address = await _dynamicAddressRepo.GetFullAddressFromAddressId(SiteDB.AddressId);
+                    await EmailService.SendCustomerInvoiceEmail(productSendingEmailModels, checkOutOrderModel, address);
+                }
+                if (checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_DELIVERY))
+                {
+                    //Get Customer Address
+                    string address = await _dynamicAddressRepo.GetFullAddressFromAddressId(addressId);
+                    await EmailService.SendCustomerInvoiceEmail(productSendingEmailModels, checkOutOrderModel, address);
+                }
+            }
+
+            //Gửi mail hóa đơn qua email khách
 
             checkError.isError = false;
             return checkError;
@@ -350,8 +388,24 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             return checkError;
         }
 
-
+        public async Task<string> GenerateOrderId()
+        {
+            Random generator = new Random();
+            
+            var createdDate = String.Format("{0:ddMMyyyy-HHmmss}", DateTime.Now);
+            bool isDuplicate = true;
+            var orderId = String.Empty;
+            while (isDuplicate)
+            {
+                var randomNumber = generator.Next(1, 1_000_000).ToString("D6");
+                orderId = "BTH-" + randomNumber + "-" + createdDate;
+                isDuplicate = await _orderHeaderRepo.CheckDuplicateOrderId(orderId);
+            }
+            return orderId;
+        }
     }
+
+
 
     public class CartModel
     {
