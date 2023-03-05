@@ -16,7 +16,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
             Comments = new HashSet<Comment>();
             EventProductDiscounts = new HashSet<EventProductDiscount>();
             OrderDetails = new HashSet<OrderDetail>();
-            ProductImages = new HashSet<ProductImage>();
             ProductImportDetails = new HashSet<ProductImportDetail>();
             SiteInventories = new HashSet<SiteInventory>();
         }
@@ -57,8 +56,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public virtual ICollection<EventProductDiscount> EventProductDiscounts { get; set; }
         [InverseProperty(nameof(OrderDetail.Product))]
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
-        [InverseProperty(nameof(ProductImage.Product))]
-        public virtual ICollection<ProductImage> ProductImages { get; set; }
         [InverseProperty(nameof(ProductImportDetail.Product))]
         public virtual ICollection<ProductImportDetail> ProductImportDetails { get; set; }
         [InverseProperty(nameof(SiteInventory.Product))]

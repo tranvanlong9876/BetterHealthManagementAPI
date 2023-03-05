@@ -26,14 +26,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
 
         [StringLength(50)]
         public string BarCode { get; set; }
-        public List<ProductImage> imageURL { get; set; }
     }
 
-    public class ProductImage {
-        [Required]
-        public string imageURL { get; set; }
-        public bool? IsFirstImage { get; set; }
     
-    }
 
 }

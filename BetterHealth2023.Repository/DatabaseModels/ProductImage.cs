@@ -26,7 +26,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public bool IsFirstImage { get; set; }
 
         [ForeignKey(nameof(ProductId))]
-        [InverseProperty(nameof(ProductDetail.ProductImages))]
-        public virtual ProductDetail Product { get; set; }
+        [InverseProperty(nameof(ProductParent.ProductImages))]
+        public virtual ProductParent Product { get; set; }
     }
 }

@@ -19,6 +19,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         }
 
+        //Truyền Id Parent
         public async Task<bool> addMultipleImages(List<ProductImage> productImages)
         {
             await context.AddRangeAsync(productImages);
@@ -46,6 +47,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             }
 
             return image;
+        }
+
+        public Task<List<ProductImage>> GetProductImageDBs(string productId)
+        {
+            return context.ProductImages.Where(x => x.ProductId.Equals(productId)).ToListAsync();
         }
 
         public async Task<List<ProductImageView>> getProductImages(string productId)
@@ -77,9 +83,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return images;
         }
 
-        public async Task<bool> removeAllImages(string productId)
+        public async Task<bool> removeAllImages(List<ProductImage> productImages)
         {
-            List<ProductImage> productImages = await context.ProductImages.Where(x => x.ProductId.Equals(productId)).ToListAsync();
             if(productImages.Count > 0)
             {
                 context.RemoveRange(productImages);

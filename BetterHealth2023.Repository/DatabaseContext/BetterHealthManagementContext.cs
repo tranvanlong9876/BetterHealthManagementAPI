@@ -408,7 +408,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .WithMany(p => p.ProductImages)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Product_Image_Product_Details");
+                    .HasConstraintName("FK_Product_Image_Product_Parent");
             });
 
             modelBuilder.Entity<ProductImportBatch>(entity =>
