@@ -36,7 +36,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             //remove customeraddress by dynamic address
             var customerAddressremove = context.CustomerAddresses.Where(customerAddress => customerAddress.AddressId.Trim()
             .Equals(addressUpdateModel.AddressId.Trim())).FirstOrDefault();
-            context.CustomerAddresses.Remove(customerAddressremove);
+            context.CustomerAddresses.Remove(customerAddressremove);      
             //create new customer address with new information
             DynamicAddress dynamicAddressnew = new()
             {
@@ -60,8 +60,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             context.DynamicAddresses.Add(dynamicAddressnew);
             context.CustomerAddresses.Add(customerAddress);
             await context.SaveChangesAsync();
-
-
             return true;
         }
 
@@ -112,6 +110,30 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 DistrictName = selector.district.DistrictName
             }).ToListAsync();
             return districts;
+        }
+
+        public async Task<List<DynamicAddressCustomerView>> GetAllDynamicAddressByCusId(string id)
+        {
+            //get all DynamicAddress by customer id
+            var dynamicAddress = context.DynamicAddresses.Where(dynamicAddress => dynamicAddress.CustomerAddresses
+            .Any(customerAddress => customerAddress.CustomerId.Trim().Equals(id.Trim()))).ToListAsync();
+            List<DynamicAddressCustomerView> listAddCus = new List<DynamicAddressCustomerView>();
+            //filter in to list<DynamicAddressCustomerView>
+            foreach (var item in dynamicAddress.Result)
+            {
+                DynamicAddressCustomerView dynamicAddCustomerView = new()
+                {
+                    AddressId = item.Id,
+                    CityId = item.CityId,
+                    DistrictId = item.DistrictId,
+                    WardId = item.WardId,
+                    HomeAddress = item.HomeAddress,
+                };
+                //add inton listAddCus
+                listAddCus.Add(dynamicAddCustomerView);
+                
+            }
+            return listAddCus;
         }
 
         public async Task<List<WardModel>> GetAllWards(string districtID)
