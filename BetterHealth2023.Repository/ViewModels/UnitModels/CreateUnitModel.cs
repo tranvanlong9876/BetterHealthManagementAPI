@@ -10,5 +10,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.UnitM
     {
         [Required]
         public string UnitName { get; set; }
+
+        [Required]
+        public bool isCountable { get; set; }
     }
 }

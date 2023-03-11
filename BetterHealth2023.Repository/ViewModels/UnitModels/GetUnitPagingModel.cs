@@ -8,6 +8,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.UnitM
 {
     public class GetUnitPagingModel : PagingRequestBase
     {
+        public bool? isCountable { get; set; }
         public string UnitName { get; set; }
     }
 }

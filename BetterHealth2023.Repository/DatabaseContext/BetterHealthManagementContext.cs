@@ -18,11 +18,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         {
         }
 
-        public virtual DbSet<Blog> Blogs { get; set; }
         public virtual DbSet<CategoryMain> CategoryMains { get; set; }
         public virtual DbSet<City> Cities { get; set; }
-        public virtual DbSet<Comment> Comments { get; set; }
-        public virtual DbSet<CommentInformation> CommentInformations { get; set; }
         public virtual DbSet<Country> Countries { get; set; }
         public virtual DbSet<Customer> Customers { get; set; }
         public virtual DbSet<CustomerAddress> CustomerAddresses { get; set; }
@@ -42,7 +39,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<OrderShipment> OrderShipments { get; set; }
         public virtual DbSet<OrderStatus> OrderStatuses { get; set; }
         public virtual DbSet<OrderType> OrderTypes { get; set; }
-        public virtual DbSet<OrderVoucher> OrderVouchers { get; set; }
         public virtual DbSet<ProductDescription> ProductDescriptions { get; set; }
         public virtual DbSet<ProductDetail> ProductDetails { get; set; }
         public virtual DbSet<ProductDiscount> ProductDiscounts { get; set; }
@@ -53,16 +49,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<ProductIngredient> ProductIngredients { get; set; }
         public virtual DbSet<ProductIngredientDescription> ProductIngredientDescriptions { get; set; }
         public virtual DbSet<ProductParent> ProductParents { get; set; }
-        public virtual DbSet<PurchaseVoucherHistory> PurchaseVoucherHistories { get; set; }
         public virtual DbSet<RoleInternal> RoleInternals { get; set; }
         public virtual DbSet<SiteInformation> SiteInformations { get; set; }
-        public virtual DbSet<SiteInventory> SiteInventories { get; set; }
+        public virtual DbSet<SiteInventoryBatch> SiteInventoryBatches { get; set; }
         public virtual DbSet<SubCategory> SubCategories { get; set; }
         public virtual DbSet<Unit> Units { get; set; }
-        public virtual DbSet<Voucher> Vouchers { get; set; }
-        public virtual DbSet<VoucherCustomerRestriction> VoucherCustomerRestrictions { get; set; }
-        public virtual DbSet<VoucherDetail> VoucherDetails { get; set; }
-        public virtual DbSet<VoucherShop> VoucherShops { get; set; }
         public virtual DbSet<Ward> Wards { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -76,39 +67,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
-
-            modelBuilder.Entity<Blog>(entity =>
-            {
-                entity.HasOne(d => d.Employee)
-                    .WithMany(p => p.Blogs)
-                    .HasForeignKey(d => d.EmployeeId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Blog_Employee");
-            });
-
-            modelBuilder.Entity<Comment>(entity =>
-            {
-                entity.HasOne(d => d.CommentInformation)
-                    .WithMany(p => p.Comments)
-                    .HasForeignKey(d => d.CommentInformationId)
-                    .HasConstraintName("FK_Comment_Comment_Information");
-
-                entity.HasOne(d => d.Product)
-                    .WithMany(p => p.Comments)
-                    .HasForeignKey(d => d.ProductId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Comment_Product_Details");
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.Comments)
-                    .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_Comment_Customer");
-            });
-
-            modelBuilder.Entity<CommentInformation>(entity =>
-            {
-                entity.Property(e => e.LastName).IsFixedLength(true);
-            });
 
             modelBuilder.Entity<Country>(entity =>
             {
@@ -228,17 +186,17 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
 
             modelBuilder.Entity<OrderBatch>(entity =>
             {
-                entity.HasOne(d => d.Batch)
-                    .WithMany(p => p.OrderBatches)
-                    .HasForeignKey(d => d.BatchId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Order_Batches_ProductImport_Batches");
-
                 entity.HasOne(d => d.Order)
                     .WithMany(p => p.OrderBatches)
                     .HasForeignKey(d => d.OrderId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Order_Batches_OrderHeader");
+
+                entity.HasOne(d => d.SiteInventoryBatch)
+                    .WithMany(p => p.OrderBatches)
+                    .HasForeignKey(d => d.SiteInventoryBatchId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Order_Batches_Site_Inventory_Batch");
             });
 
             modelBuilder.Entity<OrderContactInfo>(entity =>
@@ -370,21 +328,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                 entity.Property(e => e.Id).ValueGeneratedNever();
             });
 
-            modelBuilder.Entity<OrderVoucher>(entity =>
-            {
-                entity.HasOne(d => d.Order)
-                    .WithMany(p => p.OrderVouchers)
-                    .HasForeignKey(d => d.OrderId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Order_Voucher_OrderHeader");
-
-                entity.HasOne(d => d.Voucher)
-                    .WithMany(p => p.OrderVouchers)
-                    .HasForeignKey(d => d.VoucherId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Order_Voucher_Voucher");
-            });
-
             modelBuilder.Entity<ProductDetail>(entity =>
             {
                 entity.Property(e => e.BarCode).IsUnicode(false);
@@ -489,21 +432,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasConstraintName("FK_Drug_Sub_Category");
             });
 
-            modelBuilder.Entity<PurchaseVoucherHistory>(entity =>
-            {
-                entity.HasOne(d => d.Customer)
-                    .WithMany(p => p.PurchaseVoucherHistories)
-                    .HasForeignKey(d => d.CustomerId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_PurchaseVoucherHistory_Customer");
-
-                entity.HasOne(d => d.VoucherShop)
-                    .WithMany(p => p.PurchaseVoucherHistories)
-                    .HasForeignKey(d => d.VoucherShopId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_PurchaseVoucherHistory_VoucherShop");
-            });
-
             modelBuilder.Entity<SiteInformation>(entity =>
             {
                 entity.HasOne(d => d.Address)
@@ -513,19 +441,24 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasConstraintName("FK_Site_Information_Dynamic_Address");
             });
 
-            modelBuilder.Entity<SiteInventory>(entity =>
+            modelBuilder.Entity<SiteInventoryBatch>(entity =>
             {
+                entity.HasOne(d => d.ImportBatch)
+                    .WithMany(p => p.SiteInventoryBatches)
+                    .HasForeignKey(d => d.ImportBatchId)
+                    .HasConstraintName("FK_Site_Inventory_Batch_ProductImport_Batches");
+
                 entity.HasOne(d => d.Product)
-                    .WithMany(p => p.SiteInventories)
+                    .WithMany(p => p.SiteInventoryBatches)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Site_Inventory_Product_Details");
+                    .HasConstraintName("FK_Site_Inventory_Batch_Product_Details");
 
                 entity.HasOne(d => d.Site)
-                    .WithMany(p => p.SiteInventories)
+                    .WithMany(p => p.SiteInventoryBatches)
                     .HasForeignKey(d => d.SiteId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Site_Inventory_Site_Information");
+                    .HasConstraintName("FK_Site_Inventory_Batch_Site_Information");
             });
 
             modelBuilder.Entity<SubCategory>(entity =>
@@ -535,30 +468,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasForeignKey(d => d.MainCategoryId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Sub_Category_Category_Main");
-            });
-
-            modelBuilder.Entity<VoucherCustomerRestriction>(entity =>
-            {
-                entity.HasOne(d => d.Customer)
-                    .WithMany(p => p.VoucherCustomerRestrictions)
-                    .HasForeignKey(d => d.CustomerId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_VoucherCustomerRestriction_Customer");
-
-                entity.HasOne(d => d.Voucher)
-                    .WithMany(p => p.VoucherCustomerRestrictions)
-                    .HasForeignKey(d => d.VoucherId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_VoucherCustomerRestriction_Voucher");
-            });
-
-            modelBuilder.Entity<VoucherDetail>(entity =>
-            {
-                entity.HasOne(d => d.Voucher)
-                    .WithMany(p => p.VoucherDetails)
-                    .HasForeignKey(d => d.VoucherId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Voucher_Detail_Voucher");
             });
 
             modelBuilder.Entity<Ward>(entity =>

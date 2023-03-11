@@ -9,6 +9,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.UnitM
     {
         public string Id { get; set; }
         public string UnitName { get; set; }
+        public bool IsCountable { get; set; }
         public DateTime CreatedDate { get; set; }
         public bool Status { get; set; }
     }

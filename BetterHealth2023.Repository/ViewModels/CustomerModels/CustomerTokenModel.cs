@@ -14,5 +14,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Custo
         public string RoleName { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
         public string ImageURL { get; set; } = string.Empty;
+        public string PhoneNo { get; set; } = string.Empty;
     }
 }

@@ -65,6 +65,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderBatchRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderDetailRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderContactInfoRepos;
+using Google.Cloud.Firestore;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartService;
 
 namespace BetterHealthManagementAPI
 {
@@ -85,6 +87,7 @@ namespace BetterHealthManagementAPI
             {
                 Credential = GoogleCredential.FromFile("betterhealth-firebase.json")
             }));
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "betterhealth-firebase.json");
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -135,6 +138,7 @@ namespace BetterHealthManagementAPI
             services.AddScoped<IVNPayService, VNPayService>();
             services.AddScoped<IProductDiscountService, ProductDiscountService>();
             services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<ICartService, CartService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();

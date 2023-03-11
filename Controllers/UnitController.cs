@@ -42,7 +42,7 @@ namespace BetterHealthManagementAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUnit(CreateUnitModel unitModel)
         {
-            var model = await _unitService.Insert(unitModel.UnitName);
+            var model = await _unitService.Insert(unitModel);
             if (model.isError) return BadRequest(model);
             return Created("", "Đơn vị tính mới đã được tạo thành công.");
         }
@@ -50,7 +50,7 @@ namespace BetterHealthManagementAPI.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateUnit(UpdateUnitModel updateUnitModel)
         {
-            var model = await _unitService.Update(updateUnitModel.Id, updateUnitModel.UnitName);
+            var model = await _unitService.Update(updateUnitModel);
             if (model.isError) return BadRequest(model);
             return Created("", "Đơn vị tính mới đã được tạo thành công.");
         }

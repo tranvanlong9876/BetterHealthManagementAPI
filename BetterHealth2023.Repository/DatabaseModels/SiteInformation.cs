@@ -16,7 +16,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
             InternalUserWorkingSites = new HashSet<InternalUserWorkingSite>();
             OrderHeaders = new HashSet<OrderHeader>();
             ProductImportReceipts = new HashSet<ProductImportReceipt>();
-            SiteInventories = new HashSet<SiteInventory>();
+            SiteInventoryBatches = new HashSet<SiteInventoryBatch>();
         }
 
         [Key]
@@ -53,7 +53,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public virtual ICollection<OrderHeader> OrderHeaders { get; set; }
         [InverseProperty(nameof(ProductImportReceipt.Site))]
         public virtual ICollection<ProductImportReceipt> ProductImportReceipts { get; set; }
-        [InverseProperty(nameof(SiteInventory.Site))]
-        public virtual ICollection<SiteInventory> SiteInventories { get; set; }
+        [InverseProperty(nameof(SiteInventoryBatch.Site))]
+        public virtual ICollection<SiteInventoryBatch> SiteInventoryBatches { get; set; }
     }
 }

@@ -13,7 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
     {
         public ProductImportBatch()
         {
-            OrderBatches = new HashSet<OrderBatch>();
+            SiteInventoryBatches = new HashSet<SiteInventoryBatch>();
         }
 
         [Key]
@@ -28,13 +28,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public DateTime ManufactureDate { get; set; }
         [Column(TypeName = "date")]
         public DateTime ExpireDate { get; set; }
-        [Column("isOutOfStock")]
-        public bool IsOutOfStock { get; set; }
 
         [ForeignKey(nameof(ImportDetailId))]
         [InverseProperty(nameof(ProductImportDetail.ProductImportBatches))]
         public virtual ProductImportDetail ImportDetail { get; set; }
-        [InverseProperty(nameof(OrderBatch.Batch))]
-        public virtual ICollection<OrderBatch> OrderBatches { get; set; }
+        [InverseProperty(nameof(SiteInventoryBatch.ImportBatch))]
+        public virtual ICollection<SiteInventoryBatch> SiteInventoryBatches { get; set; }
     }
 }

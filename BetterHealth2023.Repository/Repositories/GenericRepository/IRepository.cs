@@ -2,7 +2,6 @@
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository
@@ -18,7 +17,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
         Task<bool> Remove(T entity);
         Task<List<TView>> GetAll<TView>();
         Task<PagedResult<TView>> GetAllPaging<TView>(PagingRequestBase requestBase);
-        Task<PagedResult<TView>> PagingExistingQuery<TView>(IQueryable<T> query, int pageIndex, int pageItems);
+        Task<PagedResult<TView>> PagingExistingQuery<TView>(System.Linq.IQueryable<T> query, int pageIndex, int pageItems);
         TOut TransferBetweenTwoModels<TIn, TOut>(TIn model);
 
         void TransferBetweenTwoModels<TIn, TOut>(ref TOut dbmodel, TIn model);

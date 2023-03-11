@@ -224,11 +224,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDis
             productDiscountView.Status = GetStatus(productDiscountView.StartDate, DateTime.Now, productDiscountView.EndDate);
             for(int i = 0; i < productDiscountView.EventProductDiscounts.Count; i++)
             {
+                
                 var productId = productDiscountView.EventProductDiscounts[i].ProductId;
-                var imagesModel = await _productImageRepo.GetProductImage(productId);
+                var productParentId = await _productDetailRepo.GetProductParentID(productId);
+                var imagesModel = await _productImageRepo.GetProductImage(productParentId);
                 productDiscountView.EventProductDiscounts[i].ProductImageUrl = imagesModel == null ? null : imagesModel.ImageURL;
                 var productModel = await _productDetailRepo.GetProductNameAndCurrentUnit(productId);
-                var unitName = GetStringUnit(await _productDetailRepo.GetProductLaterUnit(await _productDetailRepo.GetProductParentID(productId), productModel.UnitLevel));
+                var unitName = GetStringUnit(await _productDetailRepo.GetProductLaterUnit(productParentId, productModel.UnitLevel));
 
                 productDiscountView.EventProductDiscounts[i].Price = productModel.Price;
                 productDiscountView.EventProductDiscounts[i].ProductName = productModel.Name + " (" + unitName + ")";

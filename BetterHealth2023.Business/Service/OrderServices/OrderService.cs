@@ -12,10 +12,12 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderShipmentRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos.ProductImportBatchRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDetailRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,12 +36,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
         private readonly IOrderShipmentRepo _orderShipmentRepo;
         private readonly IOrderPickUpRepo _orderPickUpRepo;
         private readonly IProductImportRepo _productImportRepo;
-        private readonly IProductImportBatchRepo _productImportBatchRepo;
         private readonly IOrderBatchRepo _orderBatchRepo;
         private readonly IOrderDetailRepo _orderDetailRepo;
         private readonly IOrderContactInfoRepo _orderContactInfoRepo;
+        private readonly IProductDetailRepo _productDetailRepo;
 
-        public OrderService(ISiteInventoryRepo siteInventoryRepo, ISiteRepo siteRepo, ICustomerPointRepo customerPointRepo, ICustomerRepo customerRepo, IDynamicAddressRepo dynamicAddressRepo, IOrderHeaderRepo orderHeaderRepo, IOrderShipmentRepo orderShipmentRepo, IOrderPickUpRepo orderPickUpRepo, IProductImportRepo productImportRepo, IProductImportBatchRepo productImportBatchRepo, IOrderBatchRepo orderBatchRepo, IOrderDetailRepo orderDetailRepo, IOrderContactInfoRepo orderContactInfoRepo)
+        public OrderService(ISiteInventoryRepo siteInventoryRepo, ISiteRepo siteRepo, ICustomerPointRepo customerPointRepo, ICustomerRepo customerRepo, IDynamicAddressRepo dynamicAddressRepo, IOrderHeaderRepo orderHeaderRepo, IOrderShipmentRepo orderShipmentRepo, IOrderPickUpRepo orderPickUpRepo, IProductImportRepo productImportRepo, IOrderBatchRepo orderBatchRepo, IOrderDetailRepo orderDetailRepo, IOrderContactInfoRepo orderContactInfoRepo, IProductDetailRepo productDetailRepo)
         {
             _siteInventoryRepo = siteInventoryRepo;
             _siteRepo = siteRepo;
@@ -50,10 +52,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             _orderShipmentRepo = orderShipmentRepo;
             _orderPickUpRepo = orderPickUpRepo;
             _productImportRepo = productImportRepo;
-            _productImportBatchRepo = productImportBatchRepo;
             _orderBatchRepo = orderBatchRepo;
             _orderDetailRepo = orderDetailRepo;
             _orderContactInfoRepo = orderContactInfoRepo;
+            _productDetailRepo = productDetailRepo;
         }
 
         public async Task<CreateOrderCheckOutStatus> CheckOutOrder(CheckOutOrderModel checkOutOrderModel, string CustomerId)
@@ -229,49 +231,64 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 {
                     var isBatches = await _productImportRepo.checkProductManageByBatches(productModel.ProductId);
 
+                    //Convert thành unit cuối cùng
+                    var productParentId = await _productDetailRepo.GetProductParentID(productModel.ProductId);
+                    var productDetailDB = await _productDetailRepo.Get(productModel.ProductId);
+                    var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
+                    var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+                    int currentQuantity = productModel.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList);
+                    //Có quản lý theo lô
                     if (isBatches)
                     {
+
                         var listOfProductBatches = new List<OrderBatch>();
-                        var availableBatches = await _productImportBatchRepo.GetAllProductBatchesAvailable(productModel.ProductId);
-                        int currentQuantity = productModel.Quantity;
+                        var availableBatches = await _siteInventoryRepo.GetAllProductBatchesAvailable(productLastUnitDetail.Id, checkOutOrderModel.SiteId);
+
+                        int loopBatch = 0;
+                        //Quantity sau khi convert thành đơn vị cuối
                         while (currentQuantity > 0)
                         {
-                            int loopBatch = 0;
                             if (availableBatches[loopBatch].Quantity > currentQuantity)
                             {
                                 listOfProductBatches.Add(new OrderBatch()
                                 {
                                     Id = Guid.NewGuid().ToString(),
-                                    BatchId = availableBatches[loopBatch].Id,
+                                    SiteInventoryBatchId = availableBatches[loopBatch].Id,
                                     OrderId = checkOutOrderModel.OrderId,
                                     SoldQuantity = currentQuantity
                                 });
+                                //Đã trừ
+                                var thisBatch = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
+                                thisBatch.Quantity = thisBatch.Quantity - currentQuantity;
+                                await _siteInventoryRepo.Update();
                                 currentQuantity = 0;
+
                             }
                             else
                             {
                                 listOfProductBatches.Add(new OrderBatch()
                                 {
                                     Id = Guid.NewGuid().ToString(),
-                                    BatchId = availableBatches[loopBatch].Id,
+                                    SiteInventoryBatchId = availableBatches[loopBatch].Id,
                                     OrderId = checkOutOrderModel.OrderId,
                                     SoldQuantity = availableBatches[loopBatch].Quantity
                                 });
                                 
                                 currentQuantity = currentQuantity - availableBatches[loopBatch].Quantity;
-                                //Set Out Of Stock
-                                var batchDB = await _productImportBatchRepo.Get(availableBatches[loopBatch].Id);
-                                batchDB.IsOutOfStock = true;
-                                await _productImportBatchRepo.Update();
+                                var batchDB = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
+                                batchDB.Quantity = 0;
+                                await _siteInventoryRepo.Update();
                                 loopBatch++;
-                                
                             }
                         }
 
                         await _orderBatchRepo.InsertRange(listOfProductBatches);
-
+                    } else //không quản lý theo lô
+                    {
+                        var siteInventory = await _siteInventoryRepo.GetSiteInventory(checkOutOrderModel.SiteId, productLastUnitDetail.Id);
+                        siteInventory.Quantity = siteInventory.Quantity - currentQuantity;
+                        await _siteInventoryRepo.Update();
                     }
-                    //thêm lô hàng đã xong
                 }
                 //Đưa hàng cần mua xuống Database
                 //Also Generate List Of Product with A Lot of detail.
@@ -286,6 +303,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     Quantity = productModel.Quantity,
                     PriceTotal = productModel.DiscountPrice * productModel.Quantity,
                 };
+
                 if(checkOutOrderModel.OrderTypeId != Commons.ORDER_TYPE_DIRECTLY)
                 {
                     var productSendingEmailModel = _customerPointRepo.TransferBetweenTwoModels<OrderDetail, SendingEmailProductModel>(orderProductModelDB);
@@ -295,14 +313,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     productSendingEmailModels.Add(productSendingEmailModel);
                 }
                 await _orderDetailRepo.Insert(orderProductModelDB);
-                //Trừ tồn kho đối với đơn không phải giao hàng
-                if (!checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_DELIVERY))
-                {
-                    var siteinventoryDB = await _siteInventoryRepo.GetSiteInventory(checkOutOrderModel.SiteId, productModel.ProductId);
-                    siteinventoryDB.Quantity = siteinventoryDB.Quantity - productModel.Quantity;
-                    siteinventoryDB.UpdatedDate = DateTime.Now;
-                    await _siteInventoryRepo.Update();
-                }
             }
 
             //Khi hoàn thành đơn mới cộng điểm tích lũy, checkout xong không cộng.
@@ -315,7 +325,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     //Get Site Address
                     var SiteDB = await _siteRepo.Get(checkOutOrderModel.SiteId);
                     string address = await _dynamicAddressRepo.GetFullAddressFromAddressId(SiteDB.AddressId);
-                    await EmailService.SendCustomerInvoiceEmail(productSendingEmailModels, checkOutOrderModel, address);
+                    _ = Task.Run(() => EmailService.SendCustomerInvoiceEmail(productSendingEmailModels, checkOutOrderModel, address)).ConfigureAwait(false);
                 }
                 if (checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_DELIVERY))
                 {
@@ -330,6 +340,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             checkError.isError = false;
             return checkError;
             
+        }
+
+        private int CountTotalQuantityFromFirstToLastUnit(List<ProductUnitModel> productDetailList)
+        {
+            int totalQuantity = 1;
+
+            if (productDetailList.Count <= 1) return totalQuantity;
+
+            for (int i = 0; i < productDetailList.Count - 1; i++)
+            {
+                totalQuantity = totalQuantity * productDetailList.Find(x => x.UnitLevel == (i + 2)).Quantitative;
+            }
+
+            return totalQuantity;
         }
 
         private string OrderStatusIdCheckOut(int orderTypeId)
@@ -363,14 +387,23 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     return checkError;
                 }
                 cartModels = new List<CartModel>();
+
                 
-                for(int i = 0; i < productIdList.Count; i++)
+                for (int i = 0; i < productIdList.Count; i++)
                 {
+                    var productParentId = await _productDetailRepo.GetProductParentID(productIdList[i]);
+
+                    var productDetailDB = await _productDetailRepo.Get(productIdList[i]);
+                    //Get All Unit 
+                    var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
+                    var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+                    //Convert thành unit level cuối và quantity tổng của nó
                     cartModels.Add(new CartModel()
                     {
-                        ProductId = productIdList[i],
-                        Quantity = productQuantityList[i]
-                    });
+                        ProductId = productLastUnitDetail.Id,
+                        Quantity = productQuantityList[i] * CountTotalQuantityFromFirstToLastUnit(productLaterList),
+                        isBatches = await _productImportRepo.checkProductManageByBatches(productIdList[i])
+                });
                 }
             }
             catch
@@ -411,5 +444,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
     {
         public string ProductId { get; set; }
         public int Quantity { get; set; }
+        public bool isBatches { get; set; }
     }
 }

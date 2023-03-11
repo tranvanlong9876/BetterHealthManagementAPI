@@ -40,6 +40,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public int UnitLevel { get; set; }
         [JsonIgnore]
         public int Quantitative { get; set; }
+        [JsonIgnore]
         public int SellQuantity { get; set; }
         public double Price { get; set; }
         public bool IsSell { get; set; }

@@ -5,10 +5,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Generic
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.UnitModels;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using static System.Linq.Queryable;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UnitRepos
 {
@@ -42,6 +40,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 query = query.Where(x => x.UnitName.Contains(pagingModel.UnitName.Trim()));
             }
 
+            if (pagingModel.isCountable.HasValue)
+            {
+                query = query.Where(x => x.IsCountable.Equals(pagingModel.isCountable.Value));
+            }
+
             int totalRow = await query.CountAsync();
 
             var UnitModelList = await query.Skip((pagingModel.pageIndex - 1) * pagingModel.pageItems)
@@ -50,6 +53,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 {
                     Id = selector.Id,
                     UnitName = selector.UnitName,
+                    IsCountable = selector.IsCountable,
                     CreatedDate = selector.CreatedDate,
                     Status = selector.Status
                 }).ToListAsync();

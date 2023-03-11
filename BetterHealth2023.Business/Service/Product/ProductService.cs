@@ -117,7 +117,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 var productDetailDB = _productDetailRepo.TransferBetweenTwoModels<CreateProductDetailModel, ProductDetail>(product_details);
                 productDetailDB.Id = product_details_id;
                 productDetailDB.ProductIdParent = product_parent_id;
-                productDetailDB.IsVisible = productDetailDB.IsSell ? productDetailDB.IsVisible : false;
+                productDetailDB.IsSell = product_details.UnitLevel == 1 ? true : product_details.IsSell;
+                productDetailDB.SellQuantity = 1;
                 check = await _productDetailRepo.Insert(productDetailDB);
 
             }
@@ -128,22 +129,49 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 
         }
 
-        public async Task<PagedResult<ViewProductListModel>> GetAllProduct(ProductPagingRequest pagingRequest, bool isInternal)
+        public async Task<PagedResult<ViewProductListModel>> GetAllProductsPagingForCustomer(ProductPagingRequest pagingRequest)
         {
-            //var productParentList = await _productDetailRepo.GetProductParentDistinct();
-            var getType = isInternal ? 2 : 1;
-            //Get Type = 1 => Load At Home For Customer.
-            //Get Type = 2 => Load At Page For Pharmacist And Owner.
-            var pageResult = await _productDetailRepo.GetAllProductsPaging(pagingRequest, getType);
+
+            var pageResult = await _productDetailRepo.GetAllProductsPagingForCustomer(pagingRequest);
+            for (var i = 0; i < pageResult.Items.Count; i++)
+            {
+                var productIdParent = await _productDetailRepo.GetProductParentID(pageResult.Items[i].Id);
+                var image = await _productImageRepo.GetProductImage(productIdParent);
+                pageResult.Items[i].imageModel = image;
+
+                var productDiscount = await _productEventDiscountRepo.GetProductDiscount(pageResult.Items[i].Id);
+                if (productDiscount != null)
+                {
+                    if (productDiscount.DiscountMoney.HasValue)
+                    {
+                        pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - productDiscount.DiscountMoney.Value;
+                    }
+
+                    if (productDiscount.DiscountPercent.HasValue)
+                    {
+                        pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - (pageResult.Items[i].Price * productDiscount.DiscountPercent.Value / 100);
+                    }
+                    pageResult.Items[i].discountModel = productDiscount;
+                }
+                else
+                {
+                    pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price;
+                }
+
+            }
+            return pageResult;
+        }
+
+        public async Task<PagedResult<ViewProductListModelForInternal>> GetAllProductsPagingForInternalUser(ProductPagingRequest pagingRequest)
+        {
+            var pageResult = await _productDetailRepo.GetAllProductsPagingForInternalUser(pagingRequest);
             for (var i = 0; i < pageResult.Items.Count; i++)
             {
                 var productIdParent = await _productDetailRepo.GetProductParentID(pageResult.Items[i].Id);
                 var image = await _productImageRepo.GetProductImage(productIdParent);
                 var productUnitList = await _productDetailRepo.GetProductLaterUnit(productIdParent, pageResult.Items[i].UnitLevel);
-                var productUnitName = GetStringUnit(productUnitList);
+                pageResult.Items[i].productUnitReferences = productUnitList;
                 pageResult.Items[i].imageModel = image;
-                pageResult.Items[i].TotalUnitOnly = productUnitName;
-                pageResult.Items[i].NameWithUnit = pageResult.Items[i].Name + " (" + productUnitName + ")";
 
                 var productDiscount = await _productEventDiscountRepo.GetProductDiscount(pageResult.Items[i].Id);
                 if (productDiscount != null)
@@ -174,10 +202,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             if (productModel == null) return null;
             productModel.descriptionModels.ingredientModel = await _productIngredientDescriptionRepo.GetProductIngredient(productModel.descriptionModels.Id);
             productModel.imageModels = await _productImageRepo.getProductImages(productModel.ProductIdParent);
-            var productUnitName = GetStringUnit(await _productDetailRepo.GetProductLaterUnit(productModel.ProductIdParent, productModel.UnitLevel));
             var productUnitPreferences = await _productDetailRepo.GetProductUnitButThis(productModel.ProductIdParent, productModel.UnitLevel);
-            productModel.NameWithUnit = productModel.Name + " (" + productUnitName + ")";
-            productModel.TotalUnitOnly = productUnitName;
             productModel.productUnitReferences = productUnitPreferences;
 
             var productDiscount = await _productEventDiscountRepo.GetProductDiscount(productId);
@@ -315,11 +340,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 //productDetailDB.UnitId = productDetailModelUpdate.UnitId;
                 //productDetailDB.UnitLevel = productDetailModelUpdate.UnitLevel;
                 //productDetailDB.Quantitative = productDetailModelUpdate.Quantitative;
-                productDetailDB.SellQuantity = productDetailModelUpdate.SellQuantity;
                 productDetailDB.Price = productDetailModelUpdate.Price;
-                productDetailDB.IsSell = productDetailModelUpdate.IsSell;
+                if(productDetailModelUpdate.UnitLevel != 1)
+                {
+                    productDetailDB.IsSell = productDetailModelUpdate.IsSell;
+                }
                 productDetailDB.BarCode = productDetailModelUpdate.BarCode;
-                productDetailDB.IsVisible = productDetailModelUpdate.IsSell ? productDetailModelUpdate.IsVisible : false;
 
                 await _productDetailRepo.Update();
 
@@ -384,27 +410,5 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             return checkError;
         }
 
-        public string GetStringUnit(List<ProductUnitModel> productUnitList)
-        {
-            var namewithUnit = String.Empty;
-            if (productUnitList.Count >= 1)
-            {
-                for (var j = 0; j < productUnitList.Count; j++)
-                {
-                    var productUnit = productUnitList[j];
-                    if (j == 0)
-                    {
-                        namewithUnit = namewithUnit + "1 " + productUnit.UnitName;
-                    }
-                    else
-                    {
-                        namewithUnit = namewithUnit + productUnit.Quantitative + " " + productUnit.UnitName;
-                    }
-
-                    if (j != productUnitList.Count - 1) namewithUnit += " x ";
-                }
-            }
-            return namewithUnit;
-        }
     }
 }
