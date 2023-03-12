@@ -4,7 +4,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingMod
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using static System.Linq.Queryable;
+using static System.Linq.Enumerable;
 using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository
@@ -70,7 +71,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Gen
             return pagedResult;
         }
 
-        public async Task<PagedResult<TView>> PagingExistingQuery<TView>(IQueryable<T> query, int pageIndex, int pageItems)
+        public async Task<PagedResult<TView>> PagingExistingQuery<TView>(System.Linq.IQueryable<T> query, int pageIndex, int pageItems)
         {
             int totalRow = await query.CountAsync();
             List<T> results = await query.Skip((pageIndex - 1) * pageItems)

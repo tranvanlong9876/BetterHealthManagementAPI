@@ -8,6 +8,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
 {
     public class CheckOutOrderModel
     {
+        public string OrderId { get; set; }
         [Required]
         public int OrderTypeId { get; set; }
         public string SiteId { get; set; }
@@ -24,21 +25,38 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         public int UsedPoint { get; set; }
         [Required]
         public int PayType { get; set; }
+        [Required]
+        public bool isPaid { get; set; }
         public string Note { get; set; }
-
+        public List<OrderVoucher> Vouchers { get; set; }
+        [Required]
+        public List<OrderProduct> Products { get; set; }
         [Required]
         public ReveicerInformation ReveicerInformation { get; set; }
 
-        public List<OrderVoucher> Vouchers { get; set; }
-
-        public List<OrderProduct> Products { get; set; }
+        public OrderPickUp OrderPickUp { get; set; }
         
+
+    }
+
+    public class OrderPickUp
+    {
+        [Required]
+        [StringLength(50)]
+        public string DatePickUp { get; set; }
+        [Required]
+        [StringLength(50)]
+        public string TimePickUp { get; set; }
     }
 
     public class OrderProduct
     {
         [Required]
         public string ProductId { get; set; }
+        [Required]
+        public string ProductName { get; set; }
+        [Required]
+        public string ProductImageUrl { get; set; }
         [Required]
         public int Quantity { get; set; }
         [Required]
@@ -51,6 +69,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
 
     public class OrderVoucher
     {
+        [Required]
         public string VoucherId { get; set; }
     }
 
@@ -58,12 +77,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
     {
         [Required]
         public string Fullname { get; set; }
-        [Required]
+        [DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }
-        [Required]
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
-        [Required]
-        public string Gender { get; set; }
+        public bool Gender { get; set; }
         public string CityId { get; set; }
         public string DistrictId { get; set; }
         public string WardId { get; set; }

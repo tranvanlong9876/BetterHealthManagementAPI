@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos
 {
-    public interface ISiteInventoryRepo : IRepository<SiteInventory>
+    public interface ISiteInventoryRepo : IRepository<SiteInventoryBatch>
     {
-        public Task<SiteInventory> GetSiteInventory(string siteID, string ProductID);
 
+        public Task<List<SiteInventoryBatch>> GetAllProductBatchesAvailable(string productId, string siteId);
+        public Task<SiteInventoryBatch> GetSiteInventory(string siteID, string ProductID);
         public Task<SiteModelToPickUp> ViewSiteToPickUpsAsync(List<CartModel> cartModels, string cityId, string districtId);
     }
 }

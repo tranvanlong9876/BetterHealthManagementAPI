@@ -3,10 +3,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using static System.Linq.Queryable;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos
 {
@@ -32,6 +30,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return await context.Customers.Where(x => x.PhoneNo.Trim().Equals(phoneNo.Trim())).FirstOrDefaultAsync();
         }
 
-      
+        public async Task<string> GetCustomerIdBasedOnPhoneNo(string phoneNo)
+        {
+            return await context.Customers.Where(x => x.PhoneNo.Equals(phoneNo)).Select(x => x.Id).FirstOrDefaultAsync();
+        }
     }
 }

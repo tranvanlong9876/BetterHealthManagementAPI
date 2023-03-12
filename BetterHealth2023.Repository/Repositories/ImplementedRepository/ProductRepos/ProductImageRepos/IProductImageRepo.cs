@@ -13,10 +13,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
     {
         public Task<List<ProductImageView>> getProductImages(string productId);
 
+        public Task<List<ProductImage>> GetProductImageDBs(string productId);
         public Task<ProductImageView> GetProductImage(string productId);
         public Task<List<UpdateProductImageModel>> getProductImagesUpdate(string productId);
 
-        public Task<bool> removeAllImages(string productId);
+        public Task<bool> removeAllImages(List<ProductImage> productImages);
 
         public Task<bool> addMultipleImages(List<ProductImage> productImages);
     }

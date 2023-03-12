@@ -14,6 +14,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public ProductParent()
         {
             ProductDetails = new HashSet<ProductDetail>();
+            ProductImages = new HashSet<ProductImage>();
         }
 
         [Key]
@@ -50,5 +51,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public virtual SubCategory SubCategory { get; set; }
         [InverseProperty(nameof(ProductDetail.ProductIdParentNavigation))]
         public virtual ICollection<ProductDetail> ProductDetails { get; set; }
+        [InverseProperty(nameof(ProductImage.Product))]
+        public virtual ICollection<ProductImage> ProductImages { get; set; }
     }
 }

@@ -5,10 +5,9 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Generic
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using static System.Linq.Queryable;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductIngredientDescriptionRepos
 {
@@ -44,6 +43,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return data;
         }
 
+        public Task<List<ProductIngredientDescription>> GetProductIngredientDB(string productDesctId)
+        {
+            return context.ProductIngredientDescriptions.Where(x => x.ProductDescriptionId.Equals(productDesctId)).ToListAsync();
+        }
+
         public async Task<List<UpdateProductIngredientModel>> GetProductIngredientUpdate(string productDescId)
         {
             var query = from pro_ingre_desc in context.ProductIngredientDescriptions.Where(desc => desc.ProductDescriptionId.Equals(productDescId))
@@ -62,11 +66,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return data;
         }
 
-        public async Task<bool> RemoveAllProductIngredients(string descriptionID)
+        public async Task<bool> RemoveAllProductIngredients(List<ProductIngredientDescription> productIngredientDescriptions)
         {
-            var productDescriptions = await context.ProductIngredientDescriptions.Where(x => x.ProductDescriptionId.Equals(descriptionID.Trim())).ToListAsync();
-
-            context.RemoveRange(productDescriptions);
+            context.RemoveRange(productIngredientDescriptions);
 
             await Update();
 

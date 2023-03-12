@@ -8,13 +8,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerM
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.CustomerErrorModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
-using FirebaseAdmin.Auth;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
@@ -151,7 +145,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                 Name = customer.Fullname,
                 RoleName = "Customer",
                 Status = customer.Status,
-                Token = customerToken
+                Token = customerToken,
+                PhoneNo = phoneNo
             };
             checkError.customerToken = customerTokenModel;
             checkError.isError = false;

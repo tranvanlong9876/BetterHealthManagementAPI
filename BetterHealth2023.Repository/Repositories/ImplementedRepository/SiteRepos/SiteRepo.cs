@@ -5,9 +5,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingMod
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using static System.Linq.Queryable;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos
 {
@@ -106,6 +105,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             var pageResult = new PagedResult<SiteViewModel>(siteList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
 
             return pageResult;
+        }
+
+        public Task<string> GetSiteAddressId(string siteId)
+        {
+            throw new NotImplementedException();
         }
     }
 

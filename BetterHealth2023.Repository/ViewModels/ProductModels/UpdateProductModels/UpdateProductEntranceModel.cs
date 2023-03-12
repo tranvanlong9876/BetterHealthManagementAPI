@@ -17,5 +17,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public List<UpdateProductDetailModel> productDetailModel { get; set; }
 
         public UpdateProductDescriptionModel descriptionModel { get; set; }
+
+        public List<UpdateProductImageModel> ImageModels { get; set; }
     }
 }

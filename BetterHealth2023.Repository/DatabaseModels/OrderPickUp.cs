@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 {
-    [Table("Order_Voucher")]
-    public partial class OrderVoucher
+    [Table("Order_PickUp")]
+    public partial class OrderPickUp
     {
         [Key]
         [StringLength(50)]
@@ -19,15 +19,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string OrderId { get; set; }
         [Required]
         [StringLength(50)]
-        public string VoucherId { get; set; }
-        [Column(TypeName = "datetime")]
-        public DateTime CreatedDate { get; set; }
+        public string DatePickUp { get; set; }
+        [Required]
+        [StringLength(50)]
+        public string TimePickUp { get; set; }
 
         [ForeignKey(nameof(OrderId))]
-        [InverseProperty(nameof(OrderHeader.OrderVouchers))]
+        [InverseProperty(nameof(OrderHeader.OrderPickUps))]
         public virtual OrderHeader Order { get; set; }
-        [ForeignKey(nameof(VoucherId))]
-        [InverseProperty("OrderVouchers")]
-        public virtual Voucher Voucher { get; set; }
     }
 }

@@ -13,12 +13,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
     {
         public ProductDetail()
         {
-            Comments = new HashSet<Comment>();
             EventProductDiscounts = new HashSet<EventProductDiscount>();
             OrderDetails = new HashSet<OrderDetail>();
-            ProductImages = new HashSet<ProductImage>();
             ProductImportDetails = new HashSet<ProductImportDetail>();
-            SiteInventories = new HashSet<SiteInventory>();
+            SiteInventoryBatches = new HashSet<SiteInventoryBatch>();
         }
 
         [Key]
@@ -40,8 +38,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public double Price { get; set; }
         [Column("isSell")]
         public bool IsSell { get; set; }
-        [Column("isVisible")]
-        public bool IsVisible { get; set; }
         [StringLength(50)]
         public string BarCode { get; set; }
 
@@ -51,17 +47,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [ForeignKey(nameof(UnitId))]
         [InverseProperty("ProductDetails")]
         public virtual Unit Unit { get; set; }
-        [InverseProperty(nameof(Comment.Product))]
-        public virtual ICollection<Comment> Comments { get; set; }
         [InverseProperty(nameof(EventProductDiscount.Product))]
         public virtual ICollection<EventProductDiscount> EventProductDiscounts { get; set; }
         [InverseProperty(nameof(OrderDetail.Product))]
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
-        [InverseProperty(nameof(ProductImage.Product))]
-        public virtual ICollection<ProductImage> ProductImages { get; set; }
         [InverseProperty(nameof(ProductImportDetail.Product))]
         public virtual ICollection<ProductImportDetail> ProductImportDetails { get; set; }
-        [InverseProperty(nameof(SiteInventory.Product))]
-        public virtual ICollection<SiteInventory> SiteInventories { get; set; }
+        [InverseProperty(nameof(SiteInventoryBatch.Product))]
+        public virtual ICollection<SiteInventoryBatch> SiteInventoryBatches { get; set; }
     }
 }

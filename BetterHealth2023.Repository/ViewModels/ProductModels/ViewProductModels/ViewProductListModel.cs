@@ -10,9 +10,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public string Id { get; set; }
         public string Name { get; set; }
 
-        public string NameWithUnit { get; set; }
-        public string TotalUnitOnly { get; set; }
-
         public string SubCategoryId { get; set; }
 
         public string ManufacturerId { get; set; }
@@ -49,4 +46,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public double? DiscountMoney { get; set; }
 
     }
+
+    public class ViewProductListModelForInternal : ViewProductListModel
+    {
+        public List<ProductUnitModel> productUnitReferences { get; set; }
+    }
+
+
 }

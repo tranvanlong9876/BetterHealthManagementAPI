@@ -5,11 +5,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductMo
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.Controllers
@@ -30,8 +27,13 @@ namespace BetterHealthManagementAPI.Controllers
         public async Task<IActionResult> GetAllProducts([FromQuery] ProductPagingRequest pagingRequest)
         {
             bool isInternal = CheckInternalUser();
-            var listProduct = await _productService.GetAllProduct(pagingRequest, isInternal);
-            return Ok(listProduct);
+            if(!isInternal)
+            {
+                return Ok(await _productService.GetAllProductsPagingForCustomer(pagingRequest));
+            } else
+            {
+                return Ok(await _productService.GetAllProductsPagingForInternalUser(pagingRequest));
+            }
         }
 
         [HttpGet("View/{id}")]
@@ -76,7 +78,7 @@ namespace BetterHealthManagementAPI.Controllers
             if (Request.Headers.ContainsKey("Authorization"))
             {
                 string token = (Request.Headers)["Authorization"].ToString().Split(" ")[1];
-                if (JwtUserToken.DecodeAPITokenToRole(token) == null || JwtUserToken.DecodeAPITokenToRole(token).Equals("Customer"))
+                if (JwtUserToken.DecodeAPITokenToRole(token) == String.Empty || JwtUserToken.DecodeAPITokenToRole(token).Equals("Customer"))
                 {
                     return false;
                 }

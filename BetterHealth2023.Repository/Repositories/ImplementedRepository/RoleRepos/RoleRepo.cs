@@ -5,7 +5,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.RoleModel
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using static System.Linq.Queryable;
 using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.RoleRepos

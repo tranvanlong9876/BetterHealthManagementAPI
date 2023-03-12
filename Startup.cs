@@ -60,6 +60,13 @@ using BetterHealthManagementAPI.BetterHealth2023.Business.Service.VNPay;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductDiscountRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDiscountServices;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServices;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderShipmentRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderPickupRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderBatchRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderDetailRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderContactInfoRepos;
+using Google.Cloud.Firestore;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartService;
 
 namespace BetterHealthManagementAPI
 {
@@ -80,6 +87,7 @@ namespace BetterHealthManagementAPI
             {
                 Credential = GoogleCredential.FromFile("betterhealth-firebase.json")
             }));
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "betterhealth-firebase.json");
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -105,6 +113,7 @@ namespace BetterHealthManagementAPI
                         };
                     });
             JwtUserToken.Initialize(Configuration);
+            EmailService.Initialize(Configuration);
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddDbContext<BetterHealthManagementContext>();            
             services.AddCors(p => p.AddPolicy("MyCors", build =>
@@ -129,6 +138,7 @@ namespace BetterHealthManagementAPI
             services.AddScoped<IVNPayService, VNPayService>();
             services.AddScoped<IProductDiscountService, ProductDiscountService>();
             services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<ICartService, CartService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();
@@ -157,6 +167,11 @@ namespace BetterHealthManagementAPI
             services.AddTransient<ISiteInventoryRepo, SiteInventoryRepo>();
             services.AddTransient<IProductDiscountRepo, ProductDiscountRepo>();
             services.AddTransient<IProductEventDiscountRepo, ProductEventDiscountRepo>();
+            services.AddTransient<IOrderShipmentRepo, OrderShipmentRepo>();
+            services.AddTransient<IOrderPickUpRepo, OrderPickUpRepo>();
+            services.AddTransient<IOrderBatchRepo, OrderBatchRepo>();
+            services.AddTransient<IOrderDetailRepo, OrderDetailRepo>();
+            services.AddTransient<IOrderContactInfoRepo, OrderContactInfoRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
