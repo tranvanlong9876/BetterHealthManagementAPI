@@ -62,7 +62,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
                 new Claim(ClaimTypes.NameIdentifier, customer.Id),
                 new Claim(ClaimTypes.Role, "Customer"),
                 new Claim(ClaimTypes.Name, customer.Fullname),
-                new Claim("Image", customer.ImageUrl)
+                new Claim("Image", customer.ImageUrl),
+                new Claim("PhoneNo", customer.PhoneNo)
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("JwtStorage:Token").Value));
@@ -132,7 +133,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
         {
             if(jwtToken == null)
             {
-                return null;
+                return String.Empty;
             }
             try
             {
@@ -141,7 +142,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
                 return claim;
             } catch
             {
-                return null;
+                return String.Empty;
             }
         }
     }

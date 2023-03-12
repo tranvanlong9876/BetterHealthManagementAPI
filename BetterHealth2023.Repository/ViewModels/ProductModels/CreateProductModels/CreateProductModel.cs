@@ -30,5 +30,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         [Required]
         public CreateProductDescriptionModel descriptionModel { get; set; }
 
+        public List<CreateProductImage> imageModel { get; set; }
+
+    }
+
+    public class CreateProductImage
+    {
+        [Required]
+        public string imageURL { get; set; }
+        public bool? IsFirstImage { get; set; }
+
     }
 }

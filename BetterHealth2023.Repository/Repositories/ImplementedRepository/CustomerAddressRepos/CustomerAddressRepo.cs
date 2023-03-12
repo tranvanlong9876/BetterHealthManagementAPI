@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
@@ -15,14 +15,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 {
     public class CustomerAddressRepo : Repository<CustomerAddress>, ICustomerAddressRepo
     {
-        public CustomerAddressRepo(BetterHealthManagementContext context, IMapper mapper) : base(context, mapper)
+        public CustomerAddressRepo(BetterHealthManagementContext context) : base(context)
         {
         }
-
         public async Task<List<CustomerAddress>> GetAllCustomerAddressByCustomerId(string id)
         {
             List<CustomerAddress> list = await context.CustomerAddresses.Where(x => x.CustomerId == id).ToListAsync();
             return list;
+            
+        public CustomerAddressRepo(BetterHealthManagementContext context, IMapper mapper) : base(context, mapper)
+        {
         }
 
         public async Task<ActionResult> InsertCustomerAddress(CustomerAddressInsertModel CustomerAddressInsertModel)

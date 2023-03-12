@@ -24,6 +24,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [Column("Unit_Name")]
         [StringLength(100)]
         public string UnitName { get; set; }
+        [Column("isCountable")]
+        public bool IsCountable { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime CreatedDate { get; set; }
         public bool Status { get; set; }

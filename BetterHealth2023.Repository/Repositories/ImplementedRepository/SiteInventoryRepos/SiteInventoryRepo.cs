@@ -5,32 +5,44 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
-using System.Data.Entity.Core.Objects;
-using System.Linq;
 using System.Threading.Tasks;
+using static System.Linq.Queryable;
+using static System.Linq.Enumerable;
+using System;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos
 {
-    public class SiteInventoryRepo : Repository<SiteInventory>, ISiteInventoryRepo
+    public class SiteInventoryRepo : Repository<SiteInventoryBatch>, ISiteInventoryRepo
     {
         public SiteInventoryRepo(BetterHealthManagementContext context, IMapper mapper) : base(context, mapper)
         {
         }
 
-        public async Task<SiteInventory> GetSiteInventory(string siteID, string ProductID)
+        public async Task<List<SiteInventoryBatch>> GetAllProductBatchesAvailable(string productId, string siteId)
         {
-            var query = from siteinven in context.SiteInventories.Where(x => x.ProductId.Equals(ProductID.Trim()) && x.SiteId.Equals(siteID.Trim()))
+            var query = from batch in context.SiteInventoryBatches
+                        from productImportBatch in context.ProductImportBatches.Where(x => x.Id == batch.ImportBatchId).DefaultIfEmpty()
+                        select new { batch, productImportBatch };
+
+            var productBatches = await query.Where(x => x.batch.ProductId.Equals(productId) && x.productImportBatch.ExpireDate > DateTime.Now && x.batch.Quantity > 0 && x.batch.SiteId.Equals(siteId)).OrderBy(x => x.productImportBatch.ExpireDate).Select(x => x.batch).ToListAsync();
+
+            return productBatches;
+        }
+
+        public async Task<SiteInventoryBatch> GetSiteInventory(string siteID, string ProductID)
+        {
+            var query = from siteinven in context.SiteInventoryBatches.Where(x => x.ProductId.Equals(ProductID.Trim()) && x.SiteId.Equals(siteID.Trim()))
                         select siteinven;
 
             return await query.FirstOrDefaultAsync();
         }
 
+
         public async Task<SiteModelToPickUp> ViewSiteToPickUpsAsync(List<CartModel> cartModels, string cityId, string districtId)
         {
             var query = from site in context.SiteInformations
-                        from inventory in context.SiteInventories.Where(x => x.SiteId == site.Id).DefaultIfEmpty()
+                        from inventory in context.SiteInventoryBatches.Where(x => x.SiteId == site.Id).DefaultIfEmpty()
                         from address in context.DynamicAddresses.Where(x => x.Id == site.AddressId).DefaultIfEmpty()
                         select new { site, inventory, address };
 
@@ -43,13 +55,21 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             //Big List.
 
+            var queryToCheck = from sib in context.SiteInventoryBatches
+                               group sib by new { sib.SiteId, sib.ProductId } into grp
+                               select new
+                               {
+                                   Site_ID = grp.Key.SiteId,
+                                   Product_ID = grp.Key.ProductId,
+                                   TotalQuantity = grp.Sum(x => x.Quantity)
+                               };
             var bigSiteList = new List<List<string>>();
 
             for(int i = 0; i < cartModels.Count; i++)
             {
                 var productId = cartModels[i].ProductId;
                 var quantity = cartModels[i].Quantity;
-                var data = await query.Where(x => (x.inventory.ProductId.Equals(productId) && x.inventory.Quantity >= quantity)).Select(selector => selector.site.Id).ToListAsync();
+                var data = await queryToCheck.Where(x => (x.Product_ID.Equals(productId) && x.TotalQuantity >= quantity)).Select(selector => selector.Site_ID).ToListAsync();
 
                 bigSiteList.Add(data);
             }
@@ -64,16 +84,22 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             for (int i = 0; i < bigSiteList[0].Count; i++)
             {
                 var siteId = bigSiteList[0][i];
-                var data = await query.Where(x => x.site.Id.Equals(siteId)).Select(selector => new SiteListToPickUp()
+                if(await query.Where(x => x.site.Id.Equals(siteId)).CountAsync() > 0)
                 {
-                    SiteId = selector.site.Id,
-                    CityId = selector.address.CityId,
-                    DistrictId = selector.address.DistrictId,
-                    HomeAddress = selector.address.HomeAddress,
-                    SiteName = selector.site.SiteName,
-                    WardId = selector.address.WardId
-                }).FirstOrDefaultAsync();
-                SiteListToPickUp.Add(data);
+                    var data = await query.Where(x => x.site.Id.Equals(siteId)).Select(selector => new SiteListToPickUp()
+                    {
+                        SiteId = selector.site.Id,
+                        CityId = selector.address.CityId,
+                        DistrictId = selector.address.DistrictId,
+                        HomeAddress = selector.address.HomeAddress,
+                        SiteName = selector.site.SiteName,
+                        WardId = selector.address.WardId
+                    }).FirstOrDefaultAsync();
+                    SiteListToPickUp.Add(data);
+                } else
+                {
+                    totalRow--;
+                }
             }
 
             SiteModelToPickUp model = new SiteModelToPickUp()

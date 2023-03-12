@@ -6,9 +6,9 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingMod
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductImportModels;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using static System.Linq.Enumerable;
+using static System.Linq.Queryable;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos
 {

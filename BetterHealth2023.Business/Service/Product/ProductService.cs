@@ -45,9 +45,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             var checkError = new CreateProductErrorModel();
             bool duplicateBarCode;
 
-            foreach(var pro_details in createProductModel.productDetailModel)
+            foreach (var pro_details in createProductModel.productDetailModel)
             {
-                if(!string.IsNullOrWhiteSpace(pro_details.BarCode))
+                if (!string.IsNullOrWhiteSpace(pro_details.BarCode))
                 {
                     duplicateBarCode = await _productDetailRepo.CheckDuplicateBarCode(pro_details.BarCode);
 
@@ -64,7 +64,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             //id
             var desc_id = Guid.NewGuid().ToString();
             var product_parent_id = Guid.NewGuid().ToString();
-            
+
             //Insert Product Description
 
             var product_desc = _productDescriptionRepo.TransferBetweenTwoModels<CreateProductDescriptionModel, ProductDescription>(createProductModel.descriptionModel);
@@ -75,7 +75,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             //Insert Product Ingredient
             var List_Product_Ingredient = createProductModel.descriptionModel.ingredientModel;
 
-            foreach(var product_ingredient in List_Product_Ingredient)
+            foreach (var product_ingredient in List_Product_Ingredient)
             {
                 var product_ingre_desc_id = Guid.NewGuid().ToString();
                 var product_ingre_db = _productIngredientDescriptionRepo.TransferBetweenTwoModels<CreateProductIngredientModel, ProductIngredientDescription>(product_ingredient);
@@ -93,36 +93,35 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             check = await _productParentRepo.Insert(productparentDB);
             //Done Insert Product Parent
 
+            var List_Product_Images = createProductModel.imageModel;
+            foreach (var product_images in List_Product_Images)
+            {
+                var product_image_id = Guid.NewGuid().ToString();
+                var product_image_db = new ProductImage()
+                {
+                    Id = product_image_id,
+                    ImageUrl = product_images.imageURL,
+                    ProductId = product_parent_id,
+                    IsFirstImage = !(product_images.IsFirstImage.HasValue) ? false : (bool)product_images.IsFirstImage
+                };
+                check = await _productImageRepo.Insert(product_image_db);
+            }
+            //done insert product images.
+
+
             //Insert Product Details
             var List_Product_Details = createProductModel.productDetailModel;
-            foreach(var product_details in List_Product_Details)
+            foreach (var product_details in List_Product_Details)
             {
                 var product_details_id = Guid.NewGuid().ToString();
                 var productDetailDB = _productDetailRepo.TransferBetweenTwoModels<CreateProductDetailModel, ProductDetail>(product_details);
                 productDetailDB.Id = product_details_id;
                 productDetailDB.ProductIdParent = product_parent_id;
-                productDetailDB.IsVisible = productDetailDB.IsSell ? productDetailDB.IsVisible : false;
+                productDetailDB.IsSell = product_details.UnitLevel == 1 ? true : product_details.IsSell;
+                productDetailDB.Quantitative = product_details.UnitLevel == 1 ? 1 : product_details.Quantitative;
+                productDetailDB.SellQuantity = 1;
                 check = await _productDetailRepo.Insert(productDetailDB);
 
-                //insert Image each time success.
-
-                if(check)
-                {
-                    var List_Product_Images = product_details.imageURL;
-                    foreach(var product_images in List_Product_Images)
-                    {
-                        var product_image_id = Guid.NewGuid().ToString();
-                        var product_image_db = new Repository.DatabaseModels.ProductImage()
-                        {
-                            Id = product_image_id,
-                            ImageUrl = product_images.imageURL,
-                            ProductId = product_details_id,
-                            IsFirstImage = !(product_images.IsFirstImage.HasValue) ? false : (bool) product_images.IsFirstImage
-                        };
-                        check = await _productImageRepo.Insert(product_image_db);
-                    }
-                    //done insert product images.
-                }
             }
 
             if (check) checkError.isError = false;
@@ -131,24 +130,18 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 
         }
 
-        public async Task<PagedResult<ViewProductListModel>> GetAllProduct(ProductPagingRequest pagingRequest, bool isInternal)
+        public async Task<PagedResult<ViewProductListModel>> GetAllProductsPagingForCustomer(ProductPagingRequest pagingRequest)
         {
-            //var productParentList = await _productDetailRepo.GetProductParentDistinct();
-            var getType = isInternal ? 2 : 1;
-            //Get Type = 1 => Load At Home For Customer.
-            //Get Type = 2 => Load At Page For Pharmacist And Owner.
-            var pageResult = await _productDetailRepo.GetAllProductsPaging(pagingRequest, getType);
+
+            var pageResult = await _productDetailRepo.GetAllProductsPagingForCustomer(pagingRequest);
             for (var i = 0; i < pageResult.Items.Count; i++)
             {
-                var image = await _productImageRepo.GetProductImage(pageResult.Items[i].Id);
-                var productUnitList = await _productDetailRepo.GetProductLaterUnit(await _productDetailRepo.GetProductParentID(pageResult.Items[i].Id), pageResult.Items[i].UnitLevel);
-                var productUnitName = GetStringUnit(productUnitList);
+                var productIdParent = await _productDetailRepo.GetProductParentID(pageResult.Items[i].Id);
+                var image = await _productImageRepo.GetProductImage(productIdParent);
                 pageResult.Items[i].imageModel = image;
-                pageResult.Items[i].TotalUnitOnly = productUnitName;
-                pageResult.Items[i].NameWithUnit = pageResult.Items[i].Name + " (" + productUnitName + ")";
 
                 var productDiscount = await _productEventDiscountRepo.GetProductDiscount(pageResult.Items[i].Id);
-                if(productDiscount != null)
+                if (productDiscount != null)
                 {
                     if (productDiscount.DiscountMoney.HasValue)
                     {
@@ -160,11 +153,46 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                         pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - (pageResult.Items[i].Price * productDiscount.DiscountPercent.Value / 100);
                     }
                     pageResult.Items[i].discountModel = productDiscount;
-                } else
+                }
+                else
                 {
                     pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price;
                 }
-                
+
+            }
+            return pageResult;
+        }
+
+        public async Task<PagedResult<ViewProductListModelForInternal>> GetAllProductsPagingForInternalUser(ProductPagingRequest pagingRequest)
+        {
+            var pageResult = await _productDetailRepo.GetAllProductsPagingForInternalUser(pagingRequest);
+            for (var i = 0; i < pageResult.Items.Count; i++)
+            {
+                var productIdParent = await _productDetailRepo.GetProductParentID(pageResult.Items[i].Id);
+                var image = await _productImageRepo.GetProductImage(productIdParent);
+                var productUnitList = await _productDetailRepo.GetProductLaterUnit(productIdParent, pageResult.Items[i].UnitLevel);
+                pageResult.Items[i].productUnitReferences = productUnitList;
+                pageResult.Items[i].imageModel = image;
+
+                var productDiscount = await _productEventDiscountRepo.GetProductDiscount(pageResult.Items[i].Id);
+                if (productDiscount != null)
+                {
+                    if (productDiscount.DiscountMoney.HasValue)
+                    {
+                        pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - productDiscount.DiscountMoney.Value;
+                    }
+
+                    if (productDiscount.DiscountPercent.HasValue)
+                    {
+                        pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - (pageResult.Items[i].Price * productDiscount.DiscountPercent.Value / 100);
+                    }
+                    pageResult.Items[i].discountModel = productDiscount;
+                }
+                else
+                {
+                    pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price;
+                }
+
             }
             return pageResult;
         }
@@ -174,11 +202,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             var productModel = await _productDetailRepo.GetSpecificProduct(productId, isInternal);
             if (productModel == null) return null;
             productModel.descriptionModels.ingredientModel = await _productIngredientDescriptionRepo.GetProductIngredient(productModel.descriptionModels.Id);
-            productModel.imageModels = await _productImageRepo.getProductImages(productModel.Id);
-            var productUnitName = GetStringUnit(await _productDetailRepo.GetProductLaterUnit(productModel.ProductIdParent, productModel.UnitLevel));
+            productModel.imageModels = await _productImageRepo.getProductImages(productModel.ProductIdParent);
             var productUnitPreferences = await _productDetailRepo.GetProductUnitButThis(productModel.ProductIdParent, productModel.UnitLevel);
-            productModel.NameWithUnit = productModel.Name + " (" + productUnitName + ")";
-            productModel.TotalUnitOnly = productUnitName;
             productModel.productUnitReferences = productUnitPreferences;
 
             var productDiscount = await _productEventDiscountRepo.GetProductDiscount(productId);
@@ -207,27 +232,25 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
         public async Task<UpdateProductViewModel> GetViewProductForUpdate(string productId)
         {
             var productParentID = await _productDetailRepo.GetProductParentID(productId);
-            if(productParentID == null)
+            if (productParentID == null)
             {
                 return null;
             }
             var productModel = await _productParentRepo.GetViewModel<UpdateProductViewModel>(productParentID);
-
+            var productImages = await _productImageRepo.getProductImagesUpdate(productParentID);
+            productModel.ImageModels = productImages;
             //get product description
             var productDescriptionModel = await _productDescriptionRepo.GetViewModel<UpdateProductDescriptionModel>(productModel.ProductDescriptionId);
             productModel.descriptionModel = productDescriptionModel;
             //get product ingredient
-            if(productModel.descriptionModel != null)
+            if (productModel.descriptionModel != null)
             {
                 var productIngredientModel = await _productIngredientDescriptionRepo.GetProductIngredientUpdate(productModel.descriptionModel.Id);
                 productModel.descriptionModel.ingredientModel = productIngredientModel;
             }
             //get list product detail
             var productDetailList = await _productDetailRepo.GetProductDetailLists(productParentID);
-            for(var i = 0; i < productDetailList.Count; i++)
-            {
-                productDetailList[i].ImageModels = await _productImageRepo.getProductImagesUpdate(productDetailList[i].Id);
-            }
+
             productModel.productDetailModel = productDetailList;
 
             return productModel;
@@ -244,7 +267,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 return checkError;
             }
 
-            for(int i = 0; i < updateProductModel.productDetailModel.Count; i++)
+            for (int i = 0; i < updateProductModel.productDetailModel.Count; i++)
             {
                 var productDetailModel = updateProductModel.productDetailModel[i];
                 if (!string.IsNullOrWhiteSpace(productDetailModel.BarCode))
@@ -266,44 +289,67 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             productParentModel.Name = updateProductModel.Name;
             productParentModel.SubCategoryId = updateProductModel.subCategoryId;
             productParentModel.ManufacturerId = updateProductModel.manufacturerId;
+
+            //await _productImageRepo.removeAllImages(updateProductModel.Id);
+            //Load lên list tạm
+            List<ProductImage> productImagesNeedToDelete = await _productImageRepo.GetProductImageDBs(updateProductModel.Id);
+            if (updateProductModel.ImageModels != null)
+            {
+                List<ProductImage> productImageInsertDBs = new();
+                for (var j = 0; j < updateProductModel.ImageModels.Count; j++)
+                {
+                    var imageModel = updateProductModel.ImageModels[j];
+                    if (String.IsNullOrWhiteSpace(imageModel.Id))
+                    {
+                        ProductImage productImageDB = new()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            ImageUrl = imageModel.ImageUrl,
+                            IsFirstImage = imageModel.IsFirstImage,
+                            ProductId = updateProductModel.Id
+                        };
+                        productImageInsertDBs.Add(productImageDB);
+                    }
+                    else
+                    {
+                        //Just need to update
+                        var productImageDBUpdate = await _productImageRepo.Get(imageModel.Id);
+                        productImageDBUpdate.ImageUrl = imageModel.ImageUrl;
+                        productImageDBUpdate.IsFirstImage = imageModel.IsFirstImage;
+                        await _productImageRepo.Update();
+                        productImagesNeedToDelete.Remove(productImagesNeedToDelete.Find(x => x.Id.Equals(imageModel.Id)));
+                    }
+                }
+                if (productImageInsertDBs.Count >= 1)
+                {
+                    await _productImageRepo.InsertRange(productImageInsertDBs);
+                }
+                if (productImagesNeedToDelete.Count >= 1)
+                {
+                    await _productImageRepo.removeAllImages(productImagesNeedToDelete);
+                }
+            }
+
+
             //done general information
 
             //update specific information
-            for(var i = 0; i < updateProductModel.productDetailModel.Count(); i++)
+            for (var i = 0; i < updateProductModel.productDetailModel.Count(); i++)
             {
                 var productDetailModelUpdate = updateProductModel.productDetailModel[i];
                 var productDetailDB = await _productDetailRepo.Get(productDetailModelUpdate.Id);
                 //productDetailDB.UnitId = productDetailModelUpdate.UnitId;
                 //productDetailDB.UnitLevel = productDetailModelUpdate.UnitLevel;
                 //productDetailDB.Quantitative = productDetailModelUpdate.Quantitative;
-                productDetailDB.SellQuantity = productDetailModelUpdate.SellQuantity;
                 productDetailDB.Price = productDetailModelUpdate.Price;
-                productDetailDB.IsSell = productDetailModelUpdate.IsSell;
+                if(productDetailModelUpdate.UnitLevel != 1)
+                {
+                    productDetailDB.IsSell = productDetailModelUpdate.IsSell;
+                }
                 productDetailDB.BarCode = productDetailModelUpdate.BarCode;
-                productDetailDB.IsVisible = productDetailModelUpdate.IsSell ? productDetailModelUpdate.IsVisible : false;
 
                 await _productDetailRepo.Update();
 
-                await _productImageRepo.removeAllImages(productDetailDB.Id);
-                List<Repository.DatabaseModels.ProductImage> productImageDBs = new();
-                if(productDetailModelUpdate.ImageModels != null)
-                {
-                    for (var j = 0; j < productDetailModelUpdate.ImageModels.Count; j++)
-                    {
-                        var imageModel = productDetailModelUpdate.ImageModels[j];
-                        Repository.DatabaseModels.ProductImage productImageDB = new()
-                        {
-                            Id = String.IsNullOrWhiteSpace(imageModel.Id) ? Guid.NewGuid().ToString() : imageModel.Id,
-                            ImageUrl = imageModel.ImageUrl,
-                            ProductId = productDetailDB.Id
-                        };
-                        productImageDBs.Add(productImageDB);
-                    }
-                    if (productImageDBs.Count >= 1)
-                    {
-                        await _productImageRepo.addMultipleImages(productImageDBs);
-                    }
-                }
             }
             //done update specific information
 
@@ -317,55 +363,53 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             productDescriptionDB.Contraindications = productDescriptionUpdate.Contraindications;
             await _productDescriptionRepo.Update();
 
-            await _productIngredientDescriptionRepo.RemoveAllProductIngredients(productDescriptionDB.Id);
-            List<ProductIngredientDescription> productIngredientDescriptions = new();
-            if(productDescriptionUpdate.ingredientModel != null)
+            //await _productIngredientDescriptionRepo.RemoveAllProductIngredients(productDescriptionDB.Id);
+            //Load lên list tạm
+            List<ProductIngredientDescription> productIngredientNeedToDelete = await _productIngredientDescriptionRepo.GetProductIngredientDB(productDescriptionUpdate.Id);
+            List<ProductIngredientDescription> productIngredientDescriptionsInsert = new();
+            if (productDescriptionUpdate.ingredientModel != null)
             {
                 for (var k = 0; k < productDescriptionUpdate.ingredientModel.Count; k++)
                 {
                     var productIngredientDescription = productDescriptionUpdate.ingredientModel[k];
-                    ProductIngredientDescription productIngredientDescriptionDB = new()
+                    if (String.IsNullOrWhiteSpace(productIngredientDescription.Id))
                     {
-                        Id = String.IsNullOrWhiteSpace(productIngredientDescription.Id) ? Guid.NewGuid().ToString() : productIngredientDescription.Id,
-                        IngredientId = productIngredientDescription.IngredientId,
-                        Content = productIngredientDescription.Content,
-                        UnitId = productIngredientDescription.UnitId,
-                        ProductDescriptionId = productDescriptionDB.Id
-                    };
-                    productIngredientDescriptions.Add(productIngredientDescriptionDB);
+                        ProductIngredientDescription productIngredientDescriptionDB = new()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            IngredientId = productIngredientDescription.IngredientId,
+                            Content = productIngredientDescription.Content,
+                            UnitId = productIngredientDescription.UnitId,
+                            ProductDescriptionId = productDescriptionDB.Id
+                        };
+                        productIngredientDescriptionsInsert.Add(productIngredientDescriptionDB);
+                    }
+                    else
+                    {
+                        //just need to update
+                        var productIngredientDescriptionDB = await _productIngredientDescriptionRepo.Get(productIngredientDescription.Id);
+                        productIngredientDescriptionDB.IngredientId = productIngredientDescription.IngredientId;
+                        productIngredientDescriptionDB.Content = productIngredientDescription.Content;
+                        productIngredientDescriptionDB.UnitId = productIngredientDescription.UnitId;
+                        await _productIngredientDescriptionRepo.Update();
+                        productIngredientNeedToDelete.Remove(productIngredientNeedToDelete.Find(x => x.Id.Equals(productIngredientDescription.Id)));
+                    }
+
                 }
-                if (productIngredientDescriptions.Count >= 1)
+                if (productIngredientDescriptionsInsert.Count >= 1)
                 {
-                    await _productIngredientDescriptionRepo.AddMultipleProductIngredients(productIngredientDescriptions);
+                    await _productIngredientDescriptionRepo.AddMultipleProductIngredients(productIngredientDescriptionsInsert);
+                }
+                if (productIngredientNeedToDelete.Count >= 1)
+                {
+                    await _productIngredientDescriptionRepo.RemoveAllProductIngredients(productIngredientNeedToDelete);
                 }
             }
             checkError.isError = false;
             checkError.productViewModel = await GetViewProductForUpdate(updateProductModel.productDetailModel[0].Id);
 
             return checkError;
-            
         }
 
-        private string GetStringUnit(List<ProductUnitModel> productUnitList)
-        {
-            var namewithUnit = String.Empty;
-            if (productUnitList.Count >= 1)
-            {
-                for (var j = 0; j < productUnitList.Count; j++)
-                {
-                    var productUnit = productUnitList[j];
-                    if(j == 0)
-                    {
-                        namewithUnit = namewithUnit + "1 " + productUnit.UnitName;
-                    } else
-                    {
-                        namewithUnit = namewithUnit + productUnit.Quantitative + " " + productUnit.UnitName;
-                    }
-                    
-                    if (j != productUnitList.Count - 1) namewithUnit += " x ";
-                }
-            }
-            return namewithUnit;
-        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.MainCategoryModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductDiscountModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductImportModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductIngredientModels;
@@ -62,6 +63,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Utils
             CreateMap<ProductDiscountViewList, ProductDiscountViewSpecific>();
             CreateMap<ProductDiscount, ViewProductDiscountSpecific>();
             CreateMap<EventProductDiscount, ProductDiscountView>();
+
+            //
+            CreateMap<OrderDetail, SendingEmailProductModel>();
         }
     }
 }

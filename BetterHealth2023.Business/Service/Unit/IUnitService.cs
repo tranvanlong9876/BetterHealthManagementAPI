@@ -12,7 +12,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Unit
     {
         public Task<PagedResult<ViewUnitModel>> GetAll(GetUnitPagingModel pagingModel);
         public Task<ViewUnitModel> Get(string id);
-        public Task<CreateUnitErrorModel> Insert(string unitName);
-        public Task<UpdateUnitErrorModel> Update(string id, string unitName);
+        public Task<CreateUnitErrorModel> Insert(CreateUnitModel createUnitModel);
+        public Task<UpdateUnitErrorModel> Update(UpdateUnitModel updateUnitModel);
     }
 }

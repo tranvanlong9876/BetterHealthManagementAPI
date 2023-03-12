@@ -10,13 +10,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorMode
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ManufacturerModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
-using FirebaseAdmin.Auth;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
@@ -73,8 +67,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                 IsPlus = true,
                 Description = "Tạo tài khoản thành công",
                 CreateDate = DateTime.Now,
-
-
             };
             await _customerpointRepo.Insert(customerPoint);
             //insert customeraddress and dynamicaddress
@@ -156,7 +148,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                 Name = customer.Fullname,
                 RoleName = "Customer",
                 Status = customer.Status,
-                Token = customerToken
+                Token = customerToken,
+                PhoneNo = phoneNo
             };
             checkError.customerToken = customerTokenModel;
             checkError.isError = false;

@@ -8,10 +8,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingMod
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using static System.Linq.Queryable;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos
 {
@@ -59,7 +57,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             var pageResult = new PagedResult<Customer>(list, totalRow, pageindex, pageitem);
             
             return pageResult;
-            
+
+        public async Task<string> GetCustomerIdBasedOnPhoneNo(string phoneNo)
+        {
+            return await context.Customers.Where(x => x.PhoneNo.Equals(phoneNo)).Select(x => x.Id).FirstOrDefaultAsync();
         }
     }
 }

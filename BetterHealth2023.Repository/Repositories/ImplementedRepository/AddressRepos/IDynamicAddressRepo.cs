@@ -25,6 +25,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public Task<WardModel> GetSpecificWard(string wardID);
         public Task<bool> CheckAddressChangeById(AddressUpdateModel addressUpdateModel);
         public Task<List<DynamicAddressCustomerView>> GetAllDynamicAddressByCusId(string id);
-       
+        public Task<string> GetFullAddressFromAddressId(string addressId);
     }
 }

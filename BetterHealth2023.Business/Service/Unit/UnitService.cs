@@ -27,10 +27,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Unit
             return await _unitRepo.GetViewModel<ViewUnitModel>(id);
         }
 
-        public async Task<CreateUnitErrorModel> Insert(string unitName)
+        public async Task<CreateUnitErrorModel> Insert(CreateUnitModel createUnitModel)
         {
             var checkError = new CreateUnitErrorModel();
-            if(await _unitRepo.CheckExistUnitName(unitName))
+            if(await _unitRepo.CheckExistUnitName(createUnitModel.UnitName))
             {
                 checkError.isError = true;
                 checkError.alreadyExist = "Đơn vị tính sản phẩm này đã tồn tại";
@@ -41,25 +41,27 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Unit
             {
                 Id = unitID,
                 CreatedDate = DateTime.Now,
+                IsCountable = createUnitModel.isCountable,
                 Status = true,
-                UnitName = unitName.Trim()
+                UnitName = createUnitModel.UnitName.Trim()
             };
             await _unitRepo.Insert(newUnitModel);
             checkError.isError = false;
             return checkError;
         }
 
-        public async Task<UpdateUnitErrorModel> Update(string id, string unitName)
+        public async Task<UpdateUnitErrorModel> Update(UpdateUnitModel updateUnitModel)
         {
             var checkError = new UpdateUnitErrorModel();
-            if(await _unitRepo.CheckExistUnitNameUpdate(id, unitName))
+            if(await _unitRepo.CheckExistUnitNameUpdate(updateUnitModel.Id, updateUnitModel.UnitName))
             {
                 checkError.isError = true;
-                checkError.duplicateName = "Tên danh mục cập nhật bị trùng với danh mục khác!";
+                checkError.duplicateName = "Tên đơn vị cần cập nhật bị trùng với đơn vị khác!";
                 return checkError;
             }
-            var unit = await _unitRepo.Get(id);
-            unit.UnitName = unitName.Trim();
+            var unit = await _unitRepo.Get(updateUnitModel.Id);
+            unit.UnitName = updateUnitModel.UnitName.Trim();
+            unit.IsCountable = updateUnitModel.isCountable;
             await _unitRepo.Update();
             checkError.isError = false;
             return checkError;

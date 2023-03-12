@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
+using static System.Linq.Queryable;
 using System.Threading.Tasks;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
 using Microsoft.EntityFrameworkCore;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos
@@ -13,6 +12,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
     {
         public OrderHeaderRepo(BetterHealthManagementContext context) : base(context)
         {
+        }
+
+        public async Task<bool> CheckDuplicateOrderId(string orderId)
+        {
+            return await context.OrderHeaders.Where(x => x.Id.Equals(orderId)).CountAsync() >= 1 ? true : false;
         }
 
         public async Task<List<OrderHeader>> GetExecutingOrdersByPharmacistId(string pharID)

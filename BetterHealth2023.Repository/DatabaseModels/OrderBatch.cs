@@ -15,22 +15,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [StringLength(50)]
         public string Id { get; set; }
         [Required]
-        [Column("Batch_ID")]
+        [Column("Site_InventoryBatch_ID")]
         [StringLength(50)]
-        public string BatchId { get; set; }
+        public string SiteInventoryBatchId { get; set; }
         [Required]
         [Column("Order_ID")]
         [StringLength(50)]
         public string OrderId { get; set; }
-        [Required]
-        [StringLength(50)]
-        public string SoldQuantity { get; set; }
+        public int SoldQuantity { get; set; }
 
-        [ForeignKey(nameof(BatchId))]
-        [InverseProperty(nameof(ProductImportBatch.OrderBatches))]
-        public virtual ProductImportBatch Batch { get; set; }
         [ForeignKey(nameof(OrderId))]
         [InverseProperty(nameof(OrderHeader.OrderBatches))]
         public virtual OrderHeader Order { get; set; }
+        [ForeignKey(nameof(SiteInventoryBatchId))]
+        [InverseProperty("OrderBatches")]
+        public virtual SiteInventoryBatch SiteInventoryBatch { get; set; }
     }
 }

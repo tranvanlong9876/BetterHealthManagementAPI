@@ -6,10 +6,9 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingMod
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using static System.Linq.Queryable;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDetailRepos
 {
@@ -33,16 +32,17 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return false;
         }
 
-        public async Task<PagedResult<ViewProductListModel>> GetAllProductsPaging(ProductPagingRequest pagingRequest, int getType)
+        public async Task<PagedResult<ViewProductListModel>> GetAllProductsPagingForCustomer(ProductPagingRequest pagingRequest)
         {
-            var query = from details in context.ProductDetails
+            var query = from details in context.ProductDetails.Where(x => x.UnitLevel == 1)
                         from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
                         from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
-                        select new { details, parent, subcategory };
+                        from maincategory in context.CategoryMains.Where(x => x.Id == subcategory.MainCategoryId).DefaultIfEmpty()
+                        select new { details, parent, subcategory, maincategory };
 
-            if(getType == 1)
+            if (!string.IsNullOrEmpty(pagingRequest.mainCategoryID))
             {
-                query = query.Where(x => x.details.IsVisible);
+                pagingRequest.subCategoryID = null;
             }
 
             if (!string.IsNullOrEmpty(pagingRequest.productName))
@@ -55,14 +55,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 query = query.Where(x => x.parent.SubCategoryId.Equals(pagingRequest.subCategoryID.Trim()));
             }
 
+            if (!string.IsNullOrEmpty(pagingRequest.mainCategoryID))
+            {
+                query = query.Where(x => x.maincategory.Id.Equals(pagingRequest.mainCategoryID.Trim()));
+            }
+
             if (pagingRequest.isPrescription.HasValue)
             {
                 query = query.Where(x => x.parent.IsPrescription.Equals(pagingRequest.isPrescription));
-            }
-
-            if (pagingRequest.isSell.HasValue && getType != 1)
-            {
-                query = query.Where(x => x.details.IsSell.Equals(pagingRequest.isSell));
             }
 
             if (!string.IsNullOrEmpty(pagingRequest.manufacturerID))
@@ -81,6 +81,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                     SubCategoryId = selector.parent.SubCategoryId,
                     ManufacturerId = selector.parent.ManufacturerId,
                     IsPrescription = selector.parent.IsPrescription,
+                    IsBatches = selector.parent.IsBatches,
                     UnitId = selector.details.UnitId,
                     UnitLevel = selector.details.UnitLevel,
                     Quantitative = selector.details.Quantitative,
@@ -271,6 +272,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 SubCategoryId = selector.parent.SubCategoryId,
                 ManufacturerId = selector.parent.ManufacturerId,
                 IsPrescription = selector.parent.IsPrescription,
+                IsBatches = selector.parent.IsBatches,
                 UnitId = selector.detail.UnitId,
                 UnitLevel = selector.detail.UnitLevel,
                 Quantitative = selector.detail.Quantitative,
@@ -297,6 +299,70 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 UnitLevel = x.detail.UnitLevel,
                 Price = x.detail.Price
             }).FirstOrDefaultAsync();
+        }
+
+        public async Task<PagedResult<ViewProductListModelForInternal>> GetAllProductsPagingForInternalUser(ProductPagingRequest pagingRequest)
+        {
+            var query = from details in context.ProductDetails.Where(x => x.UnitLevel == 1)
+                        from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
+                        from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
+                        from maincategory in context.CategoryMains.Where(x => x.Id == subcategory.MainCategoryId).DefaultIfEmpty()
+                        select new { details, parent, subcategory, maincategory };
+
+            if (!string.IsNullOrEmpty(pagingRequest.mainCategoryID))
+            {
+                pagingRequest.subCategoryID = null;
+            }
+
+            if (!string.IsNullOrEmpty(pagingRequest.productName))
+            {
+                query = query.Where(x => (x.parent.Name.Contains(pagingRequest.productName.Trim())) || (x.details.BarCode.Contains(pagingRequest.productName.Trim())));
+            }
+
+            if (!string.IsNullOrEmpty(pagingRequest.subCategoryID))
+            {
+                query = query.Where(x => x.parent.SubCategoryId.Equals(pagingRequest.subCategoryID.Trim()));
+            }
+
+            if (!string.IsNullOrEmpty(pagingRequest.mainCategoryID))
+            {
+                query = query.Where(x => x.maincategory.Id.Equals(pagingRequest.mainCategoryID.Trim()));
+            }
+
+            if (pagingRequest.isPrescription.HasValue)
+            {
+                query = query.Where(x => x.parent.IsPrescription.Equals(pagingRequest.isPrescription));
+            }
+
+            if (!string.IsNullOrEmpty(pagingRequest.manufacturerID))
+            {
+                query = query.Where(x => x.parent.ManufacturerId.Equals(pagingRequest.manufacturerID.Trim()));
+            }
+
+            int totalRow = await query.CountAsync();
+
+            var productList = await query.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
+                .Take(pagingRequest.pageItems)
+                .Select(selector => new ViewProductListModelForInternal()
+                {
+                    Id = selector.details.Id,
+                    Name = selector.parent.Name,
+                    SubCategoryId = selector.parent.SubCategoryId,
+                    ManufacturerId = selector.parent.ManufacturerId,
+                    IsPrescription = selector.parent.IsPrescription,
+                    IsBatches = selector.parent.IsBatches,
+                    UnitId = selector.details.UnitId,
+                    UnitLevel = selector.details.UnitLevel,
+                    Quantitative = selector.details.Quantitative,
+                    SellQuantity = selector.details.SellQuantity,
+                    Price = selector.details.Price,
+                    IsSell = selector.details.IsSell,
+                    BarCode = selector.details.BarCode
+                }).ToListAsync();
+
+            var pageResult = new PagedResult<ViewProductListModelForInternal>(productList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
+
+            return pageResult;
         }
     }
 }
