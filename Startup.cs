@@ -60,6 +60,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Business.Service.VNPay;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductDiscountRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDiscountServices;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServices;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.CustomerAddressSer;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderShipmentRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderPickupRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderBatchRepos;
@@ -138,6 +139,7 @@ namespace BetterHealthManagementAPI
             services.AddScoped<IVNPayService, VNPayService>();
             services.AddScoped<IProductDiscountService, ProductDiscountService>();
             services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<ICustomerAddressService, CustomerAddressService>();
             services.AddScoped<ICartService, CartService>();
 
             //them tang repo

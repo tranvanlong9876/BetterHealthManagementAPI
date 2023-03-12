@@ -5,11 +5,14 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerPointRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DynamicAddressViewModel;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.CustomerErrorModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ManufacturerModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using System;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
 {
@@ -154,17 +157,113 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
 
         }
 
-        public Task<PagedResult<CustomerViewListModel>> GetAllProduct(ProductPagingRequest pagingRequest)
+        public async Task<List<CustomerUpdateMOdel>> GetCustomerPaging()
         {
-            throw new NotImplementedException();
-        }
+            List<CustomerUpdateMOdel> listView = new List<CustomerUpdateMOdel>();
+            
+            
+            //get all customer
+            List<Repository.DatabaseModels.Customer> listcus = await _customerRepo.GetAllCustomerModelView();
+            //get all customeraddress by customerid
 
-        public async Task<Repository.DatabaseModels.Customer> GetCustomerById(string id)
+
+
+            foreach (Repository.DatabaseModels.Customer item in listcus)
+            {
+                CustomerUpdateMOdel cusview = new()
+                {
+                    CustomerId = item.Id,
+                    FullName = item.Fullname,
+                    Email = item.Email,
+                    PhoneNo = item.PhoneNo,
+                    Dob = item.Dob,
+                    Gender = (int)item.Gender,
+                    ImageUrl = item.ImageUrl,
+
+                };
+                List<CustomerAddress> listCusAddress = await _customerAddressRepo.GetAllCustomerAddressByCustomerId(item.Id);
+                List<CustomerAddressView> listcusaddview = new List<CustomerAddressView>();
+                //filter in to list<Customeraddressview>
+                foreach (CustomerAddress item1 in listCusAddress)
+                {
+                    //new customerupdateview
+                    CustomerAddressView cusaddressview = new()
+                    {
+                        Id = item1.Id,
+                        CustomerId = item1.CustomerId,
+                        AddressId = item1.AddressId,
+                    };
+                    DynamicAddress dynamicaddress = await _dynamicAdressRepo.Get(item1.AddressId);
+                    DynamicAddressCustomerView dynamicaddresscusview = new()
+                    {
+                        AddressId = dynamicaddress.Id,
+                        CityId = dynamicaddress.CityId,
+                        DistrictId = dynamicaddress.DistrictId,
+                        WardId = dynamicaddress.WardId,
+                        HomeAddress = dynamicaddress.HomeAddress
+                    };
+                    cusaddressview.DynamicAddressCustomerView = dynamicaddresscusview;
+                    
+                    listcusaddview.Add(cusaddressview);
+                   
+                }
+                cusview.CustomerAddressList = listcusaddview;
+                listView.Add(cusview);
+
+            }
+            return listView;
+        }
+                public async Task<CustomerUpdateMOdel> GetCustomerById(string id)
         {
-            return await _customerRepo.Get(id);
-        }
+           
+            Repository.DatabaseModels.Customer customer = await _customerRepo.Get(id);
+            if(customer == null)
+            {
+                return null;
+            }
+            //get list customeraddress by id
+            List<CustomerAddress> customerAddress = await _customerAddressRepo.GetAllCustomerAddressByCustomerId(id);
+            List<DynamicAddressCustomerView> listdynamiview = await _dynamicAdressRepo.GetAllDynamicAddressByCusId(id);
+            List<CustomerAddressView> Listcustomerview = new List<CustomerAddressView>();
+            //filter in to list<Customeraddressview>
+            foreach (CustomerAddress item in customerAddress)
+            {
+                //new customerupdatemodel
+                CustomerAddressView customerAddressView = new CustomerAddressView()
+                {
+                    Id = item.Id,
+                    CustomerId = item.CustomerId,
+                    AddressId = item.AddressId,
+                    
+                };
+                foreach(DynamicAddressCustomerView item2 in listdynamiview)
+                {
+                    if (item2.AddressId == item.AddressId)
+                    {
+                        customerAddressView.DynamicAddressCustomerView = item2;
+                        continue;
+                    }
+                }
+                Listcustomerview.Add(customerAddressView);              
+            }
+            CustomerUpdateMOdel customerview = new()
+            {
+                //filter customer inton customerview
+                CustomerId = customer.Id,
+                FullName = customer.Fullname,
+                PhoneNo = customer.PhoneNo,
+                Email = customer.Email,
+                Dob = customer.Dob,
+                Gender = (int)customer.Gender,
+                ImageUrl = customer.ImageUrl,
+                CustomerAddressList = Listcustomerview        
+            };
+            return customerview;
+            }
 
-        public async  Task<bool> UpdateCustomer(CustomerUpdateMOdel customerUpdateMOdel)
+     
+        
+        public async Task<bool> UpdateCustomer(CustomerUpdateMOdel customerUpdateMOdel)
         {
             var customer = await _customerRepo.Get(customerUpdateMOdel.CustomerId);
             if (customer == null)
@@ -176,7 +275,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
             customer.Dob = customerUpdateMOdel.Dob;
             customer.ImageUrl = customerUpdateMOdel.ImageUrl;
             customer.Gender = customerUpdateMOdel.Gender;
-           
+
             await _customerRepo.Update();
             return true;
 
@@ -185,5 +284,84 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
 
 
         }
+        public async Task<PagedResult<CustomerUpdateMOdel>> GetCustomerPaging2(string name, string email, string phoneNo, int pageindex, int pageitem)
+        {
+            List<CustomerUpdateMOdel> listView = new List<CustomerUpdateMOdel>();
+
+
+            //get all customer
+            List<Repository.DatabaseModels.Customer> listcus = await _customerRepo.GetAllCustomerModelView();
+            //get all customeraddress by customerid
+            if (!string.IsNullOrEmpty(name))
+            {
+                listcus = listcus.Where(x => x.Fullname.Contains(name)).ToList();
+            }
+            if (!string.IsNullOrEmpty(email))
+            {
+                listcus = listcus.Where(x => x.Email.Contains(email)).ToList();
+            }
+            if (!string.IsNullOrEmpty(phoneNo))
+            {
+                listcus = listcus.Where(x => x.PhoneNo.Contains(phoneNo)).ToList();
+            }
+            int totalrecord = listcus.Count();
+            List<Repository.DatabaseModels.Customer> listcusget = listcus;
+            List<Repository.DatabaseModels.Customer> listcus2 = listcusget.Skip((pageindex - 1) * pageitem).Take(pageitem).ToList();
+
+            foreach (Repository.DatabaseModels.Customer item in listcus2)
+            {
+                CustomerUpdateMOdel cusview = new()
+                {
+                    CustomerId = item.Id,
+                    FullName = item.Fullname,
+                    Email = item.Email,
+                    PhoneNo = item.PhoneNo,
+                    Dob = item.Dob,
+                    Gender = (int)item.Gender,
+                    ImageUrl = item.ImageUrl,
+
+                };
+                List<CustomerAddress> listCusAddress = await _customerAddressRepo.GetAllCustomerAddressByCustomerId(item.Id);
+                List<CustomerAddressView> listcusaddview = new List<CustomerAddressView>();
+                //filter in to list<Customeraddressview>
+                foreach (CustomerAddress item1 in listCusAddress)
+                {
+                    //new customerupdateview
+                    CustomerAddressView cusaddressview = new()
+                    {
+                        Id = item1.Id,
+                        CustomerId = item1.CustomerId,
+                        AddressId = item1.AddressId,
+                    };
+                    DynamicAddress dynamicaddress = await _dynamicAdressRepo.Get(item1.AddressId);
+                    DynamicAddressCustomerView dynamicaddresscusview = new()
+                    {
+                        AddressId = dynamicaddress.Id,
+                        CityId = dynamicaddress.CityId,
+                        DistrictId = dynamicaddress.DistrictId,
+                        WardId = dynamicaddress.WardId,
+                        HomeAddress = dynamicaddress.HomeAddress
+                    };
+                    cusaddressview.DynamicAddressCustomerView = dynamicaddresscusview;
+
+                    listcusaddview.Add(cusaddressview);
+
+                }
+                cusview.CustomerAddressList = listcusaddview;
+                listView.Add(cusview);
+
+            }
+
+
+            var pagedResult = new PagedResult<CustomerUpdateMOdel>(listView, totalrecord, pageindex, pageitem);
+
+            return pagedResult;
+
+        }
+
+        
     }
-}
+
+   
+    }
+

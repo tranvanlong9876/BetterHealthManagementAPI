@@ -19,9 +19,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
         // update customer
         public  Task<bool> UpdateCustomer(CustomerUpdateMOdel customerUpdateMOdel);
 
-        public Task<PagedResult<CustomerViewListModel>> GetAllProduct(ProductPagingRequest pagingRequest);
+        public Task<List<CustomerUpdateMOdel>> GetCustomerPaging();
 
-        public Task<Repository.DatabaseModels.Customer> GetCustomerById(string id);
+        public Task<CustomerUpdateMOdel> GetCustomerById(string id);
+        public Task<PagedResult<CustomerUpdateMOdel>> GetCustomerPaging2(string name,string email,string phoneNo,int pageindex,int pageitem);
 
     }
 }

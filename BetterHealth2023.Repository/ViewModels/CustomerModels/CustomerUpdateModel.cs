@@ -10,9 +10,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Custo
         public string CustomerId { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
+        public string PhoneNo { get; set; }
         public DateTime? Dob { get; set; }
         public int Gender { get; set; }
         public string ImageUrl { get; set; }
-        public List<CustomerAddressView> CustomerAddressList { get; set; }
+        public List<CustomerAddressView> CustomerAddressList { get; set; } = null;
+
     }
 }

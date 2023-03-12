@@ -1,5 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DynamicAddressViewModel;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -92,16 +94,73 @@ namespace BetterHealthManagementAPI.Controllers
                 return StatusCode(500, "Internal server exception");
             }
         }
+       
+       
         [HttpGet]
-        public async Task<IActionResult> GetAllCustomer([FromQuery] ProductPagingRequest pagingRequest)
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllCustomer()
         {
-
-            return Ok();
+            try
+            {
+                List<CustomerUpdateMOdel> customer = await _customerService.GetCustomerPaging();
+                if(customer == null)
+                {
+                    return BadRequest();
+                }
+                return Ok(customer);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+            catch (SqlException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+        }
+        [HttpGet("Paging")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllCustomerPaging(string name, string email, string phoneNo, int pageindex,int pageitem)
+        {
+            try
+            {
+                PagedResult<CustomerUpdateMOdel> customer = await _customerService.GetCustomerPaging2(name,email,phoneNo,pageindex,pageitem);
+                if (customer == null)
+                {
+                    return BadRequest();
+                }
+                return Ok(customer);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
+            catch (SqlException)
+            {
+                return StatusCode(500, "Internal server exception");
+            }
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         //find customer by customerid
-        public async Task<IActionResult> GetCustomerById([FromBody] string id)
+        public async Task<IActionResult> GetCustomerById(string id)
         {
             try
             {
