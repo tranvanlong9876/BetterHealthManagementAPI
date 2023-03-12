@@ -52,7 +52,7 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
-        [HttpPut("Update/Address")]
+        [HttpPut]
         [Authorize(Roles = "Customers")]
         [AllowAnonymous]
         public async Task<IActionResult> UpdateCustomerAddres([FromBody] AddressUpdateModel addressUpdateModel)
@@ -81,7 +81,7 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
-        [HttpPost("Add/Address")]
+        [HttpPost]
         [Authorize(Roles = "Customers")]
         [AllowAnonymous]
         public async Task<IActionResult> InsertCustomerAddres([FromBody] CustomerAddressInsertModel CustomerAddressInsertModel)

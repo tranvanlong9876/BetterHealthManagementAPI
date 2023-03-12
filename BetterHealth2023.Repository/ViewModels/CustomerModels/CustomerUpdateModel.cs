@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels
 {
@@ -14,6 +15,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Custo
         public DateTime? Dob { get; set; }
         public int Gender { get; set; }
         public string ImageUrl { get; set; }
+
+        [JsonIgnore]
         public List<CustomerAddressView> CustomerAddressList { get; set; } = null;
 
     }

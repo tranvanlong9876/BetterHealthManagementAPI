@@ -7,12 +7,11 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DynamicAddressViewModel;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.CustomerErrorModels;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ManufacturerModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
 {
@@ -32,7 +31,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
 
         public async Task<Repository.DatabaseModels.Customer> CreateCustomer(CustomerRegisView customerRegisView)
         {
-           
+
 
             //find customer by phoneno
             var customercheck = await _customerRepo.getCustomerBasedOnPhoneNo(customerRegisView.PhoneNo);
@@ -46,7 +45,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
             {
                 return null;
             }
-            Repository.DatabaseModels.Customer customer = new() {
+            Repository.DatabaseModels.Customer customer = new()
+            {
                 Id = Guid.NewGuid().ToString(),
                 Fullname = customerRegisView.Fullname,
                 PhoneNo = customerRegisView.PhoneNo,
@@ -56,7 +56,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                 ImageUrl = customerRegisView.ImageUrl,
                 Dob = customerRegisView.Dob,
 
-        };
+            };
             await _customerRepo.Insert(customer);
             //insert customer poitn
             CustomerPoint customerPoint = new()
@@ -73,30 +73,30 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
 
             //insert dynamicaddress
             DynamicAddress dynamicAddress = new()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    CityId = customerRegisView.CityId,
-                    DistrictId = customerRegisView.DistrictId,
-                    WardId = customerRegisView.WardId,
-                    HomeAddress = customerRegisView.HomeAddress,
-                   
-                };
+            {
+                Id = Guid.NewGuid().ToString(),
+                CityId = customerRegisView.CityId,
+                DistrictId = customerRegisView.DistrictId,
+                WardId = customerRegisView.WardId,
+                HomeAddress = customerRegisView.HomeAddress,
+
+            };
             await _dynamicAdressRepo.Insert(dynamicAddress);
 
             //insert customeraddress
             CustomerAddress customerAddress = new()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    CustomerId = customer.Id,
-                    AddressId = dynamicAddress.Id,
-                    MainAddress = true,
-                };
+            {
+                Id = Guid.NewGuid().ToString(),
+                CustomerId = customer.Id,
+                AddressId = dynamicAddress.Id,
+                MainAddress = true,
+            };
             await _customerAddressRepo.Insert(customerAddress);
 
 
-        
+
             //add customer to database
-          
+
             return await Task.FromResult(customer);
         }
 
@@ -116,7 +116,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
 
             //get customer's information
             var customer = await _customerRepo.getCustomerBasedOnPhoneNo(phoneNo);
-            
+
             if (customer == null)
             {
                 checkError.isError = true;
@@ -133,7 +133,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
 
             var customerToken = JwtUserToken.CreateCustomerToken(customer);
 
-            if(customerToken == null)
+            if (customerToken == null)
             {
                 checkError.isError = true;
                 checkError.OtherError = "Lỗi tạo token, vui lòng đăng nhập lại.";
@@ -160,8 +160,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
         public async Task<List<CustomerUpdateMOdel>> GetCustomerPaging()
         {
             List<CustomerUpdateMOdel> listView = new List<CustomerUpdateMOdel>();
-            
-            
+
+
             //get all customer
             List<Repository.DatabaseModels.Customer> listcus = await _customerRepo.GetAllCustomerModelView();
             //get all customeraddress by customerid
@@ -203,9 +203,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                         HomeAddress = dynamicaddress.HomeAddress
                     };
                     cusaddressview.DynamicAddressCustomerView = dynamicaddresscusview;
-                    
+
                     listcusaddview.Add(cusaddressview);
-                   
+
                 }
                 cusview.CustomerAddressList = listcusaddview;
                 listView.Add(cusview);
@@ -213,11 +213,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
             }
             return listView;
         }
-                public async Task<CustomerUpdateMOdel> GetCustomerById(string id)
+        public async Task<CustomerUpdateMOdel> GetCustomerById(string id)
         {
-           
+
             Repository.DatabaseModels.Customer customer = await _customerRepo.Get(id);
-            if(customer == null)
+            if (customer == null)
             {
                 return null;
             }
@@ -234,9 +234,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                     Id = item.Id,
                     CustomerId = item.CustomerId,
                     AddressId = item.AddressId,
-                    
+
                 };
-                foreach(DynamicAddressCustomerView item2 in listdynamiview)
+                foreach (DynamicAddressCustomerView item2 in listdynamiview)
                 {
                     if (item2.AddressId == item.AddressId)
                     {
@@ -244,7 +244,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                         continue;
                     }
                 }
-                Listcustomerview.Add(customerAddressView);              
+                Listcustomerview.Add(customerAddressView);
             }
             CustomerUpdateMOdel customerview = new()
             {
@@ -256,13 +256,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                 Dob = customer.Dob,
                 Gender = (int)customer.Gender,
                 ImageUrl = customer.ImageUrl,
-                CustomerAddressList = Listcustomerview        
+                CustomerAddressList = Listcustomerview
             };
             return customerview;
-            }
+        }
 
-     
-        
+
+
         public async Task<bool> UpdateCustomer(CustomerUpdateMOdel customerUpdateMOdel)
         {
             var customer = await _customerRepo.Get(customerUpdateMOdel.CustomerId);
@@ -278,13 +278,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
 
             await _customerRepo.Update();
             return true;
-
-
-
-
-
         }
-        public async Task<PagedResult<CustomerUpdateMOdel>> GetCustomerPaging2(string name, string email, string phoneNo, int pageindex, int pageitem)
+        public async Task<PagedResult<CustomerUpdateMOdel>> GetCustomerPaging2(CustomerPagingRequest pagingRequest)
         {
             List<CustomerUpdateMOdel> listView = new List<CustomerUpdateMOdel>();
 
@@ -292,21 +287,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
             //get all customer
             List<Repository.DatabaseModels.Customer> listcus = await _customerRepo.GetAllCustomerModelView();
             //get all customeraddress by customerid
-            if (!string.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(pagingRequest.NameOrPhoneOrEmail))
             {
-                listcus = listcus.Where(x => x.Fullname.Contains(name)).ToList();
-            }
-            if (!string.IsNullOrEmpty(email))
-            {
-                listcus = listcus.Where(x => x.Email.Contains(email)).ToList();
-            }
-            if (!string.IsNullOrEmpty(phoneNo))
-            {
-                listcus = listcus.Where(x => x.PhoneNo.Contains(phoneNo)).ToList();
+                listcus = listcus.Where(x => x.Fullname.Contains(pagingRequest.NameOrPhoneOrEmail) || x.PhoneNo.Contains(pagingRequest.NameOrPhoneOrEmail)|| x.Email.Contains(pagingRequest.NameOrPhoneOrEmail)).ToList();
             }
             int totalrecord = listcus.Count();
             List<Repository.DatabaseModels.Customer> listcusget = listcus;
-            List<Repository.DatabaseModels.Customer> listcus2 = listcusget.Skip((pageindex - 1) * pageitem).Take(pageitem).ToList();
+            List<Repository.DatabaseModels.Customer> listcus2 = listcusget.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems).Take(pagingRequest.pageItems).ToList();
 
             foreach (Repository.DatabaseModels.Customer item in listcus2)
             {
@@ -353,15 +340,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
             }
 
 
-            var pagedResult = new PagedResult<CustomerUpdateMOdel>(listView, totalrecord, pageindex, pageitem);
+            var pagedResult = new PagedResult<CustomerUpdateMOdel>(listView, totalrecord, pagingRequest.pageIndex, pagingRequest.pageItems);
 
             return pagedResult;
 
         }
-
-        
     }
 
-   
-    }
+
+}
 

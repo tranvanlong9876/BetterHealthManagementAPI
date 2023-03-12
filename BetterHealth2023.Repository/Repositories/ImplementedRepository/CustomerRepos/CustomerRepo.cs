@@ -2,12 +2,9 @@
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.MainCategoryModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using static System.Linq.Queryable;
 
@@ -53,11 +50,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 query = query.Where(x => x.Fullname.Contains(name) || x.Fullname.Contains(name));
             }
             int totalRow = await query.CountAsync();
-          var list =  await query.Skip((pageindex - 1) * pageitem).Take(pageitem).ToListAsync();
+            var list = await query.Skip((pageindex - 1) * pageitem).Take(pageitem).ToListAsync();
             var pageResult = new PagedResult<Customer>(list, totalRow, pageindex, pageitem);
-            
-            return pageResult;
 
+            return pageResult;
+        }
         public async Task<string> GetCustomerIdBasedOnPhoneNo(string phoneNo)
         {
             return await context.Customers.Where(x => x.PhoneNo.Equals(phoneNo)).Select(x => x.Id).FirstOrDefaultAsync();

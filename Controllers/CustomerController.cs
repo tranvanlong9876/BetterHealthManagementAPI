@@ -37,7 +37,7 @@ namespace BetterHealthManagementAPI.Controllers
 
         
     
-        [HttpPost("Register")]
+        [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> RegisterCustomer([FromBody] CustomerRegisView customerRegisView)
         {
@@ -66,7 +66,7 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         //update customer
-        [HttpPut("Update")]
+        [HttpPut]
         [Authorize(Roles = "Customers")]
         [AllowAnonymous]
         public async Task<IActionResult> UpdateCustomer([FromBody] CustomerUpdateMOdel customerUpdateModel)
@@ -128,11 +128,11 @@ namespace BetterHealthManagementAPI.Controllers
         }
         [HttpGet("Paging")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllCustomerPaging(string name, string email, string phoneNo, int pageindex,int pageitem)
+        public async Task<IActionResult> GetAllCustomerPaging([FromQuery] CustomerPagingRequest pagingRequest)
         {
             try
             {
-                PagedResult<CustomerUpdateMOdel> customer = await _customerService.GetCustomerPaging2(name,email,phoneNo,pageindex,pageitem);
+                PagedResult<CustomerUpdateMOdel> customer = await _customerService.GetCustomerPaging2(pagingRequest);
                 if (customer == null)
                 {
                     return BadRequest();
