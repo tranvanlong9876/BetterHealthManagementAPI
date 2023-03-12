@@ -283,10 +283,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductImp
         private async Task<bool> ReleaseProductImport(string productImportID, string siteID, bool isCreate)
         {
             var productImportReceipt = await _productImportRepo.Get(productImportID);
-            if (productImportReceipt.IsReleased && !isCreate)
-            {
-                return false;
-            }
             var productImportDetailsDB = await _productImportDetailRepo.GetProductImportDetails(productImportID);
             foreach (var productImportDetail in productImportDetailsDB)
             {

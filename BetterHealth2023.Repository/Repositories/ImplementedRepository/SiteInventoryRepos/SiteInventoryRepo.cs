@@ -96,6 +96,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         WardId = selector.address.WardId
                     }).FirstOrDefaultAsync();
                     SiteListToPickUp.Add(data);
+                } else
+                {
+                    totalRow--;
                 }
             }
 
