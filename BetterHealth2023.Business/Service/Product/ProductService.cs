@@ -118,6 +118,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 productDetailDB.Id = product_details_id;
                 productDetailDB.ProductIdParent = product_parent_id;
                 productDetailDB.IsSell = product_details.UnitLevel == 1 ? true : product_details.IsSell;
+                productDetailDB.Quantitative = product_details.UnitLevel == 1 ? 1 : product_details.Quantitative;
                 productDetailDB.SellQuantity = 1;
                 check = await _productDetailRepo.Insert(productDetailDB);
 
