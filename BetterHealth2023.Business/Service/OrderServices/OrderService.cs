@@ -16,6 +16,8 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewOrderListModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using System;
 using System.Collections.Generic;
@@ -155,6 +157,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 PharmacistId = checkOutOrderModel.OrderTypeId == 1 ? checkOutOrderModel.PharmacistId : null,
                 SiteId = checkOutOrderModel.OrderTypeId == 3 ? null : checkOutOrderModel.SiteId,
                 IsPaid = checkOutOrderModel.isPaid,
+                ApprovedDate = checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_DIRECTLY) ? DateTime.Now : null,
+                IsApproved = checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_DIRECTLY) ? true : null
             };
 
             await _orderHeaderRepo.Insert(orderHeaderDB);
@@ -180,7 +184,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             {
                 Id = Guid.NewGuid().ToString(),
                 AddressId = addressId,
-                CustomerId = CustomerId,
+                CustomerId = string.IsNullOrEmpty(CustomerId) ? null : CustomerId,
                 Email = checkOutOrderModel.ReveicerInformation.Email,
                 Fullname = checkOutOrderModel.ReveicerInformation.Fullname,
                 Gender = checkOutOrderModel.ReveicerInformation.Gender,
@@ -434,6 +438,34 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 isDuplicate = await _orderHeaderRepo.CheckDuplicateOrderId(orderId);
             }
             return orderId;
+        }
+
+        public async Task<PagedResult<ViewOrderList>> GetAllOrders(GetOrderListPagingRequest pagingRequest, UserInformation userInformation)
+        {
+            //Filter theo Role User
+            var userRole = JwtUserToken.DecodeAPITokenToRole(userInformation.UserAccessToken);
+            dynamic payLoadToken = JwtUserToken.GetPayLoadFromToken(userInformation.UserAccessToken);
+            userInformation.UserId = JwtUserToken.GetUserID(userInformation.UserAccessToken);
+            userInformation.RoleName = userRole;
+            switch (userRole)
+            {
+                case Commons.CUSTOMER_NAME:
+                    userInformation.RoleName = Commons.CUSTOMER_NAME;
+                    break;
+                case Commons.PHARMACIST_NAME:
+                case Commons.MANAGER_NAME:
+                    userInformation.SiteId = payLoadToken.SiteID;
+                    var site = await _siteRepo.Get(userInformation.SiteId);
+                    var dynamicAddress = await _dynamicAddressRepo.GetAddressFromId(site.AddressId);
+                    userInformation.SiteCityId = dynamicAddress.CityId;
+                    userInformation.SiteDistrictId = dynamicAddress.DistrictId;
+                    userInformation.SiteWardId = dynamicAddress.DistrictId;
+                    break;
+                default:
+                    break;
+                
+            }
+            return await _orderHeaderRepo.GetAllOrders(pagingRequest, userInformation);
         }
     }
 

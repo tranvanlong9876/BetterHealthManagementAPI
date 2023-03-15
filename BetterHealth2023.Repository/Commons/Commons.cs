@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Commons
 {
-    public class Commons
+    public static class Commons
     {
         public static readonly string JWTClaimID = "Id";
         public static readonly string JWTClaimName = "Name";
@@ -26,6 +26,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Commons
         public const string OWNER_NAME = "Owner";
         public const string ADMIN_NAME = "Admin";
 
+        public const string CUSTOMER_NAME = "Customer";
+
         public const string TOTAL_INTERNAL_ROLE_NAME = "Manager,Pharmacist,Owner,Admin";
 
 
@@ -45,13 +47,46 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Commons
         public const int ORDER_TYPE_PICKUP = 2;
         public const int ORDER_TYPE_DELIVERY = 3;
 
-        //-Local
-        public static readonly string LOCAL_HUB = "https://localhost:7042/notifyhub";
-        //-Server
-        public static readonly string SERVER_HUB = "https://ultratixapi.azurewebsites.net/notifyhub";
+        public enum OrderType
+        {
+            AtStore = 1,
+            PickUp = 2,
+            Delivery = 3
+        }
 
-        // Image Host 
-        public static readonly string IMG_HOST_URL = "https://ultratiximg.blob.core.windows.net/ultratixshowimg/";
+        public enum OrderPayType
+        {
+            COD = 1,
+            VNPay = 2
+        }
+
+        public static string ConvertToOrderPayTypeString(this OrderPayType orderPayType)
+        {
+            switch (orderPayType)
+            {
+                case OrderPayType.COD:
+                    return "Thanh toán khi nhận hàng";
+                case OrderPayType.VNPay:
+                    return "Thanh toán VN Pay";
+                default:
+                    throw new ArgumentException($"Invalid value for Payment Method: {orderPayType}", nameof(orderPayType));
+            }
+        }
+
+        public static string ConvertToOrderTypeString(this OrderType orderType)
+        {
+            switch (orderType)
+            {
+                case OrderType.AtStore:
+                    return "Bán tại chỗ";
+                case OrderType.PickUp:
+                    return "Đến lấy tại cửa hàng";
+                case OrderType.Delivery:
+                    return "Giao hàng tận nơi";
+                default:
+                    throw new ArgumentException($"Invalid value for DeliveryMethod: {orderType}", nameof(orderType));
+            }
+        }
 
         //Error Message
 

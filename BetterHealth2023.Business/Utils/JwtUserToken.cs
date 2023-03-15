@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 {
@@ -47,7 +46,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(120),
+                expires: DateTime.Now.AddDays(60),
                 signingCredentials: creds
                 );
 
@@ -71,7 +70,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(120),
+                expires: DateTime.Now.AddDays(60),
                 signingCredentials: creds
                 );
 
@@ -93,6 +92,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
                 return null;
             }
             
+        }
+
+        public static dynamic GetPayLoadFromToken(string jwtToken)
+        {
+            return JObject.Parse(new JwtSecurityTokenHandler().ReadJwtToken(jwtToken).Payload.SerializeToJson());
         }
 
         public static string GetWorkingSiteFromManagerAndPharmacist(string loginToken)
