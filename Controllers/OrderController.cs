@@ -1,5 +1,4 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServices;
-using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DateTimeModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
@@ -28,7 +27,7 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         [HttpGet]
-        [SwaggerResponse(StatusCodes.Status200OK, "The order was found.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Danh Sách Đơn Hàng")]
         public async Task<IActionResult> GetAllOrders([FromQuery] GetOrderListPagingRequest pagingRequest)
         {
             var userInformation = new UserInformation();

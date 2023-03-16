@@ -17,5 +17,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
         public Task<string> GenerateOrderId();
 
         public Task<PagedResult<ViewOrderList>> GetAllOrders(GetOrderListPagingRequest pagingRequest, UserInformation userInformation);
+
+        public Task GetSpecificOrder(string orderId);
     }
 }
