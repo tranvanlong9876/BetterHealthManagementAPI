@@ -37,6 +37,17 @@ namespace BetterHealthManagementAPI.Controllers
             return Ok(orderList);
         }
 
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetOrder(string id)
+        {
+            var userInformation = new UserInformation();
+            userInformation.UserAccessToken = GetWholeToken();
+            var order = await _orderService.GetSpecificOrder(id, userInformation);
+            if (order == null) return NotFound("Không tìm thấy đơn hàng, có thể là sai ID");
+            return Ok(order);
+        }
+
         [HttpGet("PickUp/Site")]
         [AllowAnonymous]
         public async Task<IActionResult> GetSiteListPickUp([FromQuery] CartEntrance productEntrance)

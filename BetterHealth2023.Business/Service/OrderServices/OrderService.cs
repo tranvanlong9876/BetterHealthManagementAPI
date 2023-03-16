@@ -17,6 +17,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewOrderListModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewSpecificOrderModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using System;
@@ -466,6 +467,112 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 
             }
             return await _orderHeaderRepo.GetAllOrders(pagingRequest, userInformation);
+        }
+
+        public async Task<ViewOrderSpecific> GetSpecificOrder(string orderId, UserInformation userInformation)
+        {
+
+            try
+            {
+                var userRole = JwtUserToken.DecodeAPITokenToRole(userInformation.UserAccessToken);
+                dynamic payLoadToken = JwtUserToken.GetPayLoadFromToken(userInformation.UserAccessToken);
+                userInformation.UserId = JwtUserToken.GetUserID(userInformation.UserAccessToken);
+                userInformation.RoleName = userRole;
+                switch (userRole)
+                {
+                    case Commons.CUSTOMER_NAME:
+                        userInformation.RoleName = Commons.CUSTOMER_NAME;
+                        break;
+                    case Commons.PHARMACIST_NAME:
+                    case Commons.MANAGER_NAME:
+                        userInformation.SiteId = payLoadToken.SiteID;
+                        var site = await _siteRepo.Get(userInformation.SiteId);
+                        var dynamicAddress = await _dynamicAddressRepo.GetAddressFromId(site.AddressId);
+                        userInformation.SiteCityId = dynamicAddress.CityId;
+                        userInformation.SiteDistrictId = dynamicAddress.DistrictId;
+                        userInformation.SiteWardId = dynamicAddress.DistrictId;
+                        break;
+                    default:
+                        break;
+
+                }
+            }
+            catch
+            {
+                userInformation.RoleName = String.Empty;
+            }
+            var order = await _orderHeaderRepo.GetSpecificOrder(orderId);
+            order.orderProducts = await _orderDetailRepo.GetViewSpecificOrderProducts(orderId);
+            //chỉ khác null khi nó là giao hàng và chưa tiếp nhận
+            List<OrderProductLastUnitLevel> orderProductLastUnitLevels = null;
+            
+            for(int i = 0; i < order.orderProducts.Count; i++)
+            {
+                var productsInOrder = order.orderProducts[i];
+                //load ra order batch đối với sản phẩm có quản lý theo lô
+                if (productsInOrder.IsBatches)
+                {
+                    var productParentId = await _productDetailRepo.GetProductParentID(productsInOrder.ProductId);
+                    var productDetailDB = await _productDetailRepo.Get(productsInOrder.ProductId);
+                    var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
+                    var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+
+                    //Nếu đơn hàng là giao hàng và chưa được chấp nhận
+                    if(order.OrderTypeId == Commons.ORDER_TYPE_DELIVERY && order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
+                    {
+                        //Khởi tạo list mà chỉ khả dụng (khác null) nếu như đúng điều kiện
+                        if(orderProductLastUnitLevels == null)
+                        {
+                            orderProductLastUnitLevels = new List<OrderProductLastUnitLevel>();
+                        }
+                        orderProductLastUnitLevels.Add(new OrderProductLastUnitLevel()
+                        {
+                            productId = productLastUnitDetail.Id,
+                            productQuantity = CountTotalQuantityFromFirstToLastUnit(productLaterList)
+                        });
+                    } else
+                    {
+                        order.orderProducts[i].orderBatches = await _orderBatchRepo.GetViewSpecificOrderBatches(orderId, productLastUnitDetail.Id);
+                    }
+                }
+                //tiến hành check tồn kho đối với đơn giao hàng chưa có được tiếp nhận và role Pharmacist
+                if(orderProductLastUnitLevels != null)
+                {
+                    var missingProductList = await _siteInventoryRepo.CheckMissingProductOfSiteId(userInformation.SiteId, orderProductLastUnitLevels);
+                    if(missingProductList.Count > 0)
+                    {
+                        order.actionStatus = new ViewSpecificActionStatus();
+                        order.actionStatus.CanAccept = false;
+                        order.actionStatus.missingProducts = missingProductList;
+                        order.actionStatus.StatusMessage = "Chi nhánh đang bị thiếu hàng, không thể tiếp nhận đơn giao hàng này!";
+                    }
+                    else
+                    {
+                        order.actionStatus = new ViewSpecificActionStatus();
+                        order.actionStatus.CanAccept = true;
+                        order.actionStatus.missingProducts = missingProductList;
+                        order.actionStatus.StatusMessage = "Bạn có thể tiếp nhận đơn giao hàng này";
+                    }
+                } else if(order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
+                {
+                    order.actionStatus = new ViewSpecificActionStatus();
+                    order.actionStatus.CanAccept = true;
+                    order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
+                    order.actionStatus.StatusMessage = "Bạn có thể tiếp nhận đơn hàng này";
+                } else if(!order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
+                {
+                    order.actionStatus = new ViewSpecificActionStatus();
+                    order.actionStatus.CanAccept = false;
+                    order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
+                    order.actionStatus.StatusMessage = "Đơn hàng này đã có người đại diện xử lý.";
+                }
+                else
+                {
+                    order.actionStatus = null;
+                }
+            }
+
+            return order;
         }
     }
 

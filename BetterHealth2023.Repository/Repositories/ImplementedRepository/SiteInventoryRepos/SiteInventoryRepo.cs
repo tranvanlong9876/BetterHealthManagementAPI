@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using static System.Linq.Queryable;
 using static System.Linq.Enumerable;
 using System;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewSpecificOrderModels;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos
 {
@@ -17,6 +18,51 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
     {
         public SiteInventoryRepo(BetterHealthManagementContext context, IMapper mapper) : base(context, mapper)
         {
+        }
+
+        //check đối với đơn giao hàng
+        public async Task<List<ViewSpecificMissingProduct>> CheckMissingProductOfSiteId(string SiteId, List<OrderProductLastUnitLevel> orderProducts)
+        {
+            List<ViewSpecificMissingProduct> missingProducts = new List<ViewSpecificMissingProduct>();
+            var query = from sib in context.SiteInventoryBatches
+                        group sib by new { sib.SiteId, sib.ProductId } into grp
+                        select new
+                        {
+                            Site_ID = grp.Key.SiteId,
+                            Product_ID = grp.Key.ProductId,
+                            TotalQuantity = grp.Sum(x => x.Quantity)
+                        };
+
+            query = query.Where(x => x.Site_ID.Equals(SiteId));
+
+            for(int i = 0; i < orderProducts.Count; i++)
+            {
+                var product = orderProducts[i];
+                var queryInside = query.Where(x => x.Product_ID.Equals(product.productId));
+
+                if(await queryInside.Where(x => x.TotalQuantity >= product.productQuantity).CountAsync() == 0)
+                {
+                    //thiếu sản phẩm
+                    var missingProductModel = await queryInside.Select(selector => new ViewSpecificMissingProduct()
+                    {
+                        missingQuantity = product.productQuantity - selector.TotalQuantity,
+                        ProductId = product.productId,
+                        StatusMessage = $"Sản phẩm đang bị thiếu tồn kho {product.productQuantity - selector.TotalQuantity} đơn vị" 
+                    }).FirstOrDefaultAsync();
+
+                    if(missingProductModel == null)
+                    {
+                        missingProductModel = new ViewSpecificMissingProduct()
+                        {
+                            missingQuantity = product.productQuantity,
+                            ProductId = product.productId,
+                            StatusMessage = $"Sản phẩm đang bị thiếu tồn kho {product.productQuantity} đơn vị"
+                        };
+                    }
+                    missingProducts.Add(missingProductModel);
+                }
+            }
+            return missingProducts;
         }
 
         public async Task<List<SiteInventoryBatch>> GetAllProductBatchesAvailable(string productId, string siteId)
@@ -65,7 +111,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                                };
             var bigSiteList = new List<List<string>>();
 
-            for(int i = 0; i < cartModels.Count; i++)
+            for (int i = 0; i < cartModels.Count; i++)
             {
                 var productId = cartModels[i].ProductId;
                 var quantity = cartModels[i].Quantity;
@@ -74,7 +120,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 bigSiteList.Add(data);
             }
 
-            for(int i = 0; i < bigSiteList.Count - 1; i++)
+            for (int i = 0; i < bigSiteList.Count - 1; i++)
             {
                 bigSiteList[0] = bigSiteList[0].Intersect(bigSiteList[i + 1]).ToList();
             }
@@ -84,7 +130,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             for (int i = 0; i < bigSiteList[0].Count; i++)
             {
                 var siteId = bigSiteList[0][i];
-                if(await query.Where(x => x.site.Id.Equals(siteId)).CountAsync() > 0)
+                if (await query.Where(x => x.site.Id.Equals(siteId)).CountAsync() > 0)
                 {
                     var data = await query.Where(x => x.site.Id.Equals(siteId)).Select(selector => new SiteListToPickUp()
                     {
@@ -96,7 +142,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         WardId = selector.address.WardId
                     }).FirstOrDefaultAsync();
                     SiteListToPickUp.Add(data);
-                } else
+                }
+                else
                 {
                     totalRow--;
                 }

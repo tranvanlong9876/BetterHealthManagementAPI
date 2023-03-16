@@ -21,18 +21,49 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         public string Note { get; set; }
         public DateTime CreatedDate { get; set; }
         public bool NeedAcceptance { get; set; }
+        public List<ViewSpecificOrderProduct> orderProducts { get; set; }
 
-        public ViewSpecificOrderProduct orderProducts { get; set; }
+        public ViewSpecificActionStatus actionStatus { get; set; }
+
+        public ViewSpecificOrderContactInfo orderContactInfo { get; set; }
+
+        
+    }
+
+    public class ViewSpecificActionStatus
+    {
+        public bool CanAccept { get; set; }
+        public string StatusMessage { get; set; }
+        //hiển thị đối với đơn hàng Giao hàng
+        public List<ViewSpecificMissingProduct> missingProducts { get; set; }
+    }
+
+    public class ViewSpecificMissingProduct
+    {
+        public string ProductId { get; set; }
+        public int missingQuantity { get; set; }
+        public string StatusMessage { get; set; }
+    }
+
+    public class ViewSpecificOrderContactInfo
+    {
+        public string Fullname { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Email { get; set; }
     }
 
     public class ViewSpecificOrderProduct
     {
         public string Id { get; set; }
         public string ProductId { get; set; }
-        public string Quantity { get; set; }
-        public string OriginalPrice { get; set; }
-        public string DiscountPrice { get; set; }
-        public string PriceTotal { get; set; }
+        public string ImageUrl { get; set; }
+        public string ProductName { get; set; }
+        public bool IsBatches { get; set; }
+        public string UnitName { get; set; }
+        public int Quantity { get; set; }
+        public double OriginalPrice { get; set; }
+        public double DiscountPrice { get; set; }
+        public double PriceTotal { get; set; }
         public string ProductNoteFromPharmacist { get; set; }
         public List<ViewSpecificOrderBatch> orderBatches { get; set; }
     }
@@ -42,5 +73,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         public DateTime ManufacturerDate { get; set; }
         public DateTime ExpireDate { get; set; }
         public int Quantity { get; set; }
+        public string UnitName { get; set; }
     }
 }

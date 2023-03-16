@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewOrderListModels;
 using System;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewSpecificOrderModels;
+using static System.Linq.Enumerable;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos
 {
@@ -134,5 +136,53 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             List<OrderHeader> list = await context.OrderHeaders.Where(x => x.SiteId == siteId).ToListAsync();
             return list;
         }
+
+        public async Task<ViewOrderSpecific> GetSpecificOrder(string orderId)
+        {
+            var query = from header in context.OrderHeaders
+                        from contactInfo in context.OrderContactInfos.Where(x => x.OrderId == header.Id).DefaultIfEmpty()
+                        select new { header, contactInfo};
+            
+            query = query.Where(x => x.header.Id.Equals(orderId));
+
+            var data = await query.Select(selector => new ViewOrderSpecific() {
+                Id = orderId,
+                NeedAcceptance = selector.header.IsApproved == null,
+                IsPaid = selector.header.IsPaid,
+                Note = selector.header.Note,
+                CreatedDate = selector.header.CreatedDate,
+                OrderTypeId = selector.header.OrderTypeId,
+                PaymentMethodId = selector.header.PayType,
+                PharmacistId = selector.header.PharmacistId,
+                OrderStatus = selector.header.OrderStatus,
+                PaymentMethod = Commons.Commons.ConvertToOrderPayTypeString((Commons.Commons.OrderPayType)selector.header.PayType),
+                OrderTypeName = Commons.Commons.ConvertToOrderTypeString((Commons.Commons.OrderType)selector.header.OrderTypeId),
+                SiteId = selector.header.SiteId,
+                TotalPrice = selector.header.TotalPrice,
+                UsedPoint = selector.header.UsedPoint,
+                orderContactInfo = new ViewSpecificOrderContactInfo()
+                {
+                    Email = selector.contactInfo.Email,
+                    Fullname = selector.contactInfo.Fullname,
+                    PhoneNumber = selector.contactInfo.PhoneNo
+                }
+            }).FirstOrDefaultAsync();
+
+            return data;
+        }
+
+        public async Task<List<ViewSpecificOrderProduct>> GetAllOrderProductFromOrderId(string OrderId)
+        {
+            return await context.OrderDetails.Where(x => x.OrderId == OrderId).Select(selector2 => new ViewSpecificOrderProduct()
+            {
+                Id = selector2.Id,
+                ProductId = selector2.ProductId,
+                OriginalPrice = selector2.OriginalPrice,
+                DiscountPrice = selector2.DiscountPrice,
+                PriceTotal = selector2.PriceTotal,
+                ProductNoteFromPharmacist = selector2.Note,
+                Quantity = selector2.Quantity
+            }).ToListAsync();
+        } 
     }
 }
