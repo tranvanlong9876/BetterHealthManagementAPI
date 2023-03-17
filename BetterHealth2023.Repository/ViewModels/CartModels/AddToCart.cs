@@ -15,13 +15,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartM
         [Required]
         public string ProductId { get; set; }
         [Required]
-        [FirestoreProperty("image")]
-        
-        public string ProductImageUrl { get; set; }
-        [Required]
-        [FirestoreProperty("name")]
-        public string ProductName { get; set; }
-        [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Số lượng sản phẩm trong giỏ hàng phải luôn luôn lớn hơn 0")]
         [FirestoreProperty("quantity")]
         public int Quantity { get; set; }
@@ -32,7 +25,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartM
     {
         [Required]
         
-        public string customerIpAddress { get; set; }
+        public string cartId { get; set; }
 
         [Required]
         public AddToCart Item { get; set; }

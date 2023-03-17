@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
@@ -16,6 +17,12 @@ namespace BetterHealthManagementAPI.Controllers
     [Authorize]
     public class UtilityController : ControllerBase
     {
+        [HttpGet("GetCurrentTime")]
+        [AllowAnonymous]
+        public IActionResult GetCurrentTime()
+        {
+            return Ok(CustomDateTime.Now);
+        } 
         [HttpPost("UploadFile")]
         [AllowAnonymous]
         public async Task<IActionResult> UploadImagesAsync(IFormFile file)

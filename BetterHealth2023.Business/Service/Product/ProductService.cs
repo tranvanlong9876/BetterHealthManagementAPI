@@ -5,6 +5,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductImageRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductIngredientDescriptionRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductParentRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.ProductErrorModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
@@ -40,6 +41,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             _productImageRepo = productImageRepo;
             _productEventDiscountRepo = productEventDiscountRepo;
         }
+
+        public async Task<CartItem> AddMoreProductInformationToCart(string productId)
+        {
+            return await _productDetailRepo.AddMoreProductInformationToCart(productId);
+        }
+
         public async Task<CreateProductErrorModel> CreateProduct(CreateProductModel createProductModel)
         {
             var checkError = new CreateProductErrorModel();

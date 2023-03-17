@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
@@ -24,7 +25,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         from discount in context.ProductDiscounts.Where(x => x.Id == discountevent.DiscountId).DefaultIfEmpty()
                         select new { discount, discountevent };
 
-            var currentTime = DateTime.Now;
+            var currentTime = CustomDateTime.Now;
 
             query = query.Where(x => currentTime > x.discount.StartDate && currentTime < x.discount.EndDate && x.discountevent.ProductId.Equals(productID) && !x.discount.IsDelete);
 
@@ -42,7 +43,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         from discount in context.ProductDiscounts.Where(x => x.Id == discountevent.DiscountId).DefaultIfEmpty()
                         select new { discount, discountevent };
 
-            var currentTime = DateTime.Now;
+            var currentTime = CustomDateTime.Now;
 
             query = query.Where(x => currentTime > x.discount.StartDate && currentTime < x.discount.EndDate && x.discountevent.ProductId.Equals(productID) && !x.discount.IsDelete);
 
@@ -62,7 +63,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         from eventDiscount in context.EventProductDiscounts.Where(x => x.DiscountId == discount.Id)
                         select new { eventDiscount, discount };
 
-            var currentTime = DateTime.Now;
+            var currentTime = CustomDateTime.Now;
 
             query = query.Where(x => x.eventDiscount.ProductId.Equals(productId) && x.discount.StartDate < currentTime && x.discount.EndDate > currentTime && !x.discount.IsDelete);
 

@@ -12,15 +12,17 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartM
     {
         [FirestoreProperty("pid")]
         public string ProductId { get; set; }
-        [FirestoreProperty("image")]
-
-        public string ProductImageUrl { get; set; }
-        [Required]
-        [FirestoreProperty("name")]
-        public string ProductName { get; set; }
+        
         [Required]
         [FirestoreProperty("quantity")]
         public int Quantity { get; set; }
+
+        public string ProductName { get; set; }
+        public string ProductImageUrl { get; set; }
+        public double Price { get; set; }
+        public double PriceAfterDiscount { get; set; }
+        public double PriceTotal { get; set; }
+
     }
 
     [FirestoreData]
@@ -28,5 +30,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartM
     {
         [FirestoreProperty("items")]
         public List<CartItem> Items { get; set; }
+
+        public double SubTotalPrice { get; set; }
+
+        public string DiscountPrice { get; set; }
+        public double TotalCartPrice { get; set; }
     }
 }

@@ -201,11 +201,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
 
             modelBuilder.Entity<OrderContactInfo>(entity =>
             {
-                entity.HasOne(d => d.Address)
-                    .WithMany(p => p.OrderContactInfos)
-                    .HasForeignKey(d => d.AddressId)
-                    .HasConstraintName("FK_Order_ContactInfo_Dynamic_Address");
-
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.OrderContactInfos)
                     .HasForeignKey(d => d.CustomerId)

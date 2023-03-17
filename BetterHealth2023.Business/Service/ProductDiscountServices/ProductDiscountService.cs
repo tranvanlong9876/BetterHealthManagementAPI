@@ -1,4 +1,5 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductDiscountRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDetailRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductImageRepos;
@@ -33,7 +34,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDis
             var discountModel = await _productDiscountRepo.Get(discountId);
             if (discountModel == null) return false;
             if (discountModel.IsDelete) return false;
-            if (discountModel.EndDate < DateTime.Now) return false;
+            if (discountModel.EndDate < CustomDateTime.Now) return false;
 
             if (await _productEventDiscountRepo.CheckAlreadyExistProductDiscount(discountId)) return false;
 
@@ -88,7 +89,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDis
             //insert Header
             var productDiscountHeaderDB = _productDiscountRepo.TransferBetweenTwoModels<CreateProductDiscountModel, ProductDiscount>(discountModel);
             productDiscountHeaderDB.Id = Guid.NewGuid().ToString();
-            productDiscountHeaderDB.CreatedDate = DateTime.Now;
+            productDiscountHeaderDB.CreatedDate = CustomDateTime.Now;
             productDiscountHeaderDB.IsDelete = false;
 
             var ProductList = new List<EventProductDiscount>();
@@ -118,7 +119,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDis
                 {
                     var startDate = pagedResult.Items[i].StartDate;
                     var endDate = pagedResult.Items[i].EndDate;
-                    var currentDate = DateTime.Now;
+                    var currentDate = CustomDateTime.Now;
 
                     pagedResult.Items[i].Status = GetStatus(startDate, currentDate, endDate);
                     pagedResult.Items[i].TotalProduct = await GetTotalProductFromDiscountId(pagedResult.Items[i].Id);
@@ -167,7 +168,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDis
                 return checkError;
             }
 
-            if(productDiscountDB.EndDate < DateTime.Now)
+            if(productDiscountDB.EndDate < CustomDateTime.Now)
             {
                 checkError.isError = true;
                 checkError.NotAllowed = "Sự kiện khuyến mãi đã kết thúc, vui lòng thêm mới một sự kiện khác.";
@@ -221,7 +222,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDis
             if (productDiscountView == null) return null;
             productDiscountView.EventProductDiscounts = await _productEventDiscountRepo.GetAllProductDiscountId(discountId);
             productDiscountView.TotalProduct = await GetTotalProductFromDiscountId(discountId);
-            productDiscountView.Status = GetStatus(productDiscountView.StartDate, DateTime.Now, productDiscountView.EndDate);
+            productDiscountView.Status = GetStatus(productDiscountView.StartDate, CustomDateTime.Now, productDiscountView.EndDate);
             for(int i = 0; i < productDiscountView.EventProductDiscounts.Count; i++)
             {
                 

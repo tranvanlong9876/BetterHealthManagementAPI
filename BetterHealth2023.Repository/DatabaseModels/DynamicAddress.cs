@@ -15,7 +15,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         {
             CustomerAddresses = new HashSet<CustomerAddress>();
             InternalUsers = new HashSet<InternalUser>();
-            OrderContactInfos = new HashSet<OrderContactInfo>();
             OrderShipmentDestinationAddresses = new HashSet<OrderShipment>();
             OrderShipmentStartAddresses = new HashSet<OrderShipment>();
             SiteInformations = new HashSet<SiteInformation>();
@@ -49,8 +48,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public virtual ICollection<CustomerAddress> CustomerAddresses { get; set; }
         [InverseProperty(nameof(InternalUser.Address))]
         public virtual ICollection<InternalUser> InternalUsers { get; set; }
-        [InverseProperty(nameof(OrderContactInfo.Address))]
-        public virtual ICollection<OrderContactInfo> OrderContactInfos { get; set; }
         [InverseProperty(nameof(OrderShipment.DestinationAddress))]
         public virtual ICollection<OrderShipment> OrderShipmentDestinationAddresses { get; set; }
         [InverseProperty(nameof(OrderShipment.StartAddress))]

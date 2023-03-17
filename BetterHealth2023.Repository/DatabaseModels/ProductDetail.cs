@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
 {
     [Table("Product_Details")]
+    [Microsoft.EntityFrameworkCore.Index(nameof(ProductIdParent), nameof(UnitLevel), Name = "Unique_ParentId_UnitLevel", IsUnique = true)]
     public partial class ProductDetail
     {
         public ProductDetail()

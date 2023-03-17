@@ -42,7 +42,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
         private readonly IOrderDetailRepo _orderDetailRepo;
         private readonly IOrderContactInfoRepo _orderContactInfoRepo;
         private readonly IProductDetailRepo _productDetailRepo;
-
         public OrderService(ISiteInventoryRepo siteInventoryRepo, ISiteRepo siteRepo, ICustomerPointRepo customerPointRepo, ICustomerRepo customerRepo, IDynamicAddressRepo dynamicAddressRepo, IOrderHeaderRepo orderHeaderRepo, IOrderShipmentRepo orderShipmentRepo, IOrderPickUpRepo orderPickUpRepo, IProductImportRepo productImportRepo, IOrderBatchRepo orderBatchRepo, IOrderDetailRepo orderDetailRepo, IOrderContactInfoRepo orderContactInfoRepo, IProductDetailRepo productDetailRepo)
         {
             _siteInventoryRepo = siteInventoryRepo;
@@ -104,21 +103,24 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 }
             }
 
+            //Nếu Token không có CustomerId (Guest, kiểm tra thêm một lần nữa bằng cách lôi số điện thoại ra)
+            //Line 107'
+            if (string.IsNullOrEmpty(CustomerId) && !string.IsNullOrEmpty(checkOutOrderModel.ReveicerInformation.PhoneNumber))
+            {
+                //Get thêm lần nữa bằng SĐT
+                CustomerId = await _customerRepo.GetCustomerIdBasedOnPhoneNo(checkOutOrderModel.ReveicerInformation.PhoneNumber);
+            }
+
             //Trừ điểm tích lũy
             var isUseSuccessfully = false;
             
+            
             if (checkOutOrderModel.UsedPoint > 0)
             {
-                var checkType = 0;
                 int? customerPoint = null;
                 if (!String.IsNullOrEmpty(CustomerId))
                 {
                     customerPoint = await _customerPointRepo.GetCustomerPointBasedOnCustomerId(CustomerId);
-                    checkType = 1;
-                } else if(!String.IsNullOrEmpty(checkOutOrderModel.ReveicerInformation.PhoneNumber))
-                {
-                    customerPoint = await _customerPointRepo.GetCustomerPointBasedOnPhoneNumber(checkOutOrderModel.ReveicerInformation.PhoneNumber);
-                    checkType = 2;
                 } else
                 {
                     customerPoint = null;
@@ -132,8 +134,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                         {
                             Id = Guid.NewGuid().ToString(),
                             IsPlus = false,
-                            CreateDate = DateTime.Now,
-                            CustomerId = checkType == 1 ? CustomerId : await _customerRepo.GetCustomerIdBasedOnPhoneNo(checkOutOrderModel.ReveicerInformation.PhoneNumber),
+                            CreateDate = CustomDateTime.Now,
+                            CustomerId = CustomerId,
                             Point = checkOutOrderModel.UsedPoint,
                             Description = $"Sử dụng {checkOutOrderModel.UsedPoint} điểm cho đơn hàng {checkOutOrderModel.OrderId} vào lúc {DateTime.Now}"
                         };
@@ -153,12 +155,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 UsedPoint = isUseSuccessfully ? checkOutOrderModel.UsedPoint : 0,
                 PayType = checkOutOrderModel.PayType,
                 Note = checkOutOrderModel.Note,
-                CreatedDate = DateTime.Now,
+                CreatedDate = CustomDateTime.Now,
                 OrderStatus = OrderStatusIdCheckOut(checkOutOrderModel.OrderTypeId),
                 PharmacistId = checkOutOrderModel.OrderTypeId == 1 ? checkOutOrderModel.PharmacistId : null,
                 SiteId = checkOutOrderModel.OrderTypeId == 3 ? null : checkOutOrderModel.SiteId,
                 IsPaid = checkOutOrderModel.isPaid,
-                ApprovedDate = checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_DIRECTLY) ? DateTime.Now : null,
+                ApprovedDate = checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_DIRECTLY) ? CustomDateTime.Now : null,
                 IsApproved = checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_DIRECTLY) ? true : null
             };
 
@@ -184,7 +186,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             var orderContactInfo = new OrderContactInfo()
             {
                 Id = Guid.NewGuid().ToString(),
-                AddressId = addressId,
                 CustomerId = string.IsNullOrEmpty(CustomerId) ? null : CustomerId,
                 Email = checkOutOrderModel.ReveicerInformation.Email,
                 Fullname = checkOutOrderModel.ReveicerInformation.Fullname,
@@ -304,16 +305,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     ProductId = productModel.ProductId,
                     OriginalPrice = productModel.OriginalPrice,
                     DiscountPrice = productModel.DiscountPrice,
-                    Quantity = productModel.Quantity,
-                    PriceTotal = productModel.DiscountPrice * productModel.Quantity,
+                    Quantity = productModel.Quantity
                 };
 
                 if(checkOutOrderModel.OrderTypeId != Commons.ORDER_TYPE_DIRECTLY)
                 {
                     var productSendingEmailModel = _customerPointRepo.TransferBetweenTwoModels<OrderDetail, SendingEmailProductModel>(orderProductModelDB);
-                    productSendingEmailModel.TotalPrice = orderProductModelDB.PriceTotal;
-                    productSendingEmailModel.imageUrl = productModel.ProductImageUrl;
-                    productSendingEmailModel.ProductName = productModel.ProductName;
+                    productSendingEmailModel.TotalPrice = orderProductModelDB.DiscountPrice * orderProductModelDB.Quantity;
+                    var (name, imageUrl) = await _productDetailRepo.GetImageAndProductName(orderProductModelDB.ProductId);
+                    productSendingEmailModel.imageUrl = name;
+                    productSendingEmailModel.ProductName = imageUrl;
                     productSendingEmailModels.Add(productSendingEmailModel);
                 }
                 await _orderDetailRepo.Insert(orderProductModelDB);
@@ -429,7 +430,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
         {
             Random generator = new Random();
             
-            var createdDate = String.Format("{0:ddMMyyyy-HHmmss}", DateTime.Now);
+            var createdDate = String.Format("{0:ddMMyyyy-HHmmss}", CustomDateTime.Now);
             bool isDuplicate = true;
             var orderId = String.Empty;
             while (isDuplicate)
@@ -535,41 +536,57 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                         order.orderProducts[i].orderBatches = await _orderBatchRepo.GetViewSpecificOrderBatches(orderId, productLastUnitDetail.Id);
                     }
                 }
-                //tiến hành check tồn kho đối với đơn giao hàng chưa có được tiếp nhận và role Pharmacist
-                if(orderProductLastUnitLevels != null)
-                {
-                    var missingProductList = await _siteInventoryRepo.CheckMissingProductOfSiteId(userInformation.SiteId, orderProductLastUnitLevels);
-                    if(missingProductList.Count > 0)
-                    {
-                        order.actionStatus = new ViewSpecificActionStatus();
-                        order.actionStatus.CanAccept = false;
-                        order.actionStatus.missingProducts = missingProductList;
-                        order.actionStatus.StatusMessage = "Chi nhánh đang bị thiếu hàng, không thể tiếp nhận đơn giao hàng này!";
-                    }
-                    else
-                    {
-                        order.actionStatus = new ViewSpecificActionStatus();
-                        order.actionStatus.CanAccept = true;
-                        order.actionStatus.missingProducts = missingProductList;
-                        order.actionStatus.StatusMessage = "Bạn có thể tiếp nhận đơn giao hàng này";
-                    }
-                } else if(order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
-                {
-                    order.actionStatus = new ViewSpecificActionStatus();
-                    order.actionStatus.CanAccept = true;
-                    order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
-                    order.actionStatus.StatusMessage = "Bạn có thể tiếp nhận đơn hàng này";
-                } else if(!order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
+            }
+
+            //Xử lý action nhận đơn
+            if (orderProductLastUnitLevels != null)
+            {
+                var missingProductList = await _siteInventoryRepo.CheckMissingProductOfSiteId(userInformation.SiteId, orderProductLastUnitLevels);
+                if (missingProductList.Count > 0)
                 {
                     order.actionStatus = new ViewSpecificActionStatus();
                     order.actionStatus.CanAccept = false;
-                    order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
-                    order.actionStatus.StatusMessage = "Đơn hàng này đã có người đại diện xử lý.";
+                    order.actionStatus.missingProducts = missingProductList;
+                    order.actionStatus.StatusMessage = "Chi nhánh đang bị thiếu hàng, không thể tiếp nhận đơn giao hàng này!";
                 }
                 else
                 {
-                    order.actionStatus = null;
+                    order.actionStatus = new ViewSpecificActionStatus();
+                    order.actionStatus.CanAccept = true;
+                    order.actionStatus.missingProducts = missingProductList;
+                    order.actionStatus.StatusMessage = "Bạn có thể tiếp nhận đơn giao hàng này";
                 }
+            }
+            else if (order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
+            {
+                order.actionStatus = new ViewSpecificActionStatus();
+                order.actionStatus.CanAccept = true;
+                order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
+                order.actionStatus.StatusMessage = "Bạn có thể tiếp nhận đơn hàng này";
+            }
+            else if (!order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
+            {
+                order.actionStatus = new ViewSpecificActionStatus();
+                order.actionStatus.CanAccept = false;
+                order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
+                order.actionStatus.StatusMessage = "Đơn hàng này đã có người đại diện xử lý.";
+            }
+            else
+            {
+                order.actionStatus = null;
+            }
+
+            //Lấy ra thông tin giao hàng nếu như là Đơn Giao Hàng
+            if (order.OrderTypeId.Equals(Commons.ORDER_TYPE_DELIVERY))
+            {
+                order.orderDelivery = await _orderShipmentRepo.GetOrderDeliveryInformation(orderId);
+                order.orderDelivery.FullyAddress = await _dynamicAddressRepo.GetFullAddressFromAddressId(order.orderDelivery.AddressId);
+            }
+
+            //Lấy ra thông tin đến lấy nếu như là Đơn Đến Lấy 
+            if (order.OrderTypeId.Equals(Commons.ORDER_TYPE_PICKUP))
+            {
+                order.orderPickUp = await _orderPickUpRepo.GetOrderPickUpInformation(orderId);
             }
 
             return order;

@@ -10,6 +10,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartM
     {
         [Required]
         public string productId { get; set; }
-        public string customerIdOrIpAddress { get; set; }
+        public string cartId { get; set; }
     }
 }

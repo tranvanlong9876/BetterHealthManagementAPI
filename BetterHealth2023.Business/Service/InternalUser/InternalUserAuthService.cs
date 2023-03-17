@@ -200,8 +200,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
                         Id = workingSiteID,
                         SiteId = internalUser.SiteId,
                         UserId = empID,
-                        CreatedDate = DateTime.Now,
-                        UpdatedDate = DateTime.Now,
+                        CreatedDate = CustomDateTime.Now,
+                        UpdatedDate = CustomDateTime.Now,
                         IsWorking = true
                     };
 

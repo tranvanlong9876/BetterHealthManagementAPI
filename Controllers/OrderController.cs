@@ -1,4 +1,5 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServices;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DateTimeModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
@@ -74,7 +75,7 @@ namespace BetterHealthManagementAPI.Controllers
         [AllowAnonymous]
         public IActionResult GetDatePickUpAvailable()
         {
-            var dateTime = DateTime.Today;
+            var dateTime = CustomDateTime.Now.Date;
             List<PickUpDateModel> dateTimes = new List<PickUpDateModel>();
             for (int i = 0; i < 10; i++)
             {
@@ -95,7 +96,7 @@ namespace BetterHealthManagementAPI.Controllers
         [AllowAnonymous]
         public IActionResult GetTimeAvailable(DateTime dateTime)
         {
-            var currentDateTime = DateTime.Now;
+            var currentDateTime = CustomDateTime.Now;
             List<string> timeAvailables = new List<string>();
             if (currentDateTime.ToShortDateString().Equals(dateTime.ToShortDateString()))
             {

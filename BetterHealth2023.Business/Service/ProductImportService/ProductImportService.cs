@@ -1,4 +1,5 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos.ProductImportBatchRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos.ProductImportDetailRepos;
@@ -64,7 +65,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductImp
             //Insert Header
             var productImportHeader = _productImportRepo.TransferBetweenTwoModels<CreateProductImportModel, ProductImportReceipt>(importModel);
             productImportHeader.Id = headerID;
-            productImportHeader.ImportDate = DateTime.Now;
+            productImportHeader.ImportDate = CustomDateTime.Now;
             productImportHeader.ProductImportDetails = null;
             await _productImportRepo.Insert(productImportHeader);
 
@@ -166,7 +167,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductImp
             }
 
             //Update Header.
-            productImportReceipt.ImportDate = DateTime.Now;
+            productImportReceipt.ImportDate = CustomDateTime.Now;
             productImportReceipt.IsReleased = updateProductImport.IsReleased;
             productImportReceipt.TaxPrice = updateProductImport.TaxPrice;
             productImportReceipt.TotalProductPrice = updateProductImport.TotalProductPrice;
@@ -316,8 +317,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductImp
                             Quantity = productImportBatchDB.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList),
                             SiteId = siteID,
                             ImportBatchId = productImportBatchDB.Id,
-                            CreatedDate = DateTime.Now,
-                            UpdatedDate = DateTime.Now
+                            CreatedDate = CustomDateTime.Now,
+                            UpdatedDate = CustomDateTime.Now
                         };
                         await _siteInventoryRepo.Insert(siteInventoryBatch);
                     }
@@ -335,14 +336,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductImp
                             ProductId = productLastUnitDetail.Id,
                             Quantity = productImportDetail.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList),
                             SiteId = siteID,
-                            CreatedDate = DateTime.Now,
-                            UpdatedDate = DateTime.Now
+                            CreatedDate = CustomDateTime.Now,
+                            UpdatedDate = CustomDateTime.Now
                         };
                         await _siteInventoryRepo.Insert(SiteInventoryBatchDB);
                     }
                     else
                     {
-                        SiteInventoryBatchDB.UpdatedDate = DateTime.Now;
+                        SiteInventoryBatchDB.UpdatedDate = CustomDateTime.Now;
                         SiteInventoryBatchDB.Quantity = SiteInventoryBatchDB.Quantity + (productImportDetail.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList));
                         await _siteInventoryRepo.Update();
                     }

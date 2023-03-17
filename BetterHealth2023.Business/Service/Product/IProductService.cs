@@ -1,4 +1,5 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.ProductErrorModels;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.ProductErrorModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
@@ -12,6 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 {
     public interface IProductService
     {
+        public Task<CartItem> AddMoreProductInformationToCart(string productId);
         public Task<CreateProductErrorModel> CreateProduct(CreateProductModel createProductModel);
 
         public Task<PagedResult<ViewProductListModel>> GetAllProductsPagingForCustomer(ProductPagingRequest pagingRequest);

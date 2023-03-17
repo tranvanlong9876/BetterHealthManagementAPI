@@ -141,7 +141,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
             var query = from header in context.OrderHeaders
                         from contactInfo in context.OrderContactInfos.Where(x => x.OrderId == header.Id).DefaultIfEmpty()
-                        select new { header, contactInfo};
+                        from orderStatus in context.OrderStatuses.Where(x => x.Id == header.OrderStatus).DefaultIfEmpty()
+                        select new { header, contactInfo, orderStatus};
             
             query = query.Where(x => x.header.Id.Equals(orderId));
 
@@ -155,6 +156,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 PaymentMethodId = selector.header.PayType,
                 PharmacistId = selector.header.PharmacistId,
                 OrderStatus = selector.header.OrderStatus,
+                OrderStatusName = selector.orderStatus.OrderStatusName,
                 PaymentMethod = Commons.Commons.ConvertToOrderPayTypeString((Commons.Commons.OrderPayType)selector.header.PayType),
                 OrderTypeName = Commons.Commons.ConvertToOrderTypeString((Commons.Commons.OrderType)selector.header.OrderTypeId),
                 SiteId = selector.header.SiteId,
@@ -170,19 +172,5 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             return data;
         }
-
-        public async Task<List<ViewSpecificOrderProduct>> GetAllOrderProductFromOrderId(string OrderId)
-        {
-            return await context.OrderDetails.Where(x => x.OrderId == OrderId).Select(selector2 => new ViewSpecificOrderProduct()
-            {
-                Id = selector2.Id,
-                ProductId = selector2.ProductId,
-                OriginalPrice = selector2.OriginalPrice,
-                DiscountPrice = selector2.DiscountPrice,
-                PriceTotal = selector2.PriceTotal,
-                ProductNoteFromPharmacist = selector2.Note,
-                Quantity = selector2.Quantity
-            }).ToListAsync();
-        } 
     }
 }

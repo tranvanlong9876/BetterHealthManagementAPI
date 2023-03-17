@@ -1,4 +1,5 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UnitRepos;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UnitRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.UnitErrorModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.UnitModels;
@@ -40,7 +41,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Unit
             var newUnitModel = new Repository.DatabaseModels.Unit()
             {
                 Id = unitID,
-                CreatedDate = DateTime.Now,
+                CreatedDate = CustomDateTime.Now,
                 IsCountable = createUnitModel.isCountable,
                 Status = true,
                 UnitName = createUnitModel.UnitName.Trim()

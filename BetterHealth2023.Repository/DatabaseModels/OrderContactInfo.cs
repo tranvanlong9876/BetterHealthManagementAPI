@@ -19,8 +19,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string OrderId { get; set; }
         [StringLength(50)]
         public string CustomerId { get; set; }
-        [StringLength(50)]
-        public string AddressId { get; set; }
         [Required]
         [StringLength(50)]
         public string Fullname { get; set; }
@@ -30,9 +28,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string Email { get; set; }
         public bool? Gender { get; set; }
 
-        [ForeignKey(nameof(AddressId))]
-        [InverseProperty(nameof(DynamicAddress.OrderContactInfos))]
-        public virtual DynamicAddress Address { get; set; }
         [ForeignKey(nameof(CustomerId))]
         [InverseProperty("OrderContactInfos")]
         public virtual Customer Customer { get; set; }

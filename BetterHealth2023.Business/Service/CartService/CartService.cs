@@ -26,7 +26,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
 
             cart.LastUpdated = Timestamp.GetCurrentTimestamp();
             var collectionReference = firestore.Collection("carts");
-            var documentReference = collectionReference.Document(cart.customerIpAddress);
+            var documentReference = collectionReference.Document(cart.cartId);
             var documentSnapshot = await documentReference.GetSnapshotAsync();
             if (!documentSnapshot.Exists)
             {
@@ -62,10 +62,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
             return true;
         }
 
-        public async Task<ViewCart> GetCart(string phoneNo)
+        public async Task<ViewCart> GetCart(string cartId)
         {
             var collectionReference = firestore.Collection("carts");
-            var documentReference = collectionReference.Document(phoneNo);
+            var documentReference = collectionReference.Document(cartId);
             var snapshot = await documentReference.GetSnapshotAsync();
             if (snapshot.Exists)
             {

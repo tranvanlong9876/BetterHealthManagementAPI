@@ -8,7 +8,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
 {
     public interface ICartService
     {
-        public Task<ViewCart> GetCart(string phoneNo);
+        public Task<ViewCart> GetCart(string cartId);
         public Task<bool> UpdateCart(Cart cart);
         public Task<bool> RemoveItemFromCart(string productId, string IpAddressOrPhoneNo);
     }

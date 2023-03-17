@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.InternalUserAuthRepos;
@@ -44,7 +45,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
                 ContactInfo = siteviewmodel.ContactInfo,
                 ImageUrl = siteviewmodel.ImageUrl,
                 AddressId = addressID,
-                LastUpdate = DateTime.Now,
+                LastUpdate = CustomDateTime.Now,
                 IsActivate = false,
                 IsDelivery = false
 
@@ -82,7 +83,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
             dynamicAddress.DistrictId = updateSiteModel.districtId;
             dynamicAddress.WardId = updateSiteModel.wardId;
             dynamicAddress.HomeAddress = updateSiteModel.homeAddress;
-            site.LastUpdate = DateTime.Now;
+            site.LastUpdate = CustomDateTime.Now;
             await _dynamicAddressRepo.Update();
             await _siteRepo.Update();
             return await Task.FromResult(true);
@@ -120,7 +121,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
             if (updateSiteStatus.isError) return updateSiteStatus;
 
             site.IsDelivery = IsDelivery;
-            site.LastUpdate = DateTime.Now;
+            site.LastUpdate = CustomDateTime.Now;
             await _siteRepo.Update();
             updateSiteStatus.isError = false;
             return await Task.FromResult(updateSiteStatus);
@@ -158,7 +159,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
             if (updateSiteStatus.isError) return updateSiteStatus;
 
             site.IsActivate = IsActive;
-            site.LastUpdate = DateTime.Now;
+            site.LastUpdate = CustomDateTime.Now;
 
             if (site.IsDelivery && !IsActive) site.IsDelivery = false;
 

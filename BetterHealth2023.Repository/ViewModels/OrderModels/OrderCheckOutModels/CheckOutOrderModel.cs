@@ -8,6 +8,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
 {
     public class CheckOutOrderModel
     {
+        [Required]
         public string OrderId { get; set; }
         [Required]
         public int OrderTypeId { get; set; }
@@ -54,17 +55,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         [Required]
         public string ProductId { get; set; }
         [Required]
-        public string ProductName { get; set; }
-        [Required]
-        public string ProductImageUrl { get; set; }
-        [Required]
         public int Quantity { get; set; }
         [Required]
         public double OriginalPrice { get; set; }
         [Required]
         public double DiscountPrice { get; set; }
-        [Required]
-        public double TotalPrice { get; set; }
     }
 
     public class OrderVoucher

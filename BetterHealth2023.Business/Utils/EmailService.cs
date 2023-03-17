@@ -51,7 +51,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 
         public static async Task SendCustomerInvoiceEmail(List<SendingEmailProductModel> sendingEmailProductModels, CheckOutOrderModel checkOutOrderModel, string address)
         {
-            DateTime createdDate = DateTime.Now;
+            DateTime createdDate = CustomDateTime.Now;
             string cartHtml = string.Empty;
             for(int i = 0; i < sendingEmailProductModels.Count; i++)
             {

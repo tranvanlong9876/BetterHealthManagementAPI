@@ -20,7 +20,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.VNPay
 
         public string CreatePaymentUrl(VNPayInformationModel model)
         {
-            var ticks = DateTime.Now.Ticks.ToString();
+            var ticks = CustomDateTime.Now.Ticks.ToString();
             var urlCallBack = _configuration["PaymentCallBack:ReturnUrl"];
             var pay = new VNPayLibrary();
 
@@ -28,7 +28,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.VNPay
             pay.AddRequestData("vnp_Command", _configuration["VnPay:Command"]);
             pay.AddRequestData("vnp_TmnCode", _configuration["VnPay:TmnCode"]);
             pay.AddRequestData("vnp_Amount", ((float) model.Amount * 100).ToString());
-            pay.AddRequestData("vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss"));
+            pay.AddRequestData("vnp_CreateDate", CustomDateTime.Now.ToString("yyyyMMddHHmmss"));
             pay.AddRequestData("vnp_CurrCode", _configuration["VnPay:CurrCode"]);
             pay.AddRequestData("vnp_IpAddr", model.IpAddress);
             pay.AddRequestData("vnp_Locale", _configuration["VnPay:Locale"]);

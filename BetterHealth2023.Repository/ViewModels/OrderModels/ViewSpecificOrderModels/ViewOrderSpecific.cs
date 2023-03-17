@@ -13,6 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         public string OrderTypeName { get; set; }
         public string SiteId { get; set; }
         public string OrderStatus { get; set; }
+        public string OrderStatusName { get; set; }
         public double TotalPrice { get; set; }
         public int UsedPoint { get; set; }
         public int PaymentMethodId { get; set; }
@@ -22,12 +23,27 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         public DateTime CreatedDate { get; set; }
         public bool NeedAcceptance { get; set; }
         public List<ViewSpecificOrderProduct> orderProducts { get; set; }
-
         public ViewSpecificActionStatus actionStatus { get; set; }
-
         public ViewSpecificOrderContactInfo orderContactInfo { get; set; }
+        public ViewSpecificOrderPickUp orderPickUp { get; set; }
+        public ViewSpecificOrderDelivery orderDelivery { get; set; }
+    }
 
-        
+    public class ViewSpecificOrderPickUp
+    {
+        public string DatePickUp { get; set; }
+        public string TimePickUp { get; set; }
+    }
+
+    public class ViewSpecificOrderDelivery
+    {
+        public string CityId { get; set; }
+        public string DistrictId { get; set; }
+        public string WardId { get; set; }
+        public string HomeNumber { get; set; }
+        public string FullyAddress { get; set; }
+        public double ShippingFee { get; set; }
+        public string AddressId { get; set; }
     }
 
     public class ViewSpecificActionStatus

@@ -2,6 +2,7 @@
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
@@ -125,7 +126,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public async Task<string> GetProductParentID(string productID)
         {
             return await (from detail in context.ProductDetails.Where(x => x.Id.Equals(productID))
-                        select detail.ProductIdParent).SingleOrDefaultAsync();
+                          select detail.ProductIdParent).SingleOrDefaultAsync();
         }
 
         public async Task<List<ProductUnitModel>> GetProductUnitButThis(string productID, int unitLevel)
@@ -157,7 +158,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         from unitOfProduct in context.Units.Where(unitPro => unitPro.Id == details.UnitId).DefaultIfEmpty()
                         select new { details, parent, description, unitOfProduct };
 
-            if(!isInternal)
+            if (!isInternal)
             {
                 query = query.Where(x => x.details.IsSell.Equals(true));
             }
@@ -246,13 +247,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                             orderby detail.UnitLevel ascending
                             select detail;
 
-            if(isSell.HasValue)
+            if (isSell.HasValue)
             {
                 queryUnit = queryUnit.Where(x => x.IsSell);
             }
 
             var unitLevel = await queryUnit.Take(1).Select(x => x.UnitLevel).SingleOrDefaultAsync();
-            
+
             var query = from parent in context.ProductParents
                         from detail in context.ProductDetails.Where(details => details.ProductIdParent == parent.Id)
                         from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
@@ -260,7 +261,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             query = query.Where(x => (x.parent.Id.Equals(productParentID.Trim())) && (x.detail.UnitLevel <= unitLevel));
 
-            if(isSell.HasValue)
+            if (isSell.HasValue)
             {
                 query = query.Where(x => x.detail.IsSell);
             }
@@ -363,6 +364,39 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             var pageResult = new PagedResult<ViewProductListModelForInternal>(productList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
 
             return pageResult;
+        }
+
+        public async Task<(string, string)> GetImageAndProductName(string productId)
+        {
+            var imageUrl = string.Empty;
+            var productName = string.Empty;
+
+            var query = from detail in context.ProductDetails
+                        from parent in context.ProductParents.Where(x => x.Id == detail.ProductIdParent).DefaultIfEmpty()
+                        from image in context.ProductImages.Where(x => x.ProductId == parent.Id && x.IsFirstImage).DefaultIfEmpty()
+                        where detail.Id == productId
+                        select new { parent.Name, image.ImageUrl };
+            var result = await Task.WhenAll(query.Select(x => x.Name).FirstOrDefaultAsync(), query.Select(x => x.ImageUrl).FirstOrDefaultAsync());
+
+            return (result[0], result[1]);
+        }
+
+        public async Task<CartItem> AddMoreProductInformationToCart(string productId)
+        {
+            var query = (from detail in context.ProductDetails
+                         from parent in context.ProductParents.Where(x => x.Id == detail.ProductIdParent).DefaultIfEmpty()
+                         from image in context.ProductImages.Where(x => x.ProductId == parent.Id && x.IsFirstImage).DefaultIfEmpty()
+                         select new { detail.Price, parent.Name, image.ImageUrl, detail.Id });
+
+            var result = await query.Where(x => x.Id.Equals(productId)).Select(selector => new CartItem()
+            {
+                Price = selector.Price,
+                ProductId = selector.Id,
+                ProductImageUrl = selector.ImageUrl,
+                ProductName = selector.Name
+            }).FirstOrDefaultAsync();
+
+            return result;
         }
     }
 }
