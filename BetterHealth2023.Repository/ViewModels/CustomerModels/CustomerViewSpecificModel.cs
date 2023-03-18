@@ -1,12 +1,11 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels
 {
-    public class CustomerUpdateModel
+    public class CustomerViewSpecificModel
     {
         public string CustomerId { get; set; }
         public string FullName { get; set; }
@@ -15,7 +14,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Custo
         public DateTime? Dob { get; set; }
         public int Gender { get; set; }
         public string ImageUrl { get; set; }
-
-
+        public List<CustomerAddressView> CustomerAddressList { get; set; } = Enumerable.Empty<CustomerAddressView>().ToList();
     }
 }

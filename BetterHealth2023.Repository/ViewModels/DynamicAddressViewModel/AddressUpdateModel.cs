@@ -2,11 +2,11 @@
 {
     public class AddressUpdateModel
     {
-        public string CustomerId { get; set; }
-        public string AddressId { get; set; }
+        public string CustomerAddressId { get; set; }
         public string CityId { get; set; }
         public string DistrictId { get; set; }
         public string WardId { get; set; }
         public string HomeAddress { get; set; }
+
     }
 }

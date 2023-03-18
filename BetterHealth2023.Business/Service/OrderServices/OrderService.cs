@@ -411,7 +411,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 });
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 checkError.isError = true;
                 checkError.errorConvert = "Lỗi chuyển đổi dữ liệu, hãy đảm bảo Quantity đã đúng kiểu Integer và ngăn cách bằng chấm phẩy (;)";

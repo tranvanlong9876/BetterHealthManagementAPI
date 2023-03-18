@@ -8,7 +8,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CustomerAd
 {
     public interface ICustomerAddressService
     {
-        public  Task<ActionResult> RemoveCustomerAddressById(string id);
-        public Task<ActionResult> InseartCustomerAddress(CustomerAddressInsertModel CustomerAddressInsertModel);
+        public Task<IActionResult> UpdateCustomerAddress(AddressUpdateModel addressUpdateModel);
+        public Task<IActionResult> RemoveCustomerAddressById(string id);
+        public Task<IActionResult> InsertCustomerAddress(CustomerAddressInsertModel CustomerAddressInsertModel);
     }
 }

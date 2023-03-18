@@ -10,14 +10,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
     {
         public Task<CustomerLoginStatus> customerLoginPhoneOTP(LoginCustomerModel loginPhoneOTPModel);
         // insert customer
-        public Task<Repository.DatabaseModels.Customer> CreateCustomer(CustomerRegisView customerRegisView);
+        public Task<Repository.DatabaseModels.Customer> CreateCustomer(RegisterCustomerModel customerRegisView);
         // update customer
-        public Task<bool> UpdateCustomer(CustomerUpdateMOdel customerUpdateMOdel);
-
-        public Task<List<CustomerUpdateMOdel>> GetCustomerPaging();
-
-        public Task<CustomerUpdateMOdel> GetCustomerById(string id);
-        public Task<PagedResult<CustomerUpdateMOdel>> GetCustomerPaging2(CustomerPagingRequest pagingRequest);
+        public Task<bool> UpdateCustomer(CustomerUpdateModel customerUpdateMOdel);
+        public Task<CustomerViewSpecificModel> GetCustomerById(string id);
+        public Task<PagedResult<CustomerViewListModel>> GetCustomerPagingRequest(CustomerPagingRequest pagingRequest);
 
     }
 }

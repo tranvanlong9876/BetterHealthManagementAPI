@@ -8,6 +8,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Custo
 {
     public class CustomerPagingRequest : PagingRequestBase
     {
-        public string NameOrPhoneOrEmail { get; set; }
+        public string NameOrPhone { get; set; }
     }
 }

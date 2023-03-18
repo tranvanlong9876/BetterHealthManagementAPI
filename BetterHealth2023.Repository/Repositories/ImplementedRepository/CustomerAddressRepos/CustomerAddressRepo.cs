@@ -22,36 +22,34 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public CustomerAddressRepo(BetterHealthManagementContext context, IMapper mapper) : base(context, mapper)
         {
         }
-        public async Task<List<CustomerAddress>> GetAllCustomerAddressByCustomerId(string id)
+        public async Task<List<CustomerAddressView>> GetAllCustomerAddressByCustomerId(string id)
         {
-            List<CustomerAddress> list = await context.CustomerAddresses.Where(x => x.CustomerId == id).ToListAsync();
-            return list;
+            var query = from customerAddress in context.CustomerAddresses
+                        from dynamicAddress in context.DynamicAddresses.Where(x => x.Id == customerAddress.AddressId)
+                        select new { customerAddress, dynamicAddress };
+
+            query = query.Where(x => x.customerAddress.CustomerId.Equals(id));
+
+            return await query.Select(selector => new CustomerAddressView()
+            {
+                Id = selector.customerAddress.Id,
+                AddressId = selector.customerAddress.AddressId,
+                CityId = selector.dynamicAddress.CityId,
+                DistrictId = selector.dynamicAddress.DistrictId,
+                WardId = selector.dynamicAddress.WardId,
+                HomeAddress = selector.dynamicAddress.HomeAddress,
+                IsMainAddress = selector.customerAddress.MainAddress
+            }).ToListAsync();
         }
 
+        public async Task<int> GetTotalCurrentCustomerAddress(string customerId)
+        {
+            return await context.CustomerAddresses.Where(x => x.CustomerId.Equals(customerId) && x.MainAddress).CountAsync();
+        }
 
         public async Task<ActionResult> InsertCustomerAddress(CustomerAddressInsertModel CustomerAddressInsertModel)
         {
-            DynamicAddress dynamicAddressnew = new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                CityId = CustomerAddressInsertModel.CityId,
-                DistrictId = CustomerAddressInsertModel.DistrictId,
-                WardId = CustomerAddressInsertModel.WardId,
-                HomeAddress = CustomerAddressInsertModel.HomeAddress,
-
-            };
-
-            //insert customeraddress
-            CustomerAddress customerAddress = new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                CustomerId = CustomerAddressInsertModel.CustomerId,
-                AddressId = dynamicAddressnew.Id,
-                MainAddress = true,
-            };
-            //update database
-            context.DynamicAddresses.Add(dynamicAddressnew);
-            context.CustomerAddresses.Add(customerAddress);
+            
             await context.SaveChangesAsync();
             //return actionresult
             return new OkObjectResult("Insert success");

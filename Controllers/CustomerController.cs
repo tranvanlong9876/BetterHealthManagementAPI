@@ -27,23 +27,14 @@ namespace BetterHealthManagementAPI.Controllers
         {
             _customerService = customerService;
         }
-        // GET: api/<CustomerController>
-     
 
-        // GET api/<CustomerController>/5
-      
-
-        // POST api/<CustomerController>
-
-        
-    
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> RegisterCustomer([FromBody] CustomerRegisView customerRegisView)
+        public async Task<IActionResult> RegisterCustomer([FromBody] RegisterCustomerModel registerCustomerModel)
         {
             try
             {
-                var customer = await _customerService.CreateCustomer(customerRegisView);
+                var customer = await _customerService.CreateCustomer(registerCustomerModel);
                 if (customer == null) return BadRequest();
                 return Ok(customer);
             }
@@ -67,15 +58,15 @@ namespace BetterHealthManagementAPI.Controllers
 
         //update customer
         [HttpPut]
-        [Authorize(Roles = "Customers")]
+        [Authorize(Roles = "Customer")]
         [AllowAnonymous]
-        public async Task<IActionResult> UpdateCustomer([FromBody] CustomerUpdateMOdel customerUpdateModel)
+        public async Task<IActionResult> UpdateCustomer(CustomerUpdateModel customerUpdateModel)
         {
             try
             {
                 var customer = await _customerService.UpdateCustomer(customerUpdateModel);
                 if (customer == false) return BadRequest();
-                return Ok("Update Success");
+                return Ok("Cập nhật thông tin khách hàng thành công.");
             }
             catch (ArgumentNullException ex)
             {
@@ -94,49 +85,15 @@ namespace BetterHealthManagementAPI.Controllers
                 return StatusCode(500, "Internal server exception");
             }
         }
-       
-       
+
         [HttpGet]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetAllCustomer()
-        {
-            try
-            {
-                List<CustomerUpdateMOdel> customer = await _customerService.GetCustomerPaging();
-                if(customer == null)
-                {
-                    return BadRequest();
-                }
-                return Ok(customer);
-            }
-            catch (ArgumentNullException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (DbUpdateException)
-            {
-                return StatusCode(500, "Internal server exception");
-            }
-            catch (SqlException)
-            {
-                return StatusCode(500, "Internal server exception");
-            }
-        }
-        [HttpGet("Paging")]
         [AllowAnonymous]
         public async Task<IActionResult> GetAllCustomerPaging([FromQuery] CustomerPagingRequest pagingRequest)
         {
             try
             {
-                PagedResult<CustomerUpdateMOdel> customer = await _customerService.GetCustomerPaging2(pagingRequest);
-                if (customer == null)
-                {
-                    return BadRequest();
-                }
+                var customer = await _customerService.GetCustomerPagingRequest(pagingRequest);
+
                 return Ok(customer);
             }
             catch (ArgumentNullException ex)
@@ -165,7 +122,7 @@ namespace BetterHealthManagementAPI.Controllers
             try
             {
                 var customer = await _customerService.GetCustomerById(id);
-                if (customer == null) return NotFound();
+                if (customer == null) return NotFound("Không tìm thấy khách hàng");
                 return Ok(customer);
             }
             catch (ArgumentNullException ex)

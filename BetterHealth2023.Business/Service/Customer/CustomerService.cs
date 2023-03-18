@@ -8,6 +8,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerM
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DynamicAddressViewModel;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.CustomerErrorModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
+using FirebaseAdmin.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,36 +19,28 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
     public class CustomerService : ICustomerService
     {
         private readonly ICustomerRepo _customerRepo;
-        private readonly ICustomerPointRepo _customerpointRepo;
         private readonly IDynamicAddressRepo _dynamicAdressRepo;
         private readonly ICustomerAddressRepo _customerAddressRepo;
-        public CustomerService(ICustomerRepo customerRepo, ICustomerPointRepo customerpointRepo, IDynamicAddressRepo dynamicaddressAdressRepo, ICustomerAddressRepo customerAddressRepo)
+
+        public CustomerService(ICustomerRepo customerRepo, IDynamicAddressRepo dynamicAdressRepo, ICustomerAddressRepo customerAddressRepo)
         {
             _customerRepo = customerRepo;
-            _customerpointRepo = customerpointRepo;
-            _dynamicAdressRepo = dynamicaddressAdressRepo;
+            _dynamicAdressRepo = dynamicAdressRepo;
             _customerAddressRepo = customerAddressRepo;
         }
 
-        public async Task<Repository.DatabaseModels.Customer> CreateCustomer(CustomerRegisView customerRegisView)
+        public async Task<Repository.DatabaseModels.Customer> CreateCustomer(RegisterCustomerModel customerRegisView)
         {
-
-
             //find customer by phoneno
             var customercheck = await _customerRepo.getCustomerBasedOnPhoneNo(customerRegisView.PhoneNo);
             if (customercheck != null)
             {
-                return null;
+                throw new ArgumentException("Số điện thoại của khách hàng đã có sẵn trong hệ thống.");
             }
-            //find customer by email
-            var customercheckemail = await _customerRepo.getCustomerBasedOnEmail(customerRegisView.Email);
-            if (customercheckemail != null)
-            {
-                return null;
-            }
+
             Repository.DatabaseModels.Customer customer = new()
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = Guid.NewGuid().ToString() + "-c",
                 Fullname = customerRegisView.Fullname,
                 PhoneNo = customerRegisView.PhoneNo,
                 Email = customerRegisView.Email,
@@ -55,20 +48,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                 Status = 1,
                 ImageUrl = customerRegisView.ImageUrl,
                 Dob = customerRegisView.Dob,
-
             };
             await _customerRepo.Insert(customer);
-            //insert customer poitn
-            CustomerPoint customerPoint = new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                CustomerId = customer.Id,
-                Point = 0,
-                IsPlus = true,
-                Description = "Tạo tài khoản thành công",
-                CreateDate = CustomDateTime.Now,
-            };
-            await _customerpointRepo.Insert(customerPoint);
             //insert customeraddress and dynamicaddress
 
             //insert dynamicaddress
@@ -92,9 +73,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                 MainAddress = true,
             };
             await _customerAddressRepo.Insert(customerAddress);
-
-
-
             //add customer to database
 
             return await Task.FromResult(customer);
@@ -105,7 +83,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
             CustomerLoginStatus checkError = new CustomerLoginStatus();
             //check Valid
             //bool check = await _phoneOTPRepos.VerifyPhoneOTP(loginPhoneOTPModel);
-            //FirebaseToken decodeToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(loginPhoneOTPModel.firebaseToken);
+            try
+            {
+                FirebaseToken decodeToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(loginPhoneOTPModel.firebaseToken);
+            }
+            catch
+            {
+                throw new ArgumentException("Firebase Token đã hết hạn hoặc không hợp lệ.");
+            }
             var phoneNo = JwtUserToken.DecodeFireBaseTokenToPhoneNo(loginPhoneOTPModel.firebaseToken);
             if (phoneNo == null)
             {
@@ -154,99 +139,19 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
             checkError.customerToken = customerTokenModel;
             checkError.isError = false;
             return checkError;
-
         }
-
-        public async Task<List<CustomerUpdateMOdel>> GetCustomerPaging()
-        {
-            List<CustomerUpdateMOdel> listView = new List<CustomerUpdateMOdel>();
-
-
-            //get all customer
-            List<Repository.DatabaseModels.Customer> listcus = await _customerRepo.GetAllCustomerModelView();
-            //get all customeraddress by customerid
-
-
-
-            foreach (Repository.DatabaseModels.Customer item in listcus)
-            {
-                CustomerUpdateMOdel cusview = new()
-                {
-                    CustomerId = item.Id,
-                    FullName = item.Fullname,
-                    Email = item.Email,
-                    PhoneNo = item.PhoneNo,
-                    Dob = item.Dob,
-                    Gender = (int)item.Gender,
-                    ImageUrl = item.ImageUrl,
-
-                };
-                List<CustomerAddress> listCusAddress = await _customerAddressRepo.GetAllCustomerAddressByCustomerId(item.Id);
-                List<CustomerAddressView> listcusaddview = new List<CustomerAddressView>();
-                //filter in to list<Customeraddressview>
-                foreach (CustomerAddress item1 in listCusAddress)
-                {
-                    //new customerupdateview
-                    CustomerAddressView cusaddressview = new()
-                    {
-                        Id = item1.Id,
-                        CustomerId = item1.CustomerId,
-                        AddressId = item1.AddressId,
-                    };
-                    DynamicAddress dynamicaddress = await _dynamicAdressRepo.Get(item1.AddressId);
-                    DynamicAddressCustomerView dynamicaddresscusview = new()
-                    {
-                        AddressId = dynamicaddress.Id,
-                        CityId = dynamicaddress.CityId,
-                        DistrictId = dynamicaddress.DistrictId,
-                        WardId = dynamicaddress.WardId,
-                        HomeAddress = dynamicaddress.HomeAddress
-                    };
-                    cusaddressview.DynamicAddressCustomerView = dynamicaddresscusview;
-
-                    listcusaddview.Add(cusaddressview);
-
-                }
-                cusview.CustomerAddressList = listcusaddview;
-                listView.Add(cusview);
-
-            }
-            return listView;
-        }
-        public async Task<CustomerUpdateMOdel> GetCustomerById(string id)
+        public async Task<CustomerViewSpecificModel> GetCustomerById(string id)
         {
 
-            Repository.DatabaseModels.Customer customer = await _customerRepo.Get(id);
+            var customer = await _customerRepo.Get(id);
             if (customer == null)
             {
                 return null;
             }
             //get list customeraddress by id
-            List<CustomerAddress> customerAddress = await _customerAddressRepo.GetAllCustomerAddressByCustomerId(id);
-            List<DynamicAddressCustomerView> listdynamiview = await _dynamicAdressRepo.GetAllDynamicAddressByCusId(id);
-            List<CustomerAddressView> Listcustomerview = new List<CustomerAddressView>();
-            //filter in to list<Customeraddressview>
-            foreach (CustomerAddress item in customerAddress)
-            {
-                //new customerupdatemodel
-                CustomerAddressView customerAddressView = new CustomerAddressView()
-                {
-                    Id = item.Id,
-                    CustomerId = item.CustomerId,
-                    AddressId = item.AddressId,
+            var customerAddress = await _customerAddressRepo.GetAllCustomerAddressByCustomerId(id);
 
-                };
-                foreach (DynamicAddressCustomerView item2 in listdynamiview)
-                {
-                    if (item2.AddressId == item.AddressId)
-                    {
-                        customerAddressView.DynamicAddressCustomerView = item2;
-                        continue;
-                    }
-                }
-                Listcustomerview.Add(customerAddressView);
-            }
-            CustomerUpdateMOdel customerview = new()
+            CustomerViewSpecificModel customerview = new()
             {
                 //filter customer inton customerview
                 CustomerId = customer.Id,
@@ -256,14 +161,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
                 Dob = customer.Dob,
                 Gender = (int)customer.Gender,
                 ImageUrl = customer.ImageUrl,
-                CustomerAddressList = Listcustomerview
+                CustomerAddressList = customerAddress
             };
             return customerview;
         }
 
-
-
-        public async Task<bool> UpdateCustomer(CustomerUpdateMOdel customerUpdateMOdel)
+        public async Task<bool> UpdateCustomer(CustomerUpdateModel customerUpdateMOdel)
         {
             var customer = await _customerRepo.Get(customerUpdateMOdel.CustomerId);
             if (customer == null)
@@ -279,70 +182,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
             await _customerRepo.Update();
             return true;
         }
-        public async Task<PagedResult<CustomerUpdateMOdel>> GetCustomerPaging2(CustomerPagingRequest pagingRequest)
+        public async Task<PagedResult<CustomerViewListModel>> GetCustomerPagingRequest(CustomerPagingRequest pagingRequest)
         {
-            List<CustomerUpdateMOdel> listView = new List<CustomerUpdateMOdel>();
-
-
             //get all customer
-            List<Repository.DatabaseModels.Customer> listcus = await _customerRepo.GetAllCustomerModelView();
-            //get all customeraddress by customerid
-            if (!string.IsNullOrEmpty(pagingRequest.NameOrPhoneOrEmail))
-            {
-                listcus = listcus.Where(x => x.Fullname.Contains(pagingRequest.NameOrPhoneOrEmail) || x.PhoneNo.Contains(pagingRequest.NameOrPhoneOrEmail)|| x.Email.Contains(pagingRequest.NameOrPhoneOrEmail)).ToList();
-            }
-            int totalrecord = listcus.Count();
-            List<Repository.DatabaseModels.Customer> listcusget = listcus;
-            List<Repository.DatabaseModels.Customer> listcus2 = listcusget.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems).Take(pagingRequest.pageItems).ToList();
+            var listCustomer = await _customerRepo.GetAllCustomerModelViewPaging(pagingRequest);
 
-            foreach (Repository.DatabaseModels.Customer item in listcus2)
-            {
-                CustomerUpdateMOdel cusview = new()
-                {
-                    CustomerId = item.Id,
-                    FullName = item.Fullname,
-                    Email = item.Email,
-                    PhoneNo = item.PhoneNo,
-                    Dob = item.Dob,
-                    Gender = (int)item.Gender,
-                    ImageUrl = item.ImageUrl,
-
-                };
-                List<CustomerAddress> listCusAddress = await _customerAddressRepo.GetAllCustomerAddressByCustomerId(item.Id);
-                List<CustomerAddressView> listcusaddview = new List<CustomerAddressView>();
-                //filter in to list<Customeraddressview>
-                foreach (CustomerAddress item1 in listCusAddress)
-                {
-                    //new customerupdateview
-                    CustomerAddressView cusaddressview = new()
-                    {
-                        Id = item1.Id,
-                        CustomerId = item1.CustomerId,
-                        AddressId = item1.AddressId,
-                    };
-                    DynamicAddress dynamicaddress = await _dynamicAdressRepo.Get(item1.AddressId);
-                    DynamicAddressCustomerView dynamicaddresscusview = new()
-                    {
-                        AddressId = dynamicaddress.Id,
-                        CityId = dynamicaddress.CityId,
-                        DistrictId = dynamicaddress.DistrictId,
-                        WardId = dynamicaddress.WardId,
-                        HomeAddress = dynamicaddress.HomeAddress
-                    };
-                    cusaddressview.DynamicAddressCustomerView = dynamicaddresscusview;
-
-                    listcusaddview.Add(cusaddressview);
-
-                }
-                cusview.CustomerAddressList = listcusaddview;
-                listView.Add(cusview);
-
-            }
-
-
-            var pagedResult = new PagedResult<CustomerUpdateMOdel>(listView, totalrecord, pagingRequest.pageIndex, pagingRequest.pageItems);
-
-            return pagedResult;
+            return listCustomer;
 
         }
     }

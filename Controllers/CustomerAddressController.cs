@@ -1,13 +1,11 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.CustomerAddressSer;
-using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DynamicAddressViewModel;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System;
-using System.Data;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
@@ -19,15 +17,16 @@ namespace BetterHealthManagementAPI.Controllers
     public class CustomerAddressController : ControllerBase
     {
         private readonly ICustomerAddressService _customerAddressService;
-        private readonly IDynamicAddressRepo _dynamicAddressRepo;
-        public CustomerAddressController(ICustomerAddressService customerAddressService,IDynamicAddressRepo dynamicAddressRepo)
+
+        public CustomerAddressController(ICustomerAddressService customerAddressService)
         {
             _customerAddressService = customerAddressService;
-            _dynamicAddressRepo = dynamicAddressRepo;
         }
 
+
         //delele customer address by id
-        [HttpDelete]
+        [HttpDelete("{id}")]
+        [SwaggerOperation(Description = "Xóa địa chỉ của khách hàng, lưu ý truyền vào mã Id của CustomerAddressId, không phải AddressId hay CustomerId")]
         public async Task<IActionResult> DeleteCustomerAddressById(string id)
         {
             try { 
@@ -53,15 +52,15 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = "Customers")]
+        [Authorize(Roles = "Customer")]
         [AllowAnonymous]
-        public async Task<IActionResult> UpdateCustomerAddres([FromBody] AddressUpdateModel addressUpdateModel)
+        [SwaggerOperation(Description = "Cập nhật địa chỉ của khách hàng, lưu ý truyền vào mã Id của CustomerAddressId, và dữ liệu mới của địa chỉ.")]
+
+        public async Task<IActionResult> UpdateCustomerAddress([FromBody] AddressUpdateModel addressUpdateModel)
         {
             try
             {
-                var customeraddress = await _dynamicAddressRepo.CheckAddressChangeById(addressUpdateModel);
-                if (customeraddress == false) return BadRequest();
-                return Ok("Update Success");
+                return await _customerAddressService.UpdateCustomerAddress(addressUpdateModel);
             }
             catch (ArgumentNullException ex)
             {
@@ -82,15 +81,15 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Customers")]
+        [Authorize(Roles = "Customer")]
         [AllowAnonymous]
-        public async Task<IActionResult> InsertCustomerAddres([FromBody] CustomerAddressInsertModel CustomerAddressInsertModel)
+        [SwaggerOperation(Description = "Thêm địa chỉ cho khách hàng")]
+
+        public async Task<IActionResult> InsertCustomerAddress([FromBody] CustomerAddressInsertModel CustomerAddressInsertModel)
         {
             try
             {
-                var customeraddress = await _customerAddressService.InseartCustomerAddress(CustomerAddressInsertModel);
-                if (customeraddress == null) return BadRequest();
-                return Ok("Update Success");
+                return await _customerAddressService.InsertCustomerAddress(CustomerAddressInsertModel);
             }
             catch (ArgumentNullException ex)
             {

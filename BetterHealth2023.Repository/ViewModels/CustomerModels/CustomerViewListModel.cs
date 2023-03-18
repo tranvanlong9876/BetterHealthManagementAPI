@@ -6,7 +6,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingMod
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels
 {
-    public class CustomerViewListModel : PagingRequestBase
+    public class CustomerViewListModel
     {   
         public string Id { get; set; }
         
@@ -22,13 +22,5 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Custo
         public DateTime? Dob { get; set; }
      
         public string ImageUrl { get; set; }
-
-        public string CityId { get; set; }
-
-        public string DistrictId { get; set; }
-
-        public string WardId { get; set; }
-
-        public string HomeAddress { get; set; }
     }
 }

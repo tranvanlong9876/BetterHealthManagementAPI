@@ -1,5 +1,6 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
@@ -16,6 +17,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public Task<Customer> getCustomerBasedOnEmail(string Email);
         public Task<CustomerAddress> GetAddressCustomer(string id);
         public Task<List<Customer>> GetAllCustomerModelView();
-        public Task<PagedResult<Customer>> GetAllCustomerModelViewPaging(string name,int pageindex, int pageitem);
+        public Task<PagedResult<CustomerViewListModel>> GetAllCustomerModelViewPaging(CustomerPagingRequest pagingRequest);
     }
 }

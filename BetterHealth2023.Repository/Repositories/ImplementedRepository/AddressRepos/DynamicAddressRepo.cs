@@ -19,49 +19,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         }
 
-        public async Task<bool> CheckAddressChangeById(AddressUpdateModel addressUpdateModel)
-        {
-            //find dynamic address by id
-            var dynamicAddress =  context.DynamicAddresses.Find(addressUpdateModel.AddressId);
-            //compare what were change
-            if (dynamicAddress.CityId.Trim().Equals(addressUpdateModel.CityId.Trim()) &&
-                dynamicAddress.DistrictId.Trim().Equals(addressUpdateModel.DistrictId.Trim()) &&
-                dynamicAddress.WardId.Trim().Equals(addressUpdateModel.WardId.Trim()) &&
-                dynamicAddress.HomeAddress.Trim().Equals(addressUpdateModel.HomeAddress.Trim()))
-            {
-
-                return false;
-            }
-            //remove customeraddress by dynamic address
-            var customerAddressremove = context.CustomerAddresses.Where(customerAddress => customerAddress.AddressId.Trim()
-            .Equals(addressUpdateModel.AddressId.Trim())).FirstOrDefault();
-            context.CustomerAddresses.Remove(customerAddressremove);      
-            //create new customer address with new information
-            DynamicAddress dynamicAddressnew = new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                CityId = addressUpdateModel.CityId,
-                DistrictId = addressUpdateModel.DistrictId,
-                WardId = addressUpdateModel.WardId,
-                HomeAddress = addressUpdateModel.HomeAddress,
-
-            };
-
-            //insert customeraddress
-            CustomerAddress customerAddress = new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                CustomerId = addressUpdateModel.CustomerId,
-                AddressId = dynamicAddressnew.Id,
-                MainAddress = true,
-            };
-            //update database
-            context.DynamicAddresses.Add(dynamicAddressnew);
-            context.CustomerAddresses.Add(customerAddress);
-            await context.SaveChangesAsync();
-            return true;
-        }
-
         public async Task<AddressModel> GetAddressFromId(string addressID)
         {
             var query = from address in context.DynamicAddresses
