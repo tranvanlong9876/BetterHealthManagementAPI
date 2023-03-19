@@ -4,6 +4,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderMode
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Mail;
@@ -133,7 +134,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 
         private static string ConvertToVietNamCurrency(double price)
         {
-            return String.Format(System.Globalization.CultureInfo.GetCultureInfo("vi-VN"), "{0:c}", price);
+            return price.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) + "đ";
         }
 
         private static string GetEstimateDeliveryTime(DateTime createdOrderTime)
