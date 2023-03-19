@@ -3,6 +3,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
@@ -366,7 +367,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return pageResult;
         }
 
-        public async Task<(string, string)> GetImageAndProductName(string productId)
+        public async Task<InformationToSendEmail> GetImageAndProductName(string productId)
         {
             var imageUrl = string.Empty;
             var productName = string.Empty;
@@ -376,9 +377,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         from image in context.ProductImages.Where(x => x.ProductId == parent.Id && x.IsFirstImage).DefaultIfEmpty()
                         where detail.Id == productId
                         select new { parent.Name, image.ImageUrl };
-            var result = await Task.WhenAll(query.Select(x => x.Name).FirstOrDefaultAsync(), query.Select(x => x.ImageUrl).FirstOrDefaultAsync());
 
-            return (result[0], result[1]);
+            return await query.Select(selector => new InformationToSendEmail()
+            {
+                ImageUrl = selector.ImageUrl,
+                Name = selector.Name
+            }).FirstOrDefaultAsync();
         }
 
         public async Task<CartItem> AddMoreProductInformationToCart(string productId)

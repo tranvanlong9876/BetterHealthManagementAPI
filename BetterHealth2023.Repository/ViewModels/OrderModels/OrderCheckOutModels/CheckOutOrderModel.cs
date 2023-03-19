@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Swashbuckle.AspNetCore.Annotations;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -11,6 +12,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         [Required]
         public string OrderId { get; set; }
         [Required]
+        [Range(1, 3, ErrorMessage = "Sai dữ liệu, chỉ được phép nằm từ 1 đến 3. 1: Đến Lấy, 2: Nhận Tại Cửa Hàng, 3: Giao Hàng Tận Nơi.")]
         public int OrderTypeId { get; set; }
         public string SiteId { get; set; }
         public string PharmacistId { get; set; }
@@ -25,8 +27,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         [Required]
         public int UsedPoint { get; set; }
         [Required]
+        [Range(1, 2, ErrorMessage = "Sai dữ liệu, chỉ được phép nằm từ 1 đến 2. 1: Thanh Toán Khi Nhận Hàng, 2: Thanh Toán VN PAY.")]
         public int PayType { get; set; }
         [Required]
+        [SwaggerSchema(Description = "1 là Chưa Thanh Toán (tiền mặt), 2 là Đã Thanh Toán (VN Pay)")]
         public bool isPaid { get; set; }
         public string Note { get; set; }
         public List<OrderVoucher> Vouchers { get; set; }

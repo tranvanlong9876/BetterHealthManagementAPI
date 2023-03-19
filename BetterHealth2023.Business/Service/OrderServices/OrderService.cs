@@ -64,6 +64,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             var checkError = new CreateOrderCheckOutStatus();
 
             //Validate
+            if(checkOutOrderModel.Products.Count == 0)
+            {
+                checkError.isError = true;
+                checkError.missingProduct = "Không thể checkout khi không có sản phẩm";
+                return checkError;
+            }
+
             if(checkOutOrderModel.OrderTypeId == Commons.ORDER_TYPE_DIRECTLY && (String.IsNullOrEmpty(checkOutOrderModel.PharmacistId) || (String.IsNullOrEmpty(checkOutOrderModel.SiteId))))
             {
                 checkError.isError = true;
@@ -87,7 +94,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             }
             if(checkOutOrderModel.OrderTypeId == Commons.ORDER_TYPE_DELIVERY)
             {
-                if(checkOutOrderModel.ReveicerInformation.CityId == null || checkOutOrderModel.ReveicerInformation.DistrictId == null || checkOutOrderModel.ReveicerInformation.WardId == null || checkOutOrderModel.ReveicerInformation.HomeAddress == null)
+                if(string.IsNullOrEmpty(checkOutOrderModel.ReveicerInformation.CityId) || string.IsNullOrEmpty(checkOutOrderModel.ReveicerInformation.DistrictId) || string.IsNullOrEmpty(checkOutOrderModel.ReveicerInformation.WardId) || string.IsNullOrEmpty(checkOutOrderModel.ReveicerInformation.HomeAddress))
                 {
                     checkError.isError = true;
                     checkError.missingAddress = "Thiếu dữ liệu địa chỉ của đơn giao hàng, vui lòng bổ sung dữ liệu.";
@@ -168,7 +175,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
 
             string addressId = null;
 
-            if (checkOutOrderModel.ReveicerInformation.CityId != null && checkOutOrderModel.ReveicerInformation.DistrictId != null && checkOutOrderModel.ReveicerInformation.WardId != null && checkOutOrderModel.ReveicerInformation.HomeAddress != null)
+            if (!string.IsNullOrEmpty(checkOutOrderModel.ReveicerInformation.CityId) && !string.IsNullOrEmpty(checkOutOrderModel.ReveicerInformation.DistrictId) && !string.IsNullOrEmpty(checkOutOrderModel.ReveicerInformation.WardId) && !string.IsNullOrEmpty(checkOutOrderModel.ReveicerInformation.HomeAddress))
             {
                 addressId = Guid.NewGuid().ToString();
                 var dynamicAddressDB = new DynamicAddress()
@@ -312,9 +319,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 {
                     var productSendingEmailModel = _customerPointRepo.TransferBetweenTwoModels<OrderDetail, SendingEmailProductModel>(orderProductModelDB);
                     productSendingEmailModel.TotalPrice = orderProductModelDB.DiscountPrice * orderProductModelDB.Quantity;
-                    var (name, imageUrl) = await _productDetailRepo.GetImageAndProductName(orderProductModelDB.ProductId);
-                    productSendingEmailModel.imageUrl = name;
-                    productSendingEmailModel.ProductName = imageUrl;
+                    var informationToSendEmail = await _productDetailRepo.GetImageAndProductName(orderProductModelDB.ProductId);
+                    productSendingEmailModel.imageUrl = informationToSendEmail.ImageUrl;
+                    productSendingEmailModel.ProductName = informationToSendEmail.Name;
                     productSendingEmailModels.Add(productSendingEmailModel);
                 }
                 await _orderDetailRepo.Insert(orderProductModelDB);
@@ -323,7 +330,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             //Khi hoàn thành đơn mới cộng điểm tích lũy, checkout xong không cộng.
 
             //Generate List Of Product With More Information
-            if(checkOutOrderModel.OrderTypeId != Commons.ORDER_TYPE_DIRECTLY && !String.IsNullOrWhiteSpace(checkOutOrderModel.ReveicerInformation.Email))
+            if(checkOutOrderModel.OrderTypeId != Commons.ORDER_TYPE_DIRECTLY && !string.IsNullOrWhiteSpace(checkOutOrderModel.ReveicerInformation.Email))
             {
                 if (checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_PICKUP))
                 {

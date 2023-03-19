@@ -10,6 +10,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         public bool isError { get; set; }
         public string missingSite { get; set; }
         public string missingPharmacist { get; set; }
+        public string missingProduct { get; set; }
 
         public string missingModel { get; set; }
 

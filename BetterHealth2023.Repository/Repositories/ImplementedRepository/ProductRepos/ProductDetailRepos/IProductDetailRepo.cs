@@ -1,6 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
@@ -18,7 +19,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public Task<ViewSpecificProductModel> GetSpecificProduct(string productID, bool isInternal);
         public Task<bool> CheckDuplicateBarCode(string BarCode);
 
-        public Task<(string, string)> GetImageAndProductName(string productId);
+        public Task<InformationToSendEmail> GetImageAndProductName(string productId);
         public Task<ProductUnitModelForDiscount> GetProductNameAndCurrentUnit(string productId);
 
         public Task<bool> CheckDuplicateBarCodeUpdate(string BarCode, string productID);

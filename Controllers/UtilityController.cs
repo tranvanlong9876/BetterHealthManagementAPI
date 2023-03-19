@@ -112,5 +112,12 @@ namespace BetterHealthManagementAPI.Controllers
             }
 
         }
+
+        [HttpGet("ReadGGCloud")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ReadString()
+        {
+            return Ok(await ReadFileFromCloudStorage.ReadFileFromGoogleCloudStorage("123"));
+        }
     }
 }

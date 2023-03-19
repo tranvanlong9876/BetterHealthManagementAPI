@@ -19,6 +19,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
         public static string body;
         private static IConfiguration _configuration;
 
+        private static string CHECKOUTCARTPARTIAL_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/CheckOutCartPartial.html?alt=media&token=3b115883-1257-4272-bfbe-33f8209a1295";
+        private static string CHECKOUTCARTTEMPLATE_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/CheckOutCartTemplate.html?alt=media&token=b989acf9-1bfc-4f14-ac17-040ef15286a6";
+        private static string INTERNALUSER_REGISTER_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/InternalUserRegisteration.html?alt=media&token=a6d34bb8-ef8d-42ad-890f-048eebf40dd6";
+
         public static void Initialize(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -53,10 +57,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
         {
             DateTime createdDate = CustomDateTime.Now;
             string cartHtml = string.Empty;
+            string dynamicRow = await ReadFileFromCloudStorage.ReadFileFromGoogleCloudStorage(CHECKOUTCARTPARTIAL_URL);
             for(int i = 0; i < sendingEmailProductModels.Count; i++)
             {
                 var productModel = sendingEmailProductModels[i];
-                string eachRow = File.ReadAllText(Directory.GetCurrentDirectory() + @"\Assets\WebTemplate\CheckOutCartPartial.html");
+                string eachRow = dynamicRow;
+                //string eachRow = File.ReadAllText(Directory.GetCurrentDirectory() + @"\Assets\WebTemplate\CheckOutCartPartial.html");
                 eachRow = eachRow.Replace("{{imageUrl}}", "cid:productImage" + (i + 1));
                 eachRow = eachRow.Replace("{{productName}}", productModel.ProductName);
                 eachRow = eachRow.Replace("{{productPrice}}", ConvertToVietNamCurrency(productModel.OriginalPrice));
@@ -66,7 +72,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 
                 cartHtml = cartHtml + eachRow;
             }
-            body = File.ReadAllText(Directory.GetCurrentDirectory() + @"\Assets\WebTemplate\CheckOutCartTemplate.html");
+            body = await ReadFileFromCloudStorage.ReadFileFromGoogleCloudStorage(CHECKOUTCARTTEMPLATE_URL);
             body = body.Replace("{{orderId}}", checkOutOrderModel.OrderId);
             body = body.Replace("{{createdDate}}", "(" + String.Format("{0:dd/MM/yyyy HH:mm:ss}", createdDate) + ")");
 
@@ -182,7 +188,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             {
                 roleName = "Quản lý tài khoản";
             }
-            body = File.ReadAllText(Directory.GetCurrentDirectory() + @"\Assets\WebTemplate\InternalUserRegisteration.html");
+            body = await ReadFileFromCloudStorage.ReadFileFromGoogleCloudStorage(INTERNALUSER_REGISTER_URL);
             body = body.Replace("{{name}}", registerEmployee.Fullname);
             body = body.Replace("{{username}}", registerEmployee.Username);
             body = body.Replace("{{password}}", randomPassword);
