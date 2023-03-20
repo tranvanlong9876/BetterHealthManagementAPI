@@ -32,6 +32,29 @@ namespace BetterHealthManagementAPI.Controllers
             _productEventDiscountRepo = productEventDiscountRepo;
         }
 
+        [HttpPost("ApplyCustomerPoint")]
+        [SwaggerOperation(Summary = "Sử dụng điểm vào Giỏ Hàng của khách hàng, lưu ý chỉ dùng cho Role Khách hàng")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ApplyCustomerPoint(CustomerCartPoint cartPoint)
+        {
+            try
+            {
+                var check = await _cartService.UpdateCustomerCartPoint(cartPoint);
+                if (check)
+                {
+                    return Ok("Thêm điểm sử dụng của khách vào giỏ hàng thành công");
+                }
+                else
+                {
+                    return BadRequest("Lỗi thêm điểm");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("{cartId}")]
         [SwaggerOperation(Summary = "Lấy ra toàn bộ thông tin trong giỏ hàng của khách hàng. CartID đối với Guest thì truyền IpAddressV4, đối với Customer thì truyền SĐT trong Token.")]
         [AllowAnonymous]
@@ -44,7 +67,7 @@ namespace BetterHealthManagementAPI.Controllers
 
                 //Kết nối database
                 if (listCart == null) return NotFound("Không tìm thấy giỏ hàng");
-
+                if (!listCart.Point.HasValue) listCart.Point = 0;
                 var SubTotalPrice = 0D;
                 for (int i = 0; i < listCart.Items.Count; i++)
                 {
@@ -74,8 +97,8 @@ namespace BetterHealthManagementAPI.Controllers
                 }
 
                 listCart.SubTotalPrice = SubTotalPrice;
-                listCart.DiscountPrice = "Từ từ làm má ơi";
-                listCart.TotalCartPrice = SubTotalPrice;
+                listCart.DiscountPrice = listCart.Point.Value * 1000;
+                listCart.TotalCartPrice = SubTotalPrice - listCart.DiscountPrice;
 
                 return Ok(listCart);
             }

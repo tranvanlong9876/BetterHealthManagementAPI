@@ -6,7 +6,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 {
     public interface ICustomerPointRepo : IRepository<CustomerPoint>
     {
-        public Task<int?> GetCustomerPointBasedOnCustomerId(string customerId);
+        public Task<int> GetCustomerPointBasedOnCustomerId(string customerId);
         public Task<int?> GetCustomerPointBasedOnPhoneNumber(string phoneNumber);
+        
     }
 }

@@ -27,6 +27,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartM
         
         public string cartId { get; set; }
 
+        [JsonIgnore]
+        [FirestoreProperty("point")]
+        public int? Point { get; set; }
         [Required]
         public AddToCart Item { get; set; }
         [FirestoreProperty("items")]

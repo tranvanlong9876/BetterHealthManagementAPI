@@ -23,7 +23,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
             var product = await _productDetailRepo.Get(cart.Item.ProductId);
             if (product == null) throw new ArgumentException("Không tìm thấy sản phẩm trong hệ thống");
             if (!product.IsSell) throw new ArgumentException("Sản phẩm này không được bày bán");
-
+            cart.Point = 0;
             cart.LastUpdated = Timestamp.GetCurrentTimestamp();
             var collectionReference = firestore.Collection("carts");
             var documentReference = collectionReference.Document(cart.cartId);
@@ -95,6 +95,22 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
 
             return true;
 
+        }
+
+        public async Task<bool> UpdateCustomerCartPoint(CustomerCartPoint cartPoint)
+        {
+            var collectionReference = firestore.Collection("carts");
+            var documentReference = collectionReference.Document(cartPoint.CartId);
+            var snapShot = await documentReference.GetSnapshotAsync();
+            if(snapShot.Exists)
+            {
+                var existingCart = snapShot.ConvertTo<CustomerCartPoint>();
+                existingCart.UsingPoint = cartPoint.UsingPoint;
+                await documentReference.UpdateAsync("point", existingCart.UsingPoint);
+                await documentReference.UpdateAsync("last-update", Timestamp.GetCurrentTimestamp());
+                return true;
+            }
+            return false;
         }
     }
 }

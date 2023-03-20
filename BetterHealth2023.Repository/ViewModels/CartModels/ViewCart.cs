@@ -31,9 +31,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartM
         [FirestoreProperty("items")]
         public List<CartItem> Items { get; set; }
 
+        [FirestoreProperty("point")]
+        public int? Point { get; set; }
         public double SubTotalPrice { get; set; }
 
-        public string DiscountPrice { get; set; }
+        public double DiscountPrice { get; set; }
         public double TotalCartPrice { get; set; }
     }
 }

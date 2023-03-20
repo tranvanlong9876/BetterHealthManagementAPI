@@ -19,20 +19,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
         }
 
-        public async Task<int?> GetCustomerPointBasedOnCustomerId(string customerId)
+        public async Task<int> GetCustomerPointBasedOnCustomerId(string customerId)
         {
             int? plusPoint = await context.CustomerPoints.Where(x => x.CustomerId.Equals(customerId) && x.IsPlus).SumAsync(x => x.Point);
             int? minusPoint = await context.CustomerPoints.Where(x => x.CustomerId.Equals(customerId) && !x.IsPlus).SumAsync(x => x.Point);
 
-            if(plusPoint == null && minusPoint == null)
+            if(!plusPoint.HasValue && !minusPoint.HasValue)
             {
-                return null;
+                return 0;
             }
 
-            plusPoint = plusPoint == null ? 0 : plusPoint;
-            minusPoint = minusPoint == null ? 0 : minusPoint;
+            plusPoint = !plusPoint.HasValue ? 0 : plusPoint;
+            minusPoint = !minusPoint.HasValue ? 0 : minusPoint;
 
-            return plusPoint - minusPoint;
+            return plusPoint.Value - minusPoint.Value;
         }
 
         public async Task<int?> GetCustomerPointBasedOnPhoneNumber(string phoneNumber)
