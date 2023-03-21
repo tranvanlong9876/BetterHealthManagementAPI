@@ -12,6 +12,7 @@ using static System.Linq.Enumerable;
 using System;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewSpecificOrderModels;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos
 {
@@ -140,7 +141,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         DistrictId = selector.address.DistrictId,
                         HomeAddress = selector.address.HomeAddress,
                         SiteName = selector.site.SiteName,
-                        WardId = selector.address.WardId
+                        WardId = selector.address.WardId,
+                        AddressId = selector.address.Id
                     }).FirstOrDefaultAsync();
                     SiteListToPickUp.Add(data);
                 }

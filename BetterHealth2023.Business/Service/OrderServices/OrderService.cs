@@ -446,6 +446,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             SiteModelToPickUp siteModel = await _siteInventoryRepo.ViewSiteToPickUpsAsync(cartModels, cartEntrance.CityId, cartEntrance.DistrictId);
 
             checkError.siteListPickUp = siteModel;
+            for(var i = 0; i < siteModel.siteListToPickUps.Count; i++)
+            {
+                siteModel.siteListToPickUps[i].FullyAddress = await _dynamicAddressRepo.GetFullAddressFromAddressId(siteModel.siteListToPickUps[i].AddressId);
+            }
 
             checkError.isError = false;
             return checkError;

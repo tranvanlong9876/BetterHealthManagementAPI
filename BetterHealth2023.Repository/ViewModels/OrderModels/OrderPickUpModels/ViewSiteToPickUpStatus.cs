@@ -27,6 +27,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         public string DistrictId { get; set; }
         public string WardId { get; set; }
         public string HomeAddress { get; set; }
+        public string AddressId { get; set; }
+        public string FullyAddress { get; set; }
     }
     
 }
