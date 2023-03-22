@@ -1,5 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartService;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductDiscountRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartModels;
 using Google.Cloud.Firestore;
@@ -55,15 +57,15 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
-        [HttpGet("{cartId}")]
-        [SwaggerOperation(Summary = "Lấy ra toàn bộ thông tin trong giỏ hàng của khách hàng. CartID đối với Guest thì truyền IpAddressV4, đối với Customer thì truyền SĐT trong Token.")]
+        [HttpGet("{deviceId}")]
+        [SwaggerOperation(Summary = "Lấy ra toàn bộ thông tin trong giỏ hàng của khách hàng. Luôn luôn truyền mã thiết bị, không truyền SĐT Khách hàng (API tự nhận diện trong Token)")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetCartFromFirebase(string cartId)
+        public async Task<IActionResult> GetCartFromFirebase(string deviceId)
         {
             try
             {
                 //Kết nối firebase
-                var listCart = await _cartService.GetCart(cartId);
+                var listCart = await _cartService.GetCart(deviceId, GetCustomerId());
 
                 //Kết nối database
                 if (listCart == null) return NotFound("Không tìm thấy giỏ hàng");
@@ -109,13 +111,13 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         [HttpPost]
-        [SwaggerOperation(Summary = "Thêm một sản phẩm vào giỏ hàng của khách hàng. Nếu giỏ hàng đã có sản phẩm thì sẽ update theo quantity vừa truyền vô. CartID đối với Guest thì truyền IpAddressV4, đối với Customer thì truyền SĐT trong Token.")]
+        [SwaggerOperation(Summary = "Thêm một sản phẩm vào giỏ hàng của khách hàng. Nếu giỏ hàng đã có sản phẩm thì sẽ update theo quantity vừa truyền vô. Lưu ý, truyền mã thiết bị DeviceID.")]
         [AllowAnonymous]
         public async Task<IActionResult> UpdateCart(Cart cart)
         {
             try
             {
-                var check = await _cartService.UpdateCart(cart);
+                var check = await _cartService.UpdateCart(cart, GetCustomerId());
                 if (check)
                 {
                     return Ok("Thêm sản phẩm vào giỏ hàng thành công");
@@ -132,7 +134,7 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         [HttpDelete]
-        [SwaggerOperation(Summary = "Xóa một sản phẩm khỏi giỏ hàng của khách hàng. CartID đối với Guest thì truyền IpAddressV4, đối với Customer thì truyền SĐT trong Token.")]
+        [SwaggerOperation(Summary = "Xóa một sản phẩm khỏi giỏ hàng của khách hàng. Lưu ý không truyền mã thiết bị, vui lòng truyền mã CartID (dữ liệu trong Json của API GetCart)")]
         [AllowAnonymous]
         public async Task<IActionResult> RemoveItemFromCart(RemoveItemFromCart removeItemFromCart)
         {
@@ -146,6 +148,25 @@ namespace BetterHealthManagementAPI.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        private string GetCustomerId()
+        {
+            if (Request.Headers.ContainsKey("Authorization"))
+            {
+                var token = (Request.Headers)["Authorization"].ToString().Split(" ")[1];
+                if (JwtUserToken.DecodeAPITokenToRole(token).Equals(Commons.CUSTOMER_NAME)) {
+                    return JwtUserToken.GetUserID(token);
+                }
+                else
+                {
+                    throw new ArgumentException("Đây không phải là khách hàng, không được phép thêm giỏ hàng");
+                }
+            }
+            else
+            {
+                return String.Empty;
             }
         }
     }

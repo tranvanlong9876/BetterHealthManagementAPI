@@ -25,16 +25,25 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartM
     {
         [Required]
         
-        public string cartId { get; set; }
+        public string deviceId { get; set; }
 
         [JsonIgnore]
         [FirestoreProperty("point")]
         public int? Point { get; set; }
         [Required]
         public AddToCart Item { get; set; }
+
+        [FirestoreProperty("deviceids")]
+        [JsonIgnore]
+        public List<string> DeviceIds { get; set; }
+
         [FirestoreProperty("items")]
         [JsonIgnore]
         public List<AddToCart> Items { get; set; }
+
+        [JsonIgnore]
+        [FirestoreProperty("customerid")]
+        public string customerId { get; set; }
 
         [FirestoreProperty("last-update")]
         [JsonIgnore]

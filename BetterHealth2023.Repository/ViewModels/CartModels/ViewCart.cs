@@ -1,9 +1,6 @@
 ﻿using Google.Cloud.Firestore;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartModels
 {
@@ -28,11 +25,18 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartM
     [FirestoreData]
     public class ViewCart
     {
+        public string CartId { get; set; }
         [FirestoreProperty("items")]
         public List<CartItem> Items { get; set; }
 
         [FirestoreProperty("point")]
         public int? Point { get; set; }
+
+        [FirestoreProperty("deviceids")]
+        public List<string> DeviceIds { get; set; }
+
+        [FirestoreProperty("customerid")]
+        public string customerId { get; set; }
         public double SubTotalPrice { get; set; }
 
         public double DiscountPrice { get; set; }

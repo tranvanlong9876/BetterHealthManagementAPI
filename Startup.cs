@@ -8,6 +8,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUser;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.MainCategoryService;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ManufactureService;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServices;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderStatusService;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDiscountServices;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductImportService;
@@ -32,6 +33,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderDetailRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderPickupRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderShipmentRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderStatusRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductDiscountRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos.ProductImportBatchRepos;
@@ -136,6 +138,7 @@ namespace BetterHealthManagementAPI
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<ICustomerAddressService, CustomerAddressService>();
             services.AddScoped<ICartService, CartService>();
+            services.AddScoped<IOrderStatusService, OrderStatusService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();
@@ -169,6 +172,7 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IOrderBatchRepo, OrderBatchRepo>();
             services.AddTransient<IOrderDetailRepo, OrderDetailRepo>();
             services.AddTransient<IOrderContactInfoRepo, OrderContactInfoRepo>();
+            services.AddTransient<IOrderStatusRepo, OrderStatusRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
