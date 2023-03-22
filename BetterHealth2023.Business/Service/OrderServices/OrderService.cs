@@ -4,6 +4,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerPointRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderExecutionRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderBatchRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderContactInfoRepos;
@@ -16,10 +17,12 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderValidateModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewOrderListModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewSpecificOrderModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +45,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
         private readonly IOrderDetailRepo _orderDetailRepo;
         private readonly IOrderContactInfoRepo _orderContactInfoRepo;
         private readonly IProductDetailRepo _productDetailRepo;
-        public OrderService(ISiteInventoryRepo siteInventoryRepo, ISiteRepo siteRepo, ICustomerPointRepo customerPointRepo, ICustomerRepo customerRepo, IDynamicAddressRepo dynamicAddressRepo, IOrderHeaderRepo orderHeaderRepo, IOrderShipmentRepo orderShipmentRepo, IOrderPickUpRepo orderPickUpRepo, IProductImportRepo productImportRepo, IOrderBatchRepo orderBatchRepo, IOrderDetailRepo orderDetailRepo, IOrderContactInfoRepo orderContactInfoRepo, IProductDetailRepo productDetailRepo)
+        private readonly IOrderExecutionRepo _orderExecutionRepo;
+
+        public OrderService(ISiteInventoryRepo siteInventoryRepo, ISiteRepo siteRepo, ICustomerPointRepo customerPointRepo, ICustomerRepo customerRepo, IDynamicAddressRepo dynamicAddressRepo, IOrderHeaderRepo orderHeaderRepo, IOrderShipmentRepo orderShipmentRepo, IOrderPickUpRepo orderPickUpRepo, IProductImportRepo productImportRepo, IOrderBatchRepo orderBatchRepo, IOrderDetailRepo orderDetailRepo, IOrderContactInfoRepo orderContactInfoRepo, IProductDetailRepo productDetailRepo, IOrderExecutionRepo orderExecutionRepo)
         {
             _siteInventoryRepo = siteInventoryRepo;
             _siteRepo = siteRepo;
@@ -57,6 +62,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             _orderDetailRepo = orderDetailRepo;
             _orderContactInfoRepo = orderContactInfoRepo;
             _productDetailRepo = productDetailRepo;
+            _orderExecutionRepo = orderExecutionRepo;
         }
 
         public async Task<CreateOrderCheckOutStatus> CheckOutOrder(CheckOutOrderModel checkOutOrderModel, string CustomerId)
@@ -446,7 +452,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             SiteModelToPickUp siteModel = await _siteInventoryRepo.ViewSiteToPickUpsAsync(cartModels, cartEntrance.CityId, cartEntrance.DistrictId);
 
             checkError.siteListPickUp = siteModel;
-            for(var i = 0; i < siteModel.siteListToPickUps.Count; i++)
+            for (var i = 0; i < siteModel.siteListToPickUps.Count; i++)
             {
                 siteModel.siteListToPickUps[i].FullyAddress = await _dynamicAddressRepo.GetFullAddressFromAddressId(siteModel.siteListToPickUps[i].AddressId);
             }
@@ -501,7 +507,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
 
         public async Task<ViewOrderSpecific> GetSpecificOrder(string orderId, UserInformation userInformation)
         {
-
             try
             {
                 var userRole = JwtUserToken.DecodeAPITokenToRole(userInformation.UserAccessToken);
@@ -620,6 +625,148 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             }
 
             return order;
+        }
+
+        public async Task<IActionResult> ValidateOrder(ValidateOrderModel validateOrderModel, string pharmacistToken)
+        {
+            var pharmacistId = JwtUserToken.GetUserID(pharmacistToken);
+
+            var orderHeader = await _orderHeaderRepo.Get(validateOrderModel.OrderId);
+
+            if (orderHeader == null) return new BadRequestObjectResult("Đơn hàng không tồn tại trong hệ thống!");
+
+            if (orderHeader.IsApproved.HasValue) return new BadRequestObjectResult("Đơn hàng đã được duyệt rồi, không thể thao tác được nữa");
+
+            if (!validateOrderModel.IsAccept && string.IsNullOrEmpty(validateOrderModel.Description))
+            {
+                return new BadRequestObjectResult("Từ chối đơn hàng cần lý do chính đáng");
+            }
+
+            if (validateOrderModel.IsAccept && string.IsNullOrEmpty(validateOrderModel.Description))
+            {
+                validateOrderModel.Description = "Đơn hàng đã được duyệt và đang trong quá trình xử lý";
+            }
+
+            if (orderHeader.OrderTypeId.Equals(Commons.ORDER_TYPE_PICKUP))
+            {
+                orderHeader.IsApproved = validateOrderModel.IsAccept;
+                orderHeader.OrderStatus = validateOrderModel.IsAccept ? Commons.ORDER_PICKUP_AFTERVALIDATE_ACCEPT : Commons.ORDER_PICKUP_AFTERVALIDATE_DENY;
+                orderHeader.PharmacistId = pharmacistId;
+                orderHeader.ApprovedDate = CustomDateTime.Now;
+                await _orderHeaderRepo.Update();
+
+                var updateExecution = new OrderExecution()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    DateOfCreate = CustomDateTime.Now,
+                    Description = validateOrderModel.Description,
+                    IsInternalUser = true,
+                    OrderId = orderHeader.Id,
+                    StatusChangeFrom = Commons.CHECKOUT_ORDER_PICKUP_ID,
+                    StatusChangeTo = validateOrderModel.IsAccept ? Commons.ORDER_PICKUP_AFTERVALIDATE_ACCEPT : Commons.ORDER_PICKUP_AFTERVALIDATE_DENY,
+                    UserId = pharmacistId
+                };
+
+                await _orderExecutionRepo.Insert(updateExecution);
+
+                return new OkObjectResult(validateOrderModel.IsAccept ? "Đơn hàng đã được duyệt thành công" : "Đơn hàng đã từ chối thành công");
+            }
+
+            if (orderHeader.OrderTypeId.Equals(Commons.ORDER_TYPE_DELIVERY))
+            {
+                var siteId = JwtUserToken.GetWorkingSiteFromManagerAndPharmacist(pharmacistToken);
+                orderHeader.IsApproved = validateOrderModel.IsAccept;
+                orderHeader.OrderStatus = validateOrderModel.IsAccept ? Commons.ORDER_DELIVERY_AFTERVALIDATE_ACCEPT : Commons.ORDER_DELIVERY_AFTERVALIDATE_DENY;
+                orderHeader.PharmacistId = pharmacistId;
+                orderHeader.ApprovedDate = CustomDateTime.Now;
+                orderHeader.SiteId = siteId;
+                await _orderHeaderRepo.Update();
+
+                //Trừ tồn kho đối với đơn giao hàng được đồng ý.
+                if (validateOrderModel.IsAccept)
+                {
+                    var productList = await _orderDetailRepo.GetListOfProductInsideOrderId(validateOrderModel.OrderId);
+                    foreach (var productModel in productList)
+                    {
+                        var isBatches = await _productImportRepo.checkProductManageByBatches(productModel.ProductId);
+
+                        //Convert thành unit cuối cùng
+                        var productParentId = await _productDetailRepo.GetProductParentID(productModel.ProductId);
+                        var productDetailDB = await _productDetailRepo.Get(productModel.ProductId);
+                        var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
+                        var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+                        int currentQuantity = productModel.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList);
+                        //Có quản lý theo lô
+                        if (isBatches)
+                        {
+
+                            var listOfProductBatches = new List<OrderBatch>();
+                            var availableBatches = await _siteInventoryRepo.GetAllProductBatchesAvailable(productLastUnitDetail.Id, siteId);
+
+                            int loopBatch = 0;
+                            //Quantity sau khi convert thành đơn vị cuối
+                            while (currentQuantity > 0)
+                            {
+                                if (availableBatches[loopBatch].Quantity > currentQuantity)
+                                {
+                                    listOfProductBatches.Add(new OrderBatch()
+                                    {
+                                        Id = Guid.NewGuid().ToString(),
+                                        SiteInventoryBatchId = availableBatches[loopBatch].Id,
+                                        OrderId = validateOrderModel.OrderId,
+                                        SoldQuantity = currentQuantity
+                                    });
+                                    //Đã trừ
+                                    var thisBatch = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
+                                    thisBatch.Quantity = thisBatch.Quantity - currentQuantity;
+                                    await _siteInventoryRepo.Update();
+                                    currentQuantity = 0;
+                                }
+                                else
+                                {
+                                    listOfProductBatches.Add(new OrderBatch()
+                                    {
+                                        Id = Guid.NewGuid().ToString(),
+                                        SiteInventoryBatchId = availableBatches[loopBatch].Id,
+                                        OrderId = validateOrderModel.OrderId,
+                                        SoldQuantity = availableBatches[loopBatch].Quantity
+                                    });
+
+                                    currentQuantity = currentQuantity - availableBatches[loopBatch].Quantity;
+                                    var batchDB = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
+                                    batchDB.Quantity = 0;
+                                    await _siteInventoryRepo.Update();
+                                    loopBatch++;
+                                }
+                            }
+                            await _orderBatchRepo.InsertRange(listOfProductBatches);
+                        }
+                        else //không quản lý theo lô
+                        {
+                            var siteInventory = await _siteInventoryRepo.GetSiteInventory(siteId, productLastUnitDetail.Id);
+                            siteInventory.Quantity = siteInventory.Quantity - currentQuantity;
+                            await _siteInventoryRepo.Update();
+                        }
+                    }
+                }
+
+                var updateExecution = new OrderExecution()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    DateOfCreate = CustomDateTime.Now,
+                    Description = validateOrderModel.Description,
+                    IsInternalUser = true,
+                    OrderId = orderHeader.Id,
+                    StatusChangeFrom = Commons.CHECKOUT_ORDER_DELIVERY_ID,
+                    StatusChangeTo = validateOrderModel.IsAccept ? Commons.ORDER_DELIVERY_AFTERVALIDATE_ACCEPT : Commons.ORDER_DELIVERY_AFTERVALIDATE_DENY,
+                    UserId = pharmacistId
+                };
+
+                await _orderExecutionRepo.Insert(updateExecution);
+                return new OkObjectResult(validateOrderModel.IsAccept ? "Đơn hàng đã được duyệt thành công" : "Đơn hàng đã từ chối thành công");
+            }
+
+            return new BadRequestObjectResult("Đơn hàng tại chỗ không thể được duyệt!");
         }
     }
 

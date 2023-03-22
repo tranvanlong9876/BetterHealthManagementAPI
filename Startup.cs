@@ -27,6 +27,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.InternalUserAuthRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.MainCategoryRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ManufacturerRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderExecutionRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderBatchRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderContactInfoRepos;
@@ -173,6 +174,7 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IOrderDetailRepo, OrderDetailRepo>();
             services.AddTransient<IOrderContactInfoRepo, OrderContactInfoRepo>();
             services.AddTransient<IOrderStatusRepo, OrderStatusRepo>();
+            services.AddTransient<IOrderExecutionRepo, OrderExecutionRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

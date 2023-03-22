@@ -1,8 +1,10 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServices;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DateTimeModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderValidateModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewOrderListModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -130,6 +132,15 @@ namespace BetterHealthManagementAPI.Controllers
                 return BadRequest(check);
             }
             return Ok("Đặt hàng thành công!");
+        }
+
+        [HttpPut("ValidateOrder")]
+        [Authorize(Roles = Commons.PHARMACIST_NAME)]
+        [SwaggerOperation(Description = "API tiếp nhận đơn hàng, nếu từ chối đơn hàng (IsAccept = false), bắt buộc phải nêu lý do cụ thể.")]
+        public async Task<IActionResult> ValidateOrder(ValidateOrderModel validateOrderModel)
+        {
+            var token = GetWholeToken();
+            return await _orderService.ValidateOrder(validateOrderModel, token);
         }
         private string GetCustomerId()
         {

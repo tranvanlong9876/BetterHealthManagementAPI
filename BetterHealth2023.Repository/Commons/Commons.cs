@@ -47,6 +47,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Commons
         public const int ORDER_TYPE_PICKUP = 2;
         public const int ORDER_TYPE_DELIVERY = 3;
 
+        public const string ORDER_PICKUP_AFTERVALIDATE_ACCEPT = "3";
+        public const string ORDER_PICKUP_AFTERVALIDATE_DENY = "10";
+
+        public const string ORDER_DELIVERY_AFTERVALIDATE_ACCEPT = "6";
+        public const string ORDER_DELIVERY_AFTERVALIDATE_DENY = "11";
         public enum OrderType
         {
             AtStore = 1,

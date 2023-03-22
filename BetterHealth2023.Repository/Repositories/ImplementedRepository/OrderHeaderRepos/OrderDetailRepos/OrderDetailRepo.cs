@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using static System.Linq.Queryable;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderValidateModels;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderDetailRepos
 {
@@ -14,6 +15,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
     {
         public OrderDetailRepo(BetterHealthManagementContext context, IMapper mapper) : base(context, mapper)
         {
+        }
+
+        public async Task<List<OrderProductValidate>> GetListOfProductInsideOrderId(string OrderId)
+        {
+            return await context.OrderDetails.Where(x => x.OrderId.Equals(OrderId)).Select(selector => new OrderProductValidate()
+            {
+                ProductId = selector.ProductId,
+                Quantity = selector.Quantity
+            }).ToListAsync();
         }
 
         public async Task<List<ViewSpecificOrderProduct>> GetViewSpecificOrderProducts(string orderId)

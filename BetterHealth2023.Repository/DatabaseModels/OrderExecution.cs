@@ -28,7 +28,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public string Description { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime DateOfCreate { get; set; }
-        public int UserType { get; set; }
+        public bool IsInternalUser { get; set; }
         [Required]
         [Column("UserID")]
         [StringLength(50)]
