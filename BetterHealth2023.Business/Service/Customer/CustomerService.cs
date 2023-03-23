@@ -151,6 +151,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
             //get list customeraddress by id
             var customerAddress = await _customerAddressRepo.GetAllCustomerAddressByCustomerId(id);
 
+            for(int i = 0; i < customerAddress.Count; i++)
+            {
+                customerAddress[i].FullyAddress = await _dynamicAdressRepo.GetFullAddressFromAddressId(customerAddress[i].AddressId);
+            }
+
             CustomerViewSpecificModel customerview = new()
             {
                 //filter customer inton customerview

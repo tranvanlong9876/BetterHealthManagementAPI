@@ -10,6 +10,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 {
     public interface ICustomerAddressRepo : IRepository<CustomerAddress>
     {
+        public Task<bool> SetAllFalseMainAddress(string customerId);
         public Task<int> GetTotalCurrentCustomerAddress(string customerId);
         public Task<List<CustomerAddressView>> GetAllCustomerAddressByCustomerId(string id);
         public Task<ActionResult> InsertCustomerAddress(CustomerAddressInsertModel CustomerAddressInsertModel);

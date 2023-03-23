@@ -33,6 +33,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CustomerAd
                 HomeAddress = CustomerAddressInsertModel.HomeAddress,
             };
 
+            //Nếu cần insert True, Set tất cả Address thành false
+            if (CustomerAddressInsertModel.IsMainAddress && totalMainAddress > 0)
+            {
+                await _customerAddressRepo.SetAllFalseMainAddress(CustomerAddressInsertModel.CustomerId);
+            }
+
             //insert customeraddress
             CustomerAddress customerAddress = new()
             {

@@ -28,7 +28,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         from dynamicAddress in context.DynamicAddresses.Where(x => x.Id == customerAddress.AddressId)
                         select new { customerAddress, dynamicAddress };
 
-            query = query.Where(x => x.customerAddress.CustomerId.Equals(id));
+            query = query.OrderBy(x => x.customerAddress.MainAddress).Where(x => x.customerAddress.CustomerId.Equals(id));
 
             return await query.Select(selector => new CustomerAddressView()
             {
@@ -53,6 +53,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             await context.SaveChangesAsync();
             //return actionresult
             return new OkObjectResult("Insert success");
+        }
+
+        public async Task<bool> SetAllFalseMainAddress(string customerId)
+        {
+            var query = await context.CustomerAddresses.Where(x => x.CustomerId.Equals(customerId)).ToListAsync();
+
+            query.ForEach(row => row.MainAddress = false);
+
+            return await Update();
         }
     }
 }
