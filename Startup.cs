@@ -63,6 +63,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System;
+using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI
@@ -98,7 +100,10 @@ namespace BetterHealthManagementAPI
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.EnableAnnotations();
 
+                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
             });
+
             services.AddAutoMapper(typeof(Program).Assembly);
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddJwtBearer(options =>

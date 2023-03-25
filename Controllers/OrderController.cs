@@ -3,6 +3,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DateTimeModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderExecutionModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderValidateModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewOrderListModels;
@@ -142,6 +143,15 @@ namespace BetterHealthManagementAPI.Controllers
             var token = GetWholeToken();
             return await _orderService.ValidateOrder(validateOrderModel, token);
         }
+
+        [HttpPut("ExecuteOrder")]
+        [Authorize(Roles = Commons.PHARMACIST_NAME)]
+        [SwaggerOperation(Description = "API xử lý quá trình đơn hàng")]
+        public async Task<IActionResult> ExecuteOrder(OrderExecutionModel orderExecutionModel)
+        {
+            var token = GetWholeToken();
+            return await _orderService.ExecuteOrder(orderExecutionModel, token);
+        }
         private string GetCustomerId()
         {
             if (Request.Headers.ContainsKey("Authorization"))
@@ -154,6 +164,21 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
+        [HttpPut("UpdateOrderProductNote")]
+        [Authorize(Roles = Commons.PHARMACIST_NAME)]
+        [SwaggerOperation(Summary = "Cho phép Pharmacist sửa ghi chú sản phẩm trong đơn hàng của khách hàng.", Description = "Sử dụng Mã Id trong mảng OrderProduct trả về từ trang View Detail, không sử dụng ProductId hoặc OrderId. Role Duy nhất được phép sử dụng: Pharmacist.")]
+        public async Task<IActionResult> UpdateOrderProductNote(List<UpdateOrderProductNoteModel> productModels)
+        {
+            return await _orderService.UpdateOrderProductNoteModel(productModels);
+        }
+
+        [HttpGet("OrderExecutionHistory/{orderId}")]
+        [SwaggerOperation(Summary = "Cho phép xem lịch sử hành trình đơn hàng.", Description = "Sử dụng OrderId để truyền vào. Trả về NotFound nếu chưa có gì cả.")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ViewOrderExecutionHistory(string orderId)
+        {
+            return await _orderService.GetOrderExecutionHistory(orderId);
+        }
         private string GetWholeToken()
         {
             if (Request.Headers.ContainsKey("Authorization"))

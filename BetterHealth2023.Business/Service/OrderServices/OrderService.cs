@@ -11,11 +11,13 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderDetailRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderPickupRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderShipmentRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderStatusRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDetailRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderExecutionModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderValidateModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewOrderListModels;
@@ -46,8 +48,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
         private readonly IOrderContactInfoRepo _orderContactInfoRepo;
         private readonly IProductDetailRepo _productDetailRepo;
         private readonly IOrderExecutionRepo _orderExecutionRepo;
+        private readonly IOrderStatusRepo _orderStatusRepo;
 
-        public OrderService(ISiteInventoryRepo siteInventoryRepo, ISiteRepo siteRepo, ICustomerPointRepo customerPointRepo, ICustomerRepo customerRepo, IDynamicAddressRepo dynamicAddressRepo, IOrderHeaderRepo orderHeaderRepo, IOrderShipmentRepo orderShipmentRepo, IOrderPickUpRepo orderPickUpRepo, IProductImportRepo productImportRepo, IOrderBatchRepo orderBatchRepo, IOrderDetailRepo orderDetailRepo, IOrderContactInfoRepo orderContactInfoRepo, IProductDetailRepo productDetailRepo, IOrderExecutionRepo orderExecutionRepo)
+        public OrderService(ISiteInventoryRepo siteInventoryRepo, ISiteRepo siteRepo, ICustomerPointRepo customerPointRepo, ICustomerRepo customerRepo, IDynamicAddressRepo dynamicAddressRepo, IOrderHeaderRepo orderHeaderRepo, IOrderShipmentRepo orderShipmentRepo, IOrderPickUpRepo orderPickUpRepo, IProductImportRepo productImportRepo, IOrderBatchRepo orderBatchRepo, IOrderDetailRepo orderDetailRepo, IOrderContactInfoRepo orderContactInfoRepo, IProductDetailRepo productDetailRepo, IOrderExecutionRepo orderExecutionRepo, IOrderStatusRepo orderStatusRepo)
         {
             _siteInventoryRepo = siteInventoryRepo;
             _siteRepo = siteRepo;
@@ -63,6 +66,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             _orderContactInfoRepo = orderContactInfoRepo;
             _productDetailRepo = productDetailRepo;
             _orderExecutionRepo = orderExecutionRepo;
+            _orderStatusRepo = orderStatusRepo;
         }
 
         public async Task<CreateOrderCheckOutStatus> CheckOutOrder(CheckOutOrderModel checkOutOrderModel, string CustomerId)
@@ -767,6 +771,143 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             }
 
             return new BadRequestObjectResult("Đơn hàng tại chỗ không thể được duyệt!");
+        }
+
+        public async Task<IActionResult> ExecuteOrder(OrderExecutionModel orderExecutionModel, string pharmacistToken)
+        {
+            var pharmacistId = JwtUserToken.GetUserID(pharmacistToken);
+            var orderHeader = await _orderHeaderRepo.Get(orderExecutionModel.OrderId);
+
+            if (orderHeader == null) return new BadRequestObjectResult("Đơn hàng không tồn tại trong hệ thống");
+
+            if (!pharmacistId.Equals(orderHeader.PharmacistId)) return new BadRequestObjectResult("Pharmacist không đại diện xử lý đơn hàng này, không thể yêu cầu chuyển trạng thái.");
+
+            var orderStatusDB = await _orderStatusRepo.Get(orderExecutionModel.OrderStatusId);
+
+            if (orderStatusDB == null) return new BadRequestObjectResult("Trạng thái đơn hàng tồn tại trong hệ thống");
+
+            if (!orderStatusDB.ApplyForType.Equals(orderHeader.OrderTypeId)) return new BadRequestObjectResult("Trạng thái đơn hàng không hợp lệ, không dành cho loại đơn hàng này!");
+
+            var updateExecution = new OrderExecution()
+            {
+                Id = Guid.NewGuid().ToString(),
+                DateOfCreate = CustomDateTime.Now,
+                Description = orderExecutionModel.Description,
+                IsInternalUser = true,
+                OrderId = orderHeader.Id,
+                StatusChangeFrom = orderHeader.OrderStatus,
+                StatusChangeTo = orderExecutionModel.OrderStatusId,
+                UserId = pharmacistId
+            };
+
+            await _orderExecutionRepo.Insert(updateExecution);
+
+            if (orderExecutionModel.OrderStatusId.Equals(Commons.ORDER_DELIVERY_STATUS_DONE) || orderExecutionModel.OrderStatusId.Equals(Commons.ORDER_PICKUP_STATUS_DONE))
+            {
+                var doneExecution = new OrderExecution()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    DateOfCreate = CustomDateTime.Now,
+                    Description = "Đã giao hàng thành công cho khách hàng và thu hộ số tiền (nếu có).",
+                    IsInternalUser = true,
+                    OrderId = orderHeader.Id,
+                    StatusChangeFrom = orderExecutionModel.OrderStatusId,
+                    StatusChangeTo = orderExecutionModel.OrderStatusId,
+                    UserId = pharmacistId
+                };
+                await _orderExecutionRepo.Insert(doneExecution);
+            }
+
+            orderHeader.OrderStatus = orderExecutionModel.OrderStatusId;
+            await _orderHeaderRepo.Update();
+
+            return new OkObjectResult("Cập nhật trạng thái đơn hàng thành công");
+        }
+
+        public async Task<IActionResult> UpdateOrderProductNoteModel(List<UpdateOrderProductNoteModel> ListNoteModel)
+        {
+            foreach (var NoteModel in ListNoteModel)
+            {
+                var OrderDetailDB = await _orderDetailRepo.Get(NoteModel.OrderDetailId);
+                OrderDetailDB.Note = string.IsNullOrEmpty(NoteModel.Note) ? null : NoteModel.Note;
+            }
+
+            await _orderDetailRepo.Update();
+
+            return new OkObjectResult("Ghi chú từng món hàng đã được cập nhật thành công!");
+        }
+
+        public async Task<IActionResult> GetOrderExecutionHistory(string orderId)
+        {
+            var orderHistoryModel = new List<ViewOrderHistoryModel>();
+            var information = new OrderExecutionInformation()
+            {
+                users = new(),
+                statuses = new()
+            };
+            var orderHistoryDBList = await _orderExecutionRepo.ViewOrderHistory(orderId);
+
+            if (!orderHistoryDBList.Any()) return new NotFoundObjectResult("Không tìm thấy đơn hàng hoặc đơn hàng chưa được tiến hành.");
+            for (int i = 0; i < orderHistoryDBList.Count; i++)
+            {
+                var orderHistoryDB = orderHistoryDBList[i];
+                var matchingModel = orderHistoryModel.Where(x => x.StatusId.Equals(orderHistoryDB.StatusId)).FirstOrDefault();
+                if (matchingModel != null)
+                {
+                    matchingModel.statusDescriptions.Add(new StatusDescription()
+                    {
+                        Description = orderHistoryDB.Description,
+                        Time = orderHistoryDB.Time
+                    });
+                }
+
+                if (matchingModel == null)
+                {
+                    var findingUserModel = information.users.Where(x => x.UserId.Equals(orderHistoryDB.UserId)).FirstOrDefault();
+                    var findingStatusModel = information.statuses.Where(x => x.StatusId.Equals(orderHistoryDB.StatusId)).FirstOrDefault();
+                    var statusName = String.Empty;
+                    var userName = String.Empty;
+                    if (findingUserModel != null)
+                    {
+                        userName = findingUserModel.UserName;
+                    }
+                    else
+                    {
+                        var userModelDB = await _orderExecutionRepo.GetUserOrderExedution(orderHistoryDB.UserId, orderHistoryDB.IsInternal);
+                        information.users.Add(userModelDB);
+                        userName = userModelDB.UserName;
+                    }
+
+                    if (findingStatusModel != null)
+                    {
+                        statusName = findingStatusModel.StatusName;
+                    }
+                    else
+                    {
+                        var statusModelDB = await _orderExecutionRepo.GetStatusOrderExecution(orderHistoryDB.StatusId);
+                        information.statuses.Add(statusModelDB);
+                        statusName = statusModelDB.StatusName;
+                    }
+                    orderHistoryModel.Add(new ViewOrderHistoryModel()
+                    {
+                        StatusId = orderHistoryDB.StatusId,
+                        UserId = orderHistoryDB.UserId,
+                        IsInternal = orderHistoryDB.IsInternal,
+                        FullName = userName,
+                        StatusName = statusName,
+                        statusDescriptions = new List<StatusDescription>()
+                        {
+                            new StatusDescription()
+                            {
+                                Description = orderHistoryDB.Description,
+                                Time = orderHistoryDB.Time
+                            }
+                        }
+                    });
+                }
+            }
+
+            return new OkObjectResult(orderHistoryModel);
         }
     }
 
