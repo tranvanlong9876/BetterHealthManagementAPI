@@ -126,13 +126,21 @@ namespace BetterHealthManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> CheckOutOrder(CheckOutOrderModel checkOutOrderModel)
         {
-            var check = await _orderService.CheckOutOrder(checkOutOrderModel, GetCustomerId());
-
-            if (check.isError)
+            try
             {
-                return BadRequest(check);
+                var check = await _orderService.CheckOutOrder(checkOutOrderModel, GetCustomerId());
+
+                if (check.isError)
+                {
+                    return BadRequest(check);
+                }
+                return Ok("Đặt hàng thành công!");
             }
-            return Ok("Đặt hàng thành công!");
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpPut("ValidateOrder")]

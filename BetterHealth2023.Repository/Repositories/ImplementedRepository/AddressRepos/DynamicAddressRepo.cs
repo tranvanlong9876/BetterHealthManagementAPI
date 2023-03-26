@@ -68,7 +68,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return districts;
         }
 
-        public async Task<List<DynamicAddressCustomerView>> GetAllDynamicAddressByCusId(string id)
+        /*public async Task<List<DynamicAddressCustomerView>> GetAllDynamicAddressByCusId(string id)
         {
             //get all DynamicAddress by customer id
             var dynamicAddress = context.DynamicAddresses.Where(dynamicAddress => dynamicAddress.CustomerAddresses
@@ -90,7 +90,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 
             }
             return listAddCus;
-        }
+        }*/
 
         public async Task<List<WardModel>> GetAllWards(string districtID)
         {

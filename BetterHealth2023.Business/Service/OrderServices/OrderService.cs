@@ -12,6 +12,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderPickupRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderShipmentRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderStatusRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderVNPayRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDetailRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos;
@@ -49,8 +50,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
         private readonly IProductDetailRepo _productDetailRepo;
         private readonly IOrderExecutionRepo _orderExecutionRepo;
         private readonly IOrderStatusRepo _orderStatusRepo;
+        private readonly IOrderVNPayRepo _orderVNPayRepo;
 
-        public OrderService(ISiteInventoryRepo siteInventoryRepo, ISiteRepo siteRepo, ICustomerPointRepo customerPointRepo, ICustomerRepo customerRepo, IDynamicAddressRepo dynamicAddressRepo, IOrderHeaderRepo orderHeaderRepo, IOrderShipmentRepo orderShipmentRepo, IOrderPickUpRepo orderPickUpRepo, IProductImportRepo productImportRepo, IOrderBatchRepo orderBatchRepo, IOrderDetailRepo orderDetailRepo, IOrderContactInfoRepo orderContactInfoRepo, IProductDetailRepo productDetailRepo, IOrderExecutionRepo orderExecutionRepo, IOrderStatusRepo orderStatusRepo)
+        public OrderService(ISiteInventoryRepo siteInventoryRepo, ISiteRepo siteRepo, ICustomerPointRepo customerPointRepo, ICustomerRepo customerRepo, IDynamicAddressRepo dynamicAddressRepo, IOrderHeaderRepo orderHeaderRepo, IOrderShipmentRepo orderShipmentRepo, IOrderPickUpRepo orderPickUpRepo, IProductImportRepo productImportRepo, IOrderBatchRepo orderBatchRepo, IOrderDetailRepo orderDetailRepo, IOrderContactInfoRepo orderContactInfoRepo, IProductDetailRepo productDetailRepo, IOrderExecutionRepo orderExecutionRepo, IOrderStatusRepo orderStatusRepo, IOrderVNPayRepo orderVNPayRepo)
         {
             _siteInventoryRepo = siteInventoryRepo;
             _siteRepo = siteRepo;
@@ -67,6 +69,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             _productDetailRepo = productDetailRepo;
             _orderExecutionRepo = orderExecutionRepo;
             _orderStatusRepo = orderStatusRepo;
+            _orderVNPayRepo = orderVNPayRepo;
         }
 
         public async Task<CreateOrderCheckOutStatus> CheckOutOrder(CheckOutOrderModel checkOutOrderModel, string CustomerId)
@@ -110,6 +113,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     checkError.missingAddress = "Thiếu dữ liệu địa chỉ của đơn giao hàng, vui lòng bổ sung dữ liệu.";
                     return checkError;
                 }
+            }
+
+            if (checkOutOrderModel.PayType == 2)
+            {
+                if (checkOutOrderModel.VnpayInformation == null) throw new ArgumentException("Thanh toán online bắt buộc phải có dữ liệu trả về từ VN Pay");
             }
 
             if (checkOutOrderModel.Vouchers != null)
@@ -183,6 +191,21 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             };
 
             await _orderHeaderRepo.Insert(orderHeaderDB);
+
+            //Insert VN Pay
+
+            if (checkOutOrderModel.PayType == 2)
+            {
+                var orderVNPay = new OrderVnpay()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    OrderId = checkOutOrderModel.OrderId,
+                    VnpPayDate = checkOutOrderModel.VnpayInformation.vnp_PayDate,
+                    VnpTransactionNo = checkOutOrderModel.VnpayInformation.Vnp_TransactionNo
+                };
+
+                await _orderVNPayRepo.Insert(orderVNPay);
+            }
 
             string addressId = null;
 
@@ -382,36 +405,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
 
         }
 
-        private int CountTotalQuantityFromFirstToLastUnit(List<ProductUnitModel> productDetailList)
-        {
-            int totalQuantity = 1;
-
-            if (productDetailList.Count <= 1) return totalQuantity;
-
-            for (int i = 0; i < productDetailList.Count - 1; i++)
-            {
-                totalQuantity = totalQuantity * productDetailList.Find(x => x.UnitLevel == (i + 2)).Quantitative;
-            }
-
-            return totalQuantity;
-        }
-
-        private string OrderStatusIdCheckOut(int orderTypeId)
-        {
-            switch (orderTypeId)
-            {
-                case 1:
-                    return Commons.CHECKOUT_ORDER_DIRECTLY_ID;
-                case 2:
-                    return Commons.CHECKOUT_ORDER_PICKUP_ID;
-                case 3:
-                    return Commons.CHECKOUT_ORDER_DELIVERY_ID;
-                default:
-                    return null;
-            }
-
-        }
-
         public async Task<ViewSiteToPickUpStatus> GetViewSiteToPickUps(CartEntrance cartEntrance)
         {
             var checkError = new ViewSiteToPickUpStatus();
@@ -446,10 +439,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     });
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 checkError.isError = true;
-                checkError.errorConvert = "Lỗi chuyển đổi dữ liệu, hãy đảm bảo Quantity đã đúng kiểu Integer và ngăn cách bằng chấm phẩy (;)";
+                checkError.errorConvert = "Lỗi chuyển đổi dữ liệu, hãy đảm bảo Quantity đã đúng kiểu Integer và ngăn cách bằng chấm phẩy (;). Đồng thời, vui lòng truyền ProductId có thật.";
                 return checkError;
             }
 
@@ -634,12 +627,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
         public async Task<IActionResult> ValidateOrder(ValidateOrderModel validateOrderModel, string pharmacistToken)
         {
             var pharmacistId = JwtUserToken.GetUserID(pharmacistToken);
+            var siteId = JwtUserToken.GetWorkingSiteFromManagerAndPharmacist(pharmacistToken);
 
             var orderHeader = await _orderHeaderRepo.Get(validateOrderModel.OrderId);
 
             if (orderHeader == null) return new BadRequestObjectResult("Đơn hàng không tồn tại trong hệ thống!");
 
             if (orderHeader.IsApproved.HasValue) return new BadRequestObjectResult("Đơn hàng đã được duyệt rồi, không thể thao tác được nữa");
+
+            if (!orderHeader.SiteId.Equals(siteId) && !orderHeader.OrderTypeId.Equals(Commons.ORDER_TYPE_DELIVERY)) return new BadRequestObjectResult("Đơn hàng này không thuộc về chi nhánh của bạn, không thể xử lý");
 
             if (!validateOrderModel.IsAccept && string.IsNullOrEmpty(validateOrderModel.Description))
             {
@@ -673,12 +669,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
 
                 await _orderExecutionRepo.Insert(updateExecution);
 
+                if(!validateOrderModel.IsAccept)
+                {
+                    await AddSiteInventory(orderHeader.Id, siteId);
+                }
+
                 return new OkObjectResult(validateOrderModel.IsAccept ? "Đơn hàng đã được duyệt thành công" : "Đơn hàng đã từ chối thành công");
             }
 
             if (orderHeader.OrderTypeId.Equals(Commons.ORDER_TYPE_DELIVERY))
             {
-                var siteId = JwtUserToken.GetWorkingSiteFromManagerAndPharmacist(pharmacistToken);
                 orderHeader.IsApproved = validateOrderModel.IsAccept;
                 orderHeader.OrderStatus = validateOrderModel.IsAccept ? Commons.ORDER_DELIVERY_AFTERVALIDATE_ACCEPT : Commons.ORDER_DELIVERY_AFTERVALIDATE_DENY;
                 orderHeader.PharmacistId = pharmacistId;
@@ -770,6 +770,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 return new OkObjectResult(validateOrderModel.IsAccept ? "Đơn hàng đã được duyệt thành công" : "Đơn hàng đã từ chối thành công");
             }
 
+            //Xử lý hoàn tiền nếu thanh toán VN Pay
+
             return new BadRequestObjectResult("Đơn hàng tại chỗ không thể được duyệt!");
         }
 
@@ -830,9 +832,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             {
                 var OrderDetailDB = await _orderDetailRepo.Get(NoteModel.OrderDetailId);
                 OrderDetailDB.Note = string.IsNullOrEmpty(NoteModel.Note) ? null : NoteModel.Note;
+                await _orderDetailRepo.Update();
             }
-
-            await _orderDetailRepo.Update();
 
             return new OkObjectResult("Ghi chú từng món hàng đã được cập nhật thành công!");
         }
@@ -908,6 +909,74 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             }
 
             return new OkObjectResult(orderHistoryModel);
+        }
+
+        private async Task AddSiteInventory(string orderId, string siteId)
+        {
+            var listOrderProduct = await _orderDetailRepo.GetViewSpecificOrderProducts(orderId);
+
+            for (int i = 0; i < listOrderProduct.Count; i++)
+            {
+
+                var orderProduct = listOrderProduct[i];
+
+                var productParentId = await _productDetailRepo.GetProductParentID(orderProduct.ProductId);
+                var productDetailDB = await _productDetailRepo.Get(orderProduct.ProductId);
+                var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
+                var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+                
+                if (orderProduct.IsBatches)
+                {
+                    var orderProductBatchList = await _siteInventoryRepo.GetAllSiteInventoryBatchFromOrderProductBatch(productLastUnitDetail.Id, siteId, orderId);
+
+                    for (int j = 0; j < orderProductBatchList.Count; j++)
+                    {
+                        var orderProductBatch = orderProductBatchList[j];
+                        var siteInventory = await _siteInventoryRepo.Get(orderProductBatch.SiteInventoryBatchId);
+                        siteInventory.Quantity += orderProductBatch.SoldQuantity;
+                        siteInventory.UpdatedDate = CustomDateTime.Now;
+                        await _siteInventoryRepo.Update();
+                    }
+                }
+                else
+                {
+                    int currentQuantity = orderProduct.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList);
+                    var siteInventory = await _siteInventoryRepo.GetSiteInventory(siteId, productLastUnitDetail.Id);
+                    siteInventory.Quantity += currentQuantity;
+                    siteInventory.UpdatedDate = CustomDateTime.Now;
+                    await _siteInventoryRepo.Update();
+                }
+            }
+        }
+
+        private int CountTotalQuantityFromFirstToLastUnit(List<ProductUnitModel> productDetailList)
+        {
+            int totalQuantity = 1;
+
+            if (productDetailList.Count <= 1) return totalQuantity;
+
+            for (int i = 0; i < productDetailList.Count - 1; i++)
+            {
+                totalQuantity = totalQuantity * productDetailList.Find(x => x.UnitLevel == (i + 2)).Quantitative;
+            }
+
+            return totalQuantity;
+        }
+
+        private string OrderStatusIdCheckOut(int orderTypeId)
+        {
+            switch (orderTypeId)
+            {
+                case 1:
+                    return Commons.CHECKOUT_ORDER_DIRECTLY_ID;
+                case 2:
+                    return Commons.CHECKOUT_ORDER_PICKUP_ID;
+                case 3:
+                    return Commons.CHECKOUT_ORDER_DELIVERY_ID;
+                default:
+                    return null;
+            }
+
         }
     }
 

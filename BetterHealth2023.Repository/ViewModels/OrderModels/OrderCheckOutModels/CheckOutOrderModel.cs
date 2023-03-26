@@ -38,10 +38,19 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         public List<OrderProduct> Products { get; set; }
         [Required]
         public ReveicerInformation ReveicerInformation { get; set; }
+        public VNPayInformation VnpayInformation { get; set; }
 
         public OrderPickUp OrderPickUp { get; set; }
-        
 
+
+    }
+
+    public class VNPayInformation
+    {
+        [Required]
+        public string Vnp_TransactionNo { get; set; }
+        [Required]
+        public string vnp_PayDate { get; set; }
     }
 
     public class OrderPickUp

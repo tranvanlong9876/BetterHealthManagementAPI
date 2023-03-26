@@ -24,8 +24,8 @@ namespace BetterHealthManagementAPI.Controllers
             _siteService = siteService;
         }
 
-        [HttpGet()]
-        [Authorize(Roles = "Admin,Owner")]
+        [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllSites([FromQuery] GetSitePagingRequest pagingRequest)
         {
             try

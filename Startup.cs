@@ -35,6 +35,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderPickupRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderShipmentRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderStatusRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderVNPayRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductDiscountRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductImportRepos.ProductImportBatchRepos;
@@ -139,7 +140,7 @@ namespace BetterHealthManagementAPI
             services.AddScoped<ICountryService, CountryService>();
             services.AddScoped<IProductIngredientService, ProductIngredientService>();
             services.AddScoped<IProductImportService, ProductImportService>();
-            services.AddScoped<IVNPayService, VNPayService>();
+            services.AddTransient<IVNPayService, VNPayService>();
             services.AddScoped<IProductDiscountService, ProductDiscountService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<ICustomerAddressService, CustomerAddressService>();
@@ -180,6 +181,7 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IOrderContactInfoRepo, OrderContactInfoRepo>();
             services.AddTransient<IOrderStatusRepo, OrderStatusRepo>();
             services.AddTransient<IOrderExecutionRepo, OrderExecutionRepo>();
+            services.AddTransient<IOrderVNPayRepo, OrderVNPayRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

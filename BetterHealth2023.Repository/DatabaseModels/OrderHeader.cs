@@ -19,6 +19,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
             OrderExecutions = new HashSet<OrderExecution>();
             OrderPickUps = new HashSet<OrderPickUp>();
             OrderShipments = new HashSet<OrderShipment>();
+            OrderVnpays = new HashSet<OrderVnpay>();
         }
 
         [Key]
@@ -74,5 +75,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public virtual ICollection<OrderPickUp> OrderPickUps { get; set; }
         [InverseProperty(nameof(OrderShipment.Order))]
         public virtual ICollection<OrderShipment> OrderShipments { get; set; }
+        [InverseProperty(nameof(OrderVnpay.Order))]
+        public virtual ICollection<OrderVnpay> OrderVnpays { get; set; }
     }
 }

@@ -23,6 +23,24 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             }
         }
 
+        public void RemoveRequestData(string key)
+        {
+            if (!String.IsNullOrEmpty(key))
+            {
+                _requestData.Remove(key);
+            }
+        }
+
+        public void CreateNewRequest()
+        {
+            _requestData = new SortedList<String, String>(new VnPayCompare());
+        }
+
+        public SortedList<String, String> GetRequestData()
+        {
+            return _requestData;
+        }
+
         public void AddResponseData(string key, string value)
         {
             if (!String.IsNullOrEmpty(value))
@@ -65,10 +83,27 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 
                 signData = signData.Remove(data.Length - 1, 1);
             }
-            string vnp_SecureHash = Utils.HmacSHA512(vnp_HashSecret, signData);
+            string vnp_SecureHash = HmacSHA512(vnp_HashSecret, signData);
             baseUrl += "vnp_SecureHash=" + vnp_SecureHash;
 
             return baseUrl;
+        }
+
+        public static String HmacSHA512(string key, String inputData)
+        {
+            var hash = new StringBuilder();
+            byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+            byte[] inputBytes = Encoding.UTF8.GetBytes(inputData);
+            using (var hmac = new HMACSHA512(keyBytes))
+            {
+                byte[] hashValue = hmac.ComputeHash(inputBytes);
+                foreach (var theByte in hashValue)
+                {
+                    hash.Append(theByte.ToString("x2"));
+                }
+            }
+
+            return hash.ToString();
         }
 
 
@@ -80,7 +115,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
         public bool ValidateSignature(string inputHash, string secretKey)
         {
             string rspRaw = GetResponseData();
-            string myChecksum = Utils.HmacSHA512(secretKey, rspRaw);
+            string myChecksum = HmacSHA512(secretKey, rspRaw);
             return myChecksum.Equals(inputHash, StringComparison.InvariantCultureIgnoreCase);
         }
         private string GetResponseData()
@@ -111,26 +146,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
         }
 
         #endregion
-    }
-
-    public class Utils
-    {
-        public static String HmacSHA512(string key, String inputData)
-        {
-            var hash = new StringBuilder();
-            byte[] keyBytes = Encoding.UTF8.GetBytes(key);
-            byte[] inputBytes = Encoding.UTF8.GetBytes(inputData);
-            using (var hmac = new HMACSHA512(keyBytes))
-            {
-                byte[] hashValue = hmac.ComputeHash(inputBytes);
-                foreach (var theByte in hashValue)
-                {
-                    hash.Append(theByte.ToString("x2"));
-                }
-            }
-
-            return hash.ToString();
-        }
     }
 
     public class VnPayCompare : IComparer<string>

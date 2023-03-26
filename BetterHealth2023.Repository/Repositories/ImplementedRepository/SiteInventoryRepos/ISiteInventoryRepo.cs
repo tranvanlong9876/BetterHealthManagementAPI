@@ -12,7 +12,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 {
     public interface ISiteInventoryRepo : IRepository<SiteInventoryBatch>
     {
-
+        public Task<List<OrderBatch>> GetAllSiteInventoryBatchFromOrderProductBatch(string productId, string siteId, string orderId);
         public Task<List<SiteInventoryBatch>> GetAllProductBatchesAvailable(string productId, string siteId);
         public Task<SiteInventoryBatch> GetSiteInventory(string siteID, string ProductID);
         public Task<SiteModelToPickUp> ViewSiteToPickUpsAsync(List<CartModel> cartModels, string cityId, string districtId);

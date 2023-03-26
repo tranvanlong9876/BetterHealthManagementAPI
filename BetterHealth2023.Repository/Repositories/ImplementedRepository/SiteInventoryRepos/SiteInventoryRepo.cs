@@ -78,6 +78,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return productBatches;
         }
 
+        public async Task<List<OrderBatch>> GetAllSiteInventoryBatchFromOrderProductBatch(string productId, string siteId, string orderId)
+        {
+            var query = from orderBatch in context.OrderBatches
+                        from siteInvenBatch in context.SiteInventoryBatches.Where(x => x.Id == orderBatch.SiteInventoryBatchId).DefaultIfEmpty()
+                        select new { orderBatch, siteInvenBatch };
+            query = query.Where(x => x.orderBatch.OrderId.Equals(orderId) && x.siteInvenBatch.SiteId.Equals(siteId) && x.siteInvenBatch.ProductId.Equals(productId));
+
+            return await query.Select(x => x.orderBatch).ToListAsync();
+        }
+
         public async Task<SiteInventoryBatch> GetSiteInventory(string siteID, string ProductID)
         {
             var query = from siteinven in context.SiteInventoryBatches.Where(x => x.ProductId.Equals(ProductID.Trim()) && x.SiteId.Equals(siteID.Trim()))

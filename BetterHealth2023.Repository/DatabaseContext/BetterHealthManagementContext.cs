@@ -39,6 +39,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<OrderShipment> OrderShipments { get; set; }
         public virtual DbSet<OrderStatus> OrderStatuses { get; set; }
         public virtual DbSet<OrderType> OrderTypes { get; set; }
+        public virtual DbSet<OrderVnpay> OrderVnpays { get; set; }
         public virtual DbSet<ProductDescription> ProductDescriptions { get; set; }
         public virtual DbSet<ProductDetail> ProductDetails { get; set; }
         public virtual DbSet<ProductDiscount> ProductDiscounts { get; set; }
@@ -321,6 +322,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
             modelBuilder.Entity<OrderType>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
+            });
+
+            modelBuilder.Entity<OrderVnpay>(entity =>
+            {
+                entity.HasOne(d => d.Order)
+                    .WithMany(p => p.OrderVnpays)
+                    .HasForeignKey(d => d.OrderId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Order_VNPay_OrderHeader");
             });
 
             modelBuilder.Entity<ProductDetail>(entity =>

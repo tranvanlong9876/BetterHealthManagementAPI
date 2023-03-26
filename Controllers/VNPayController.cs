@@ -31,5 +31,12 @@ namespace BetterHealthManagementAPI.Controllers
 
             return Ok(url);
         }
+
+        [HttpGet("Query")]
+        [AllowAnonymous]
+        public async Task<IActionResult> QueryExistingOrderId([FromQuery] QueryVNPayModel queryVNPayModel)
+        {
+            return await _VNPayService.QueryExistingPaymentAsync(queryVNPayModel);
+        }
     }
 }
