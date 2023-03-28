@@ -124,28 +124,22 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpPost("Checkout")]
         [AllowAnonymous]
+        [SwaggerOperation(Summary = "API dùng để đặt hàng. OrderTypeId: 1 (tại chỗ), 2 (đến lấy tại cửa hàng), 3 (giao hàng)", Description = "Đối với đơn hàng đặt tại chỗ, phải có đầy đủ PharmacistId và SiteId. Đơn hàng đến lấy phải có SiteId.")]
         public async Task<IActionResult> CheckOutOrder(CheckOutOrderModel checkOutOrderModel)
         {
             try
             {
-                var check = await _orderService.CheckOutOrder(checkOutOrderModel, GetCustomerId());
-
-                if (check.isError)
-                {
-                    return BadRequest(check);
-                }
-                return Ok("Đặt hàng thành công!");
+                return await _orderService.CheckOutOrder(checkOutOrderModel, GetWholeToken());
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-
         }
 
         [HttpPut("ValidateOrder")]
         [Authorize(Roles = Commons.PHARMACIST_NAME)]
-        [SwaggerOperation(Description = "API tiếp nhận đơn hàng, nếu từ chối đơn hàng (IsAccept = false), bắt buộc phải nêu lý do cụ thể.")]
+        [SwaggerOperation(Summary = "API tiếp nhận đơn hàng, nếu từ chối đơn hàng (IsAccept = false), bắt buộc phải nêu lý do cụ thể.")]
         public async Task<IActionResult> ValidateOrder(ValidateOrderModel validateOrderModel)
         {
             var token = GetWholeToken();
@@ -159,17 +153,6 @@ namespace BetterHealthManagementAPI.Controllers
         {
             var token = GetWholeToken();
             return await _orderService.ExecuteOrder(orderExecutionModel, token);
-        }
-        private string GetCustomerId()
-        {
-            if (Request.Headers.ContainsKey("Authorization"))
-            {
-                return (Request.Headers)["Authorization"].ToString().Split(" ")[1];
-            }
-            else
-            {
-                return String.Empty;
-            }
         }
 
         [HttpPut("UpdateOrderProductNote")]

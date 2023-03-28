@@ -15,5 +15,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         public bool IsAccept { get; set; }
 
         public string Description { get; set; }
+
+        [Required]
+        public string IpAddress { get; set; }
     }
 }

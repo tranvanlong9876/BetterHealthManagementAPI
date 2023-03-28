@@ -50,7 +50,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
     public class ViewProductListModelForInternal : ViewProductListModel
     {
         public List<ProductUnitModel> productUnitReferences { get; set; }
+
+        public ProductInventoryModel productInventoryModel { get; set; }
     }
 
+    public class ProductInventoryModel
+    {
+        public int Quantity { get; set; }
+        public string UnitId { get; set; }
+        public string UnitName { get; set; }
+    }
 
 }

@@ -13,5 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.VNPay
         public string CreatePaymentUrl(VNPayInformationModel model);
         public Task<IActionResult> QueryExistingPaymentAsync(QueryVNPayModel queryVNPay);
         //PaymentResponseModel PaymentExecute(IQueryCollection collections);
+
+        public Task<IActionResult> RequestARefundVNPay(string token, string idAddress, RefundVNPayModel refundVNPay);
     }
 }

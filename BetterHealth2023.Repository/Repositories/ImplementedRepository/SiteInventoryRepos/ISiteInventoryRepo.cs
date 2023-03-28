@@ -3,9 +3,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewSpecificOrderModels;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos
@@ -16,7 +14,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public Task<List<SiteInventoryBatch>> GetAllProductBatchesAvailable(string productId, string siteId);
         public Task<SiteInventoryBatch> GetSiteInventory(string siteID, string ProductID);
         public Task<SiteModelToPickUp> ViewSiteToPickUpsAsync(List<CartModel> cartModels, string cityId, string districtId);
-
+        public Task<int> GetInventoryOfProductOfSite(string productId, string siteId);
         public Task<List<ViewSpecificMissingProduct>> CheckMissingProductOfSiteId(string SiteId, List<OrderProductLastUnitLevel> orderProducts);
     }
 }

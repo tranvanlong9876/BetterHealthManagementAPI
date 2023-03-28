@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -84,6 +85,65 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.VNPay
             }
 
             return new OkObjectResult(jsonResponse);
+        }
+
+        public async Task<IActionResult> RequestARefundVNPay(string token, string idAddress, RefundVNPayModel refundVNPay)
+        {
+            string userName = JwtUserToken.DecodeAPITokenToFullname(token);
+
+            VNPayLibrary payLibrary = new VNPayLibrary();
+            object jsonResponse = null;
+            var requestId = Guid.NewGuid().ToString();
+            var createDate = CustomDateTime.Now.ToString("yyyyMMddHHmmss");
+            var orderInfo = $"Yeu cau hoan tien toan phan don hang {refundVNPay.OrderId}.";
+
+            payLibrary.AddRequestData("vnp_RequestId", requestId);
+            payLibrary.AddRequestData("vnp_Version", _configuration["VnPay:Version"]);
+            payLibrary.AddRequestData("vnp_Command", "refund");
+            payLibrary.AddRequestData("vnp_TmnCode", _configuration["VnPay:TmnCode"]);
+            payLibrary.AddRequestData("vnp_TransactionType", "02");
+            payLibrary.AddRequestData("vnp_TxnRef", refundVNPay.OrderId); //Load tu 
+            payLibrary.AddRequestData("vnp_Amount", (refundVNPay.Amount * 100).ToString());
+            payLibrary.AddRequestData("vnp_OrderInfo", orderInfo);
+            //payLibrary.AddRequestData("vnp_TransactionNo", refundVNPay.TransactionNo);
+            payLibrary.AddRequestData("vnp_TransactionDate", refundVNPay.TransactionDate); //Load tu database
+            payLibrary.AddRequestData("vnp_CreateBy", userName);
+            payLibrary.AddRequestData("vnp_CreateDate", createDate);
+            payLibrary.AddRequestData("vnp_IpAddr", idAddress);
+
+            var dataHash = "";
+            dataHash += requestId + "|";
+            dataHash += _configuration["VnPay:Version"] + "|";
+            dataHash += "refund" + "|";
+            dataHash += _configuration["VnPay:TmnCode"] + "|";
+            dataHash += "02" + "|";
+            dataHash += refundVNPay.OrderId + "|";
+            dataHash += (refundVNPay.Amount * 100).ToString() + "|";
+            dataHash += "" + "|";
+            dataHash += refundVNPay.TransactionDate + "|";
+            dataHash += userName + "|";
+            dataHash += createDate + "|";
+            dataHash += idAddress + "|";
+            dataHash += orderInfo;
+            payLibrary.AddRequestData("vnp_SecureHash", VNPayLibrary.HmacSHA512(_configuration["VnPay:HashSecret"], dataHash));
+            using (var client = new HttpClient())
+            {
+                var jsonRequest = JsonConvert.SerializeObject(payLibrary.GetRequestData());
+
+                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync("https://sandbox.vnpayment.vn/merchant_webapi/api/transaction", content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+                jsonResponse = JsonConvert.DeserializeObject(responseContent);
+
+                var responseDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent);
+
+                var responseCode = responseDict["vnp_ResponseCode"];
+                if (responseCode.Equals("00")) return new OkResult();
+
+                var responseMessage = responseDict["vnp_Message"];
+                return new BadRequestObjectResult(responseMessage);
+            }
         }
     }
 }

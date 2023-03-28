@@ -32,7 +32,7 @@ namespace BetterHealthManagementAPI.Controllers
                 return Ok(await _productService.GetAllProductsPagingForCustomer(pagingRequest));
             } else
             {
-                return Ok(await _productService.GetAllProductsPagingForInternalUser(pagingRequest));
+                return Ok(await _productService.GetAllProductsPagingForInternalUser(pagingRequest, GetWholeToken()));
             }
         }
 
@@ -89,6 +89,19 @@ namespace BetterHealthManagementAPI.Controllers
             }
 
             return true;
+        }
+
+        private string GetWholeToken()
+        {
+            if (Request.Headers.ContainsKey("Authorization"))
+            {
+                string token = (Request.Headers)["Authorization"].ToString().Split(" ")[1];
+                return token;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

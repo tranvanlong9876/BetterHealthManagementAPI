@@ -17,7 +17,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
         public Task<IActionResult> ExecuteOrder(OrderExecutionModel orderExecutionModel, string pharmacistToken);
         public Task<IActionResult> ValidateOrder(ValidateOrderModel validateOrderModel, string pharmacistToken);
         public Task<ViewSiteToPickUpStatus> GetViewSiteToPickUps(CartEntrance cartEntrance);
-        public Task<CreateOrderCheckOutStatus> CheckOutOrder(CheckOutOrderModel checkOutOrderModel, string CustomerId);
+        public Task<IActionResult> CheckOutOrder(CheckOutOrderModel checkOutOrderModel, string token);
 
         public Task<string> GenerateOrderId();
 

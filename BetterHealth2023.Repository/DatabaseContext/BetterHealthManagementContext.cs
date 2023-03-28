@@ -252,7 +252,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.OrderExecutions)
                     .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Order_Execution_Employee");
             });
 

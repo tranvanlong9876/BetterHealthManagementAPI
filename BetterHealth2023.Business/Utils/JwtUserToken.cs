@@ -117,7 +117,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 
         public static string GetUserID(string loginToken)
         {
-            if (loginToken == null)
+            if (string.IsNullOrEmpty(loginToken))
             {
                 return null;
             }
@@ -135,7 +135,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 
         public static string DecodeAPITokenToRole(string jwtToken)
         {
-            if(jwtToken == null)
+            if(string.IsNullOrEmpty(jwtToken))
             {
                 return String.Empty;
             }
@@ -145,6 +145,24 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
                 var claim = tokenHandler.ReadJwtToken(jwtToken).Claims.Where(x => x.Type.Equals(ClaimTypes.Role)).Select(x => x.Value).FirstOrDefault();
                 return claim;
             } catch
+            {
+                return String.Empty;
+            }
+        }
+
+        public static string DecodeAPITokenToFullname(string jwtToken)
+        {
+            if (string.IsNullOrEmpty(jwtToken))
+            {
+                return String.Empty;
+            }
+            try
+            {
+                JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+                var claim = tokenHandler.ReadJwtToken(jwtToken).Claims.Where(x => x.Type.Equals(ClaimTypes.Name)).Select(x => x.Value).FirstOrDefault();
+                return claim;
+            }
+            catch
             {
                 return String.Empty;
             }

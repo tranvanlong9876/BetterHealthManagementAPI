@@ -1,10 +1,13 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductDiscountRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDescriptionRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDetailRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductImageRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductIngredientDescriptionRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductParentRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.ProductErrorModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
@@ -26,13 +29,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
         private readonly IProductDetailRepo _productDetailRepo;
         private readonly IProductImageRepo _productImageRepo;
         private readonly IProductEventDiscountRepo _productEventDiscountRepo;
+        private readonly ISiteInventoryRepo _siteInventoryRepo;
 
         public ProductService(IProductDescriptionRepo productDescriptionRepo
             , IProductIngredientDescriptionRepo productIngredientDescriptionRepo
             , IProductParentRepo productParentRepo
             , IProductDetailRepo productDetailRepo
             , IProductImageRepo productImageRepo
-            , IProductEventDiscountRepo productEventDiscountRepo)
+            , IProductEventDiscountRepo productEventDiscountRepo, ISiteInventoryRepo siteInventoryRepo)
         {
             _productDescriptionRepo = productDescriptionRepo;
             _productIngredientDescriptionRepo = productIngredientDescriptionRepo;
@@ -40,6 +44,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             _productDetailRepo = productDetailRepo;
             _productImageRepo = productImageRepo;
             _productEventDiscountRepo = productEventDiscountRepo;
+            _siteInventoryRepo = siteInventoryRepo;
         }
 
         public async Task<CartItem> AddMoreProductInformationToCart(string productId)
@@ -170,8 +175,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             return pageResult;
         }
 
-        public async Task<PagedResult<ViewProductListModelForInternal>> GetAllProductsPagingForInternalUser(ProductPagingRequest pagingRequest)
+        public async Task<PagedResult<ViewProductListModelForInternal>> GetAllProductsPagingForInternalUser(ProductPagingRequest pagingRequest, string userToken)
         {
+            var roleName = JwtUserToken.DecodeAPITokenToRole(userToken);
+            var siteId = (roleName.Equals(Commons.PHARMACIST_NAME) || roleName.Equals(Commons.MANAGER_NAME)) ? JwtUserToken.GetWorkingSiteFromManagerAndPharmacist(userToken) : string.Empty;
             var pageResult = await _productDetailRepo.GetAllProductsPagingForInternalUser(pagingRequest);
             for (var i = 0; i < pageResult.Items.Count; i++)
             {
@@ -180,6 +187,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 var productUnitList = await _productDetailRepo.GetProductLaterUnit(productIdParent, pageResult.Items[i].UnitLevel);
                 pageResult.Items[i].productUnitReferences = productUnitList;
                 pageResult.Items[i].imageModel = image;
+
+                if(roleName.Equals(Commons.PHARMACIST_NAME) || roleName.Equals(Commons.MANAGER_NAME))
+                {
+                    var productLastUnit = productUnitList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+
+                    var productInventoryModel = new ProductInventoryModel()
+                    {
+                        UnitId = productLastUnit.UnitId,
+                        UnitName = productLastUnit.UnitName,
+                        Quantity = await _siteInventoryRepo.GetInventoryOfProductOfSite(productLastUnit.Id, siteId)
+                    };
+
+                    pageResult.Items[i].productInventoryModel = productInventoryModel;
+                }
 
                 var productDiscount = await _productEventDiscountRepo.GetProductDiscount(pageResult.Items[i].Id);
                 if (productDiscount != null)

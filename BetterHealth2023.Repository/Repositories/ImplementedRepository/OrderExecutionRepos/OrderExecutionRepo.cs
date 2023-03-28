@@ -53,7 +53,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 Description = selector.Description,
                 UserId = selector.UserId,
                 Time = selector.DateOfCreate,
-                IsInternal = selector.IsInternalUser
+                IsInternal = selector.IsInternalUser.Value
             }).ToListAsync();
         }
     }

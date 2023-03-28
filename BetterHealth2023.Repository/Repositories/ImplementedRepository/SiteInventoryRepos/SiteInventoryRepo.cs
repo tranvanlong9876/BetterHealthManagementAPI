@@ -13,6 +13,7 @@ using System;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewSpecificOrderModels;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos
 {
@@ -37,22 +38,22 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             query = query.Where(x => x.Site_ID.Equals(SiteId));
 
-            for(int i = 0; i < orderProducts.Count; i++)
+            for (int i = 0; i < orderProducts.Count; i++)
             {
                 var product = orderProducts[i];
                 var queryInside = query.Where(x => x.Product_ID.Equals(product.productId));
 
-                if(await queryInside.Where(x => x.TotalQuantity >= product.productQuantity).CountAsync() == 0)
+                if (await queryInside.Where(x => x.TotalQuantity >= product.productQuantity).CountAsync() == 0)
                 {
                     //thiếu sản phẩm
                     var missingProductModel = await queryInside.Select(selector => new ViewSpecificMissingProduct()
                     {
                         missingQuantity = product.productQuantity - selector.TotalQuantity,
                         ProductId = product.productId,
-                        StatusMessage = $"Sản phẩm đang bị thiếu tồn kho {product.productQuantity - selector.TotalQuantity} đơn vị" 
+                        StatusMessage = $"Sản phẩm đang bị thiếu tồn kho {product.productQuantity - selector.TotalQuantity} đơn vị"
                     }).FirstOrDefaultAsync();
 
-                    if(missingProductModel == null)
+                    if (missingProductModel == null)
                     {
                         missingProductModel = new ViewSpecificMissingProduct()
                         {
@@ -86,6 +87,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             query = query.Where(x => x.orderBatch.OrderId.Equals(orderId) && x.siteInvenBatch.SiteId.Equals(siteId) && x.siteInvenBatch.ProductId.Equals(productId));
 
             return await query.Select(x => x.orderBatch).ToListAsync();
+        }
+
+        public async Task<int> GetInventoryOfProductOfSite(string productId, string siteId)
+        {
+            var totalQuantity = await context.SiteInventoryBatches
+                .Where(x => x.SiteId.Equals(siteId) && x.ProductId.Equals(productId))
+                .SumAsync(x => (int?) x.Quantity) ?? 0;
+
+            return totalQuantity;
         }
 
         public async Task<SiteInventoryBatch> GetSiteInventory(string siteID, string ProductID)
