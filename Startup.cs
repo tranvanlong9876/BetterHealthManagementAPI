@@ -3,6 +3,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartService;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.CountryServices;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.CustomerAddressSer;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.CustomerPointServices;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalRole;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUser;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.MainCategoryService;
@@ -146,6 +147,7 @@ namespace BetterHealthManagementAPI
             services.AddScoped<ICustomerAddressService, CustomerAddressService>();
             services.AddScoped<ICartService, CartService>();
             services.AddScoped<IOrderStatusService, OrderStatusService>();
+            services.AddScoped<ICustomerPointService, CustomerPointService>();
 
             //them tang repo
             services.AddTransient<IInternalUserAuthRepo, InternalUserAuthRepo>();

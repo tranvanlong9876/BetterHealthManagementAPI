@@ -26,7 +26,6 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderMode
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewSpecificOrderModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.VNPayModels;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;

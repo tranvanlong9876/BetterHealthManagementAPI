@@ -33,5 +33,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 TransactionNo = selector.vnpay.VnpTransactionNo
             }).FirstOrDefaultAsync();
         }
+
+        public async Task<OrderVnpay> GetTransaction(string orderId)
+        {
+            return await context.OrderVnpays.Where(x => x.OrderId.Equals(orderId)).FirstOrDefaultAsync();
+        }
     }
 }

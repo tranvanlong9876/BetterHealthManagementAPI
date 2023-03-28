@@ -8,5 +8,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
     public interface IOrderVNPayRepo : IRepository<OrderVnpay>
     {
         public Task<RefundVNPayModel> GetRefundVNPayModel(string orderId);
+
+        public Task<OrderVnpay> GetTransaction(string orderId);
     }
 }
