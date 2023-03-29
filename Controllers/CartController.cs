@@ -71,33 +71,35 @@ namespace BetterHealthManagementAPI.Controllers
                 if (listCart == null) return NotFound("Không tìm thấy giỏ hàng");
                 if (!listCart.Point.HasValue) listCart.Point = 0;
                 var SubTotalPrice = 0D;
-                for (int i = 0; i < listCart.Items.Count; i++)
+                if (listCart.Items != null)
                 {
-                    var cartInformation = await _productService.AddMoreProductInformationToCart(listCart.Items[i].ProductId);
-                    listCart.Items[i].Price = cartInformation.Price;
-                    listCart.Items[i].ProductImageUrl = cartInformation.ProductImageUrl;
-                    listCart.Items[i].ProductName = cartInformation.ProductName;
-                    var productDiscount = await _productEventDiscountRepo.GetProductDiscount(listCart.Items[i].ProductId);
-                    if (productDiscount != null)
+                    for (int i = 0; i < listCart.Items.Count; i++)
                     {
-                        if (productDiscount.DiscountMoney.HasValue)
+                        var cartInformation = await _productService.AddMoreProductInformationToCart(listCart.Items[i].ProductId);
+                        listCart.Items[i].Price = cartInformation.Price;
+                        listCart.Items[i].ProductImageUrl = cartInformation.ProductImageUrl;
+                        listCart.Items[i].ProductName = cartInformation.ProductName;
+                        var productDiscount = await _productEventDiscountRepo.GetProductDiscount(listCart.Items[i].ProductId);
+                        if (productDiscount != null)
                         {
-                            listCart.Items[i].PriceAfterDiscount = listCart.Items[i].Price - productDiscount.DiscountMoney.Value;
-                        }
+                            if (productDiscount.DiscountMoney.HasValue)
+                            {
+                                listCart.Items[i].PriceAfterDiscount = listCart.Items[i].Price - productDiscount.DiscountMoney.Value;
+                            }
 
-                        if (productDiscount.DiscountPercent.HasValue)
-                        {
-                            listCart.Items[i].PriceAfterDiscount = listCart.Items[i].Price - (listCart.Items[i].Price * productDiscount.DiscountPercent.Value / 100);
+                            if (productDiscount.DiscountPercent.HasValue)
+                            {
+                                listCart.Items[i].PriceAfterDiscount = listCart.Items[i].Price - (listCart.Items[i].Price * productDiscount.DiscountPercent.Value / 100);
+                            }
                         }
+                        else
+                        {
+                            listCart.Items[i].PriceAfterDiscount = listCart.Items[i].Price;
+                        }
+                        listCart.Items[i].PriceTotal = listCart.Items[i].PriceAfterDiscount * listCart.Items[i].Quantity;
+                        SubTotalPrice += listCart.Items[i].PriceTotal;
                     }
-                    else
-                    {
-                        listCart.Items[i].PriceAfterDiscount = listCart.Items[i].Price;
-                    }
-                    listCart.Items[i].PriceTotal = listCart.Items[i].PriceAfterDiscount * listCart.Items[i].Quantity;
-                    SubTotalPrice += listCart.Items[i].PriceTotal;
                 }
-
                 listCart.SubTotalPrice = SubTotalPrice;
                 listCart.DiscountPrice = listCart.Point.Value * 1000;
                 listCart.TotalCartPrice = SubTotalPrice - listCart.DiscountPrice;
@@ -156,7 +158,8 @@ namespace BetterHealthManagementAPI.Controllers
             if (Request.Headers.ContainsKey("Authorization"))
             {
                 var token = (Request.Headers)["Authorization"].ToString().Split(" ")[1];
-                if (JwtUserToken.DecodeAPITokenToRole(token).Equals(Commons.CUSTOMER_NAME)) {
+                if (JwtUserToken.DecodeAPITokenToRole(token).Equals(Commons.CUSTOMER_NAME))
+                {
                     return JwtUserToken.GetUserID(token);
                 }
                 else

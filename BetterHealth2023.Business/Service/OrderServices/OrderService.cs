@@ -128,6 +128,35 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 }
             }
 
+            //check tồn kho đối với đơn bán tại chỗ + bán đến lấy
+
+            if (!checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_DELIVERY))
+            {
+                for (int i = 0; i < checkOutOrderModel.Products.Count; i++)
+                {
+                    List<OrderProductLastUnitLevel> orderProductLastUnitLevels = new List<OrderProductLastUnitLevel>();
+                    var productsInOrder = checkOutOrderModel.Products[i];
+
+                    var productParentId = await _productDetailRepo.GetProductParentID(productsInOrder.ProductId);
+                    var productDetailDB = await _productDetailRepo.Get(productsInOrder.ProductId);
+                    var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
+                    var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+
+                    orderProductLastUnitLevels.Add(new OrderProductLastUnitLevel()
+                    {
+                        productId = productLastUnitDetail.Id,
+                        productQuantity = CountTotalQuantityFromFirstToLastUnit(productLaterList)
+                    });
+
+                    var missingProduct = await _siteInventoryRepo.CheckMissingProductOfSiteId(checkOutOrderModel.SiteId, orderProductLastUnitLevels);
+
+                    if (missingProduct.Count > 0)
+                    {
+                        return new BadRequestObjectResult(missingProduct);
+                    }
+                }
+            }
+
             //Nếu Token không có CustomerId (Guest, kiểm tra thêm một lần nữa bằng cách lôi số điện thoại ra)
             //Line 107'
             if (string.IsNullOrEmpty(customerId) && !string.IsNullOrEmpty(checkOutOrderModel.ReveicerInformation.PhoneNumber))
@@ -556,31 +585,28 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             {
                 var productsInOrder = order.orderProducts[i];
                 //load ra order batch đối với sản phẩm có quản lý theo lô
-                if (productsInOrder.IsBatches)
-                {
-                    var productParentId = await _productDetailRepo.GetProductParentID(productsInOrder.ProductId);
-                    var productDetailDB = await _productDetailRepo.Get(productsInOrder.ProductId);
-                    var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
-                    var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+                var productParentId = await _productDetailRepo.GetProductParentID(productsInOrder.ProductId);
+                var productDetailDB = await _productDetailRepo.Get(productsInOrder.ProductId);
+                var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
+                var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
 
-                    //Nếu đơn hàng là giao hàng và chưa được chấp nhận
-                    if (order.OrderTypeId == Commons.ORDER_TYPE_DELIVERY && order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
+                //Nếu đơn hàng là giao hàng và chưa được chấp nhận
+                if (order.OrderTypeId == Commons.ORDER_TYPE_DELIVERY && order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
+                {
+                    //Khởi tạo list mà chỉ khả dụng (khác null) nếu như đúng điều kiện
+                    if (orderProductLastUnitLevels == null)
                     {
-                        //Khởi tạo list mà chỉ khả dụng (khác null) nếu như đúng điều kiện
-                        if (orderProductLastUnitLevels == null)
-                        {
-                            orderProductLastUnitLevels = new List<OrderProductLastUnitLevel>();
-                        }
-                        orderProductLastUnitLevels.Add(new OrderProductLastUnitLevel()
-                        {
-                            productId = productLastUnitDetail.Id,
-                            productQuantity = CountTotalQuantityFromFirstToLastUnit(productLaterList)
-                        });
+                        orderProductLastUnitLevels = new List<OrderProductLastUnitLevel>();
                     }
-                    else
+                    orderProductLastUnitLevels.Add(new OrderProductLastUnitLevel()
                     {
-                        order.orderProducts[i].orderBatches = await _orderBatchRepo.GetViewSpecificOrderBatches(orderId, productLastUnitDetail.Id);
-                    }
+                        productId = productLastUnitDetail.Id,
+                        productQuantity = CountTotalQuantityFromFirstToLastUnit(productLaterList)
+                    });
+                }
+                else if(productsInOrder.IsBatches)
+                {
+                    order.orderProducts[i].orderBatches = await _orderBatchRepo.GetViewSpecificOrderBatches(orderId, productLastUnitDetail.Id);
                 }
             }
 
@@ -665,7 +691,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     return new BadRequestObjectResult($"Không thể yêu cầu hoàn tiền được, tin nhắn lỗi: {badRequest.Value}");
                 }
 
-                if(result is OkResult || result is OkObjectResult)
+                if (result is OkResult || result is OkObjectResult)
                 {
                     var updateExecution = new OrderExecution()
                     {

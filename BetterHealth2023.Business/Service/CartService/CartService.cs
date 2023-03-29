@@ -46,6 +46,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
             else
             {
                 Cart existingCart = documentSnapshot.ConvertTo<Cart>();
+                if(existingCart.Items == null)
+                {
+                    existingCart.Items = new List<AddToCart>();
+                }
                 AddToCart cartItems = existingCart.Items.FirstOrDefault(x => x.ProductId == cart.Item.ProductId);
                 bool isUpdated = false;
                 if (cartItems != null)
@@ -201,7 +205,17 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
             }
             else
             {
-                return null;
+                Cart cart = new Cart();
+                cart.Point = 0;
+                cart.LastUpdated = Timestamp.GetCurrentTimestamp();
+                cart.DeviceIds = new List<string>();
+                cart.DeviceIds.Add(deviceId);
+                if (!string.IsNullOrEmpty(CustomerId))
+                {
+                    cart.customerId = CustomerId;
+                }
+                await documentReference.SetAsync(cart);
+                return await GetCart(deviceId, CustomerId);
             }
         }
 

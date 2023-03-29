@@ -56,6 +56,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public async Task<List<ProductImageView>> getProductImages(string productId)
         {
             var query = from x in context.ProductImages.Where(x => x.ProductId.Equals(productId.Trim()))
+                        orderby x.IsFirstImage descending
                         select x;
 
             var images = await query.Select(selector => new ProductImageView()
