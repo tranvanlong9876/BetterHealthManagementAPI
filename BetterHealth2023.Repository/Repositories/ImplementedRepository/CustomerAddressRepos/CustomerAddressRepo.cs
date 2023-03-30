@@ -47,6 +47,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return await context.CustomerAddresses.Where(x => x.CustomerId.Equals(customerId) && x.MainAddress).CountAsync();
         }
 
+        public async Task<int> GetTotalCurrentNotMainCustomerAddress(string customerId)
+        {
+            return await context.CustomerAddresses.Where(x => x.CustomerId.Equals(customerId)).CountAsync();
+        }
+
         public async Task<ActionResult> InsertCustomerAddress(CustomerAddressInsertModel CustomerAddressInsertModel)
         {
             
@@ -62,6 +67,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             query.ForEach(row => row.MainAddress = false);
 
             return await Update();
+        }
+
+        public async Task<bool> SetFirstAddressIsMain(string customerId)
+        {
+            var customerAddress = await context.CustomerAddresses.FirstOrDefaultAsync();
+            customerAddress.MainAddress = true;
+
+            await Update();
+            return true;
         }
     }
 }

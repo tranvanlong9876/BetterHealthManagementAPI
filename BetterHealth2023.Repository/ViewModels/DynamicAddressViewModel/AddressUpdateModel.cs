@@ -8,5 +8,6 @@
         public string WardId { get; set; }
         public string HomeAddress { get; set; }
 
+        public bool IsMainAddress { get; set; }
     }
 }

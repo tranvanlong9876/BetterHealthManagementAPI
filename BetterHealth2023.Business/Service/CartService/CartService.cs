@@ -2,6 +2,7 @@
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartModels;
 using Google.Cloud.Firestore;
 using Google.Protobuf.Collections;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -254,6 +255,19 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
                 return true;
             }
             return false;
+        }
+
+        public async Task<IActionResult> RemoveCart(string cartId)
+        {
+            var document = firestore.Collection("carts").Document(cartId);
+
+            var snapShot = await document.GetSnapshotAsync();
+            if (snapShot.Exists)
+            {
+                await document.DeleteAsync();
+            }
+
+            return new OkObjectResult("Giỏ hàng đã được xóa thành công");
         }
     }
 }

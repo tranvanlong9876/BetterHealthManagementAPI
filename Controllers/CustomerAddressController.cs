@@ -1,4 +1,5 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.CustomerAddressSer;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DynamicAddressViewModel;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class CustomerAddressController : ControllerBase
     {
@@ -26,7 +27,7 @@ namespace BetterHealthManagementAPI.Controllers
 
         //delele customer address by id
         [HttpDelete("{id}")]
-        [SwaggerOperation(Description = "Xóa địa chỉ của khách hàng, lưu ý truyền vào mã Id của CustomerAddressId, không phải AddressId hay CustomerId")]
+        [SwaggerOperation(Summary = "Xóa địa chỉ của khách hàng, lưu ý truyền vào mã Id của CustomerAddressId, không phải AddressId hay CustomerId")]
         public async Task<IActionResult> DeleteCustomerAddressById(string id)
         {
             try { 
@@ -52,9 +53,8 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = "Customer")]
-        [AllowAnonymous]
-        [SwaggerOperation(Description = "Cập nhật địa chỉ của khách hàng, lưu ý truyền vào mã Id của CustomerAddressId, và dữ liệu mới của địa chỉ.")]
+        [Authorize(Roles = Commons.CUSTOMER_NAME)]
+        [SwaggerOperation(Summary = "Cập nhật địa chỉ của khách hàng, lưu ý truyền vào mã Id của CustomerAddressId, và dữ liệu mới của địa chỉ.")]
 
         public async Task<IActionResult> UpdateCustomerAddress([FromBody] AddressUpdateModel addressUpdateModel)
         {
@@ -81,9 +81,8 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Customer")]
-        [AllowAnonymous]
-        [SwaggerOperation(Description = "Thêm địa chỉ cho khách hàng")]
+        [Authorize(Roles = Commons.CUSTOMER_NAME)]
+        [SwaggerOperation(Summary = "Thêm địa chỉ cho khách hàng")]
 
         public async Task<IActionResult> InsertCustomerAddress([FromBody] CustomerAddressInsertModel CustomerAddressInsertModel)
         {

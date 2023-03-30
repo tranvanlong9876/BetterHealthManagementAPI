@@ -60,14 +60,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CustomerAd
             if (customerAddress == null)
             {
                 //return null
-                return new NotFoundObjectResult(new { message = "Customer Address Not Found" });
+                return new NotFoundObjectResult(new { message = "Không tìm được địa chỉ khách hàng để xóa!" });
             }
             else
             {
-                await _dynamicAddressRepo.Remove(await _dynamicAddressRepo.Get(customerAddress.AddressId));
                 await _customerAddressRepo.Remove(customerAddress);
+                await _dynamicAddressRepo.Remove(await _dynamicAddressRepo.Get(customerAddress.AddressId));
 
+                var customerAddressCount = await _customerAddressRepo.GetTotalCurrentNotMainCustomerAddress(customerAddress.CustomerId);
                 //return action result success
+                if (customerAddress.MainAddress && customerAddressCount > 0)
+                {
+                    await _customerAddressRepo.SetFirstAddressIsMain(customerAddress.CustomerId);
+                }
+
                 return new OkObjectResult("Xóa địa chỉ khách hàng thành công!");
 
             }
@@ -83,8 +89,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CustomerAd
             dynamicAddress.DistrictId = addressUpdateModel.DistrictId;
             dynamicAddress.WardId = addressUpdateModel.WardId;
             dynamicAddress.HomeAddress = addressUpdateModel.HomeAddress;
-
             await _dynamicAddressRepo.Update();
+
+            if (addressUpdateModel.IsMainAddress && !customerCurrentAddress.MainAddress)
+            {
+                await _customerAddressRepo.SetAllFalseMainAddress(customerCurrentAddress.CustomerId);
+
+                customerCurrentAddress.MainAddress = addressUpdateModel.IsMainAddress;
+                await _customerAddressRepo.Update();
+            }
 
             return new OkObjectResult("Cập nhật địa chỉ khách hàng thành công!");
         }

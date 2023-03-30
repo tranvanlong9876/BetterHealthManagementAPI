@@ -153,6 +153,22 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
+        [HttpDelete("{cartId}")]
+        [SwaggerOperation(Summary = "API xóa toàn bộ thông tin về giỏ hàng hiện tại của khách hàng (xóa mã thiết bị, mã khách hàng, sản phẩm). Dùng sau mỗi lúc checkout thành công!")]
+        [AllowAnonymous]
+        public async Task<IActionResult> DeleteCart(string cartId)
+        {
+            try
+            {
+                return await _cartService.RemoveCart(cartId);
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         private string GetCustomerId()
         {
             if (Request.Headers.ContainsKey("Authorization"))
