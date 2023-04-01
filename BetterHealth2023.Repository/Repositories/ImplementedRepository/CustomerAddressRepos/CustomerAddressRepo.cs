@@ -71,7 +71,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         public async Task<bool> SetFirstAddressIsMain(string customerId)
         {
-            var customerAddress = await context.CustomerAddresses.FirstOrDefaultAsync();
+            var customerAddress = await context.CustomerAddresses.Where(x => x.CustomerId.Equals(customerId)).FirstOrDefaultAsync();
             customerAddress.MainAddress = true;
 
             await Update();
