@@ -335,6 +335,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                                 //Đã trừ
                                 var thisBatch = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
                                 thisBatch.Quantity = thisBatch.Quantity - currentQuantity;
+                                thisBatch.UpdatedDate = CustomDateTime.Now;
                                 await _siteInventoryRepo.Update();
                                 currentQuantity = 0;
 
@@ -352,6 +353,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                                 currentQuantity = currentQuantity - availableBatches[loopBatch].Quantity;
                                 var batchDB = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
                                 batchDB.Quantity = 0;
+                                batchDB.UpdatedDate = CustomDateTime.Now;
                                 await _siteInventoryRepo.Update();
                                 loopBatch++;
                             }
@@ -363,6 +365,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     {
                         var siteInventory = await _siteInventoryRepo.GetSiteInventory(checkOutOrderModel.SiteId, productLastUnitDetail.Id);
                         siteInventory.Quantity = siteInventory.Quantity - currentQuantity;
+                        siteInventory.UpdatedDate = CustomDateTime.Now;
                         await _siteInventoryRepo.Update();
                     }
                 }
@@ -604,7 +607,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                         productQuantity = CountTotalQuantityFromFirstToLastUnit(productLaterList)
                     });
                 }
-                else if(productsInOrder.IsBatches)
+                else if (productsInOrder.IsBatches)
                 {
                     order.orderProducts[i].orderBatches = await _orderBatchRepo.GetViewSpecificOrderBatches(orderId, productLastUnitDetail.Id);
                 }
@@ -675,7 +678,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
 
             if (orderHeader.IsApproved.HasValue) return new BadRequestObjectResult("Đơn hàng đã được duyệt rồi, không thể thao tác được nữa");
 
-            if (!orderHeader.SiteId.Equals(siteId) && !orderHeader.OrderTypeId.Equals(Commons.ORDER_TYPE_DELIVERY)) return new BadRequestObjectResult("Đơn hàng này không thuộc về chi nhánh của bạn, không thể xử lý");
+            if (!orderHeader.OrderTypeId.Equals(Commons.ORDER_TYPE_DELIVERY))
+            {
+                if (!orderHeader.SiteId.Equals(siteId))
+                {
+                    return new BadRequestObjectResult("Đơn hàng này không thuộc về chi nhánh của bạn, không thể xử lý");
+                }
+            }
 
             if (!validateOrderModel.IsAccept && string.IsNullOrEmpty(validateOrderModel.Description))
             {
@@ -789,6 +798,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                                     //Đã trừ
                                     var thisBatch = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
                                     thisBatch.Quantity = thisBatch.Quantity - currentQuantity;
+                                    thisBatch.UpdatedDate = CustomDateTime.Now;
                                     await _siteInventoryRepo.Update();
                                     currentQuantity = 0;
                                 }
@@ -805,6 +815,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                                     currentQuantity = currentQuantity - availableBatches[loopBatch].Quantity;
                                     var batchDB = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
                                     batchDB.Quantity = 0;
+                                    batchDB.UpdatedDate = CustomDateTime.Now;
                                     await _siteInventoryRepo.Update();
                                     loopBatch++;
                                 }
@@ -815,6 +826,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                         {
                             var siteInventory = await _siteInventoryRepo.GetSiteInventory(siteId, productLastUnitDetail.Id);
                             siteInventory.Quantity = siteInventory.Quantity - currentQuantity;
+                            siteInventory.UpdatedDate = CustomDateTime.Now;
                             await _siteInventoryRepo.Update();
                         }
                     }

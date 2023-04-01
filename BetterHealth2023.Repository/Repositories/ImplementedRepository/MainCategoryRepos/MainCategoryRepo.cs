@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
 using static System.Linq.Queryable;
+using static System.Linq.Enumerable;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.MainCategoryRepos
 {
@@ -19,8 +20,19 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         public async Task<PagedResult<MainCategoryViewModel>> GetAllPaging(MainCategoryPagingRequest pagingRequest)
         {
-            var query = from main_cate in context.CategoryMains
-                        select main_cate;
+            var query = (from cm in context.CategoryMains
+                         join sc in context.SubCategories on cm.Id equals sc.MainCategoryId into subCategories
+                         from subCategory in subCategories.DefaultIfEmpty()
+                         join pp in context.ProductParents on subCategory.Id equals pp.SubCategoryId into products
+                         from product in products.DefaultIfEmpty()
+                         group product by new { cm.Id, cm.CategoryName, cm.ImageUrl } into g
+                         select new
+                         {
+                             Id = g.Key.Id,
+                             CategoryName = g.Key.CategoryName,
+                             ImageURL = g.Key.ImageUrl,
+                             NoOfProduct = g.Count(pp => pp != null)
+                         });
 
             if (!string.IsNullOrEmpty(pagingRequest.Name))
             {
@@ -34,8 +46,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                                   .Select(selector => new MainCategoryViewModel()
                                   {
                                       Id = selector.Id,
-                                      ImageUrl = selector.ImageUrl,
-                                      CategoryName = selector.CategoryName
+                                      ImageUrl = selector.ImageURL,
+                                      CategoryName = selector.CategoryName,
+                                      NoOfProducts = selector.NoOfProduct
                                   }).ToListAsync();
 
             var pagedResult = new PagedResult<MainCategoryViewModel>(data, totalRows, pagingRequest.pageIndex, pagingRequest.pageItems);

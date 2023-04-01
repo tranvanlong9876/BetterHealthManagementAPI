@@ -1,4 +1,5 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDetailRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductParentRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartModels;
 using Google.Cloud.Firestore;
 using Google.Protobuf.Collections;
@@ -14,10 +15,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
     {
         private static FirestoreDb firestore = FirestoreDb.Create("better-health-3e75a");
         private readonly IProductDetailRepo _productDetailRepo;
+        private readonly IProductParentRepo _productParentRepo;
 
-        public CartService(IProductDetailRepo productDetailRepo)
+        public CartService(IProductDetailRepo productDetailRepo, IProductParentRepo productParentRepo)
         {
             _productDetailRepo = productDetailRepo;
+            _productParentRepo = productParentRepo;
         }
 
         public async Task<bool> UpdateCart(Cart cart, string CustomerId)
@@ -25,6 +28,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
             var product = await _productDetailRepo.Get(cart.Item.ProductId);
             if (product == null) throw new ArgumentException("Không tìm thấy sản phẩm trong hệ thống");
             if (!product.IsSell) throw new ArgumentException("Sản phẩm này không được bày bán");
+            var productParent = await _productParentRepo.Get(product.ProductIdParent);
+            if (productParent.IsPrescription) throw new ArgumentException("Khách hàng không được phép tự ý đặt mua thuốc kê đơn.");
             cart.Point = 0;
             cart.LastUpdated = Timestamp.GetCurrentTimestamp();
             var collectionReference = firestore.Collection("carts");
@@ -47,7 +52,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
             else
             {
                 Cart existingCart = documentSnapshot.ConvertTo<Cart>();
-                if(existingCart.Items == null)
+                if (existingCart.Items == null)
                 {
                     existingCart.Items = new List<AddToCart>();
                 }
@@ -183,7 +188,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
                 }
                 else if (!string.IsNullOrEmpty(CustomerCart.customerId) && !string.IsNullOrEmpty(DeviceCart.customerId))
                 {
-                    if (CustomerCart.customerId.Equals(DeviceCart.customerId)) {
+                    if (CustomerCart.customerId.Equals(DeviceCart.customerId))
+                    {
                         await documentReferenceCustomer.DeleteAsync();
                     }
                 }
@@ -268,6 +274,63 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
             }
 
             return new OkObjectResult("Giỏ hàng đã được xóa thành công");
+        }
+
+        public async Task<IActionResult> AddToCartPharmacist(AddToCartPharmacistEntrance cartEntrance)
+        {
+            if (cartEntrance.items.Where(x => x.quantity <= 0).Any()) return new BadRequestObjectResult("Số lượng sản phẩm trong giỏ hàng phải lớn hơn 0");
+
+            for (int i = 0; i < cartEntrance.items.Count; i++)
+            {
+                var item = cartEntrance.items[i];
+                var product = await _productDetailRepo.Get(item.productId);
+                if (product == null) return new BadRequestObjectResult(new { message = $"Không tìm thấy sản phẩm {item.productId} trong hệ thống", productId = item.productId });
+                if (!product.IsSell) return new BadRequestObjectResult(new { message = $"Sản phẩm {item.productId} không được cho phép bày bán", productId = item.productId });
+            }
+            var document = firestore.Collection("carts").Document(cartEntrance.CartId);
+
+            var snapShot = await document.GetSnapshotAsync();
+
+            if (!snapShot.Exists) return new BadRequestObjectResult("Không tìm thấy cart khách hàng");
+
+            Cart existingCart = snapShot.ConvertTo<Cart>();
+            if (existingCart.Items == null)
+            {
+                existingCart.Items = new List<AddToCart>();
+            }
+
+            for (int i = 0; i < cartEntrance.items.Count; i++)
+            {
+                var item = cartEntrance.items[i];
+                AddToCart cartItems = existingCart.Items.FirstOrDefault(x => x.ProductId == item.productId);
+                bool isUpdated = false;
+                if (cartItems != null)
+                {
+
+                    if ((cartItems.Quantity <= Math.Abs(item.quantity)) && item.quantity < 0) return new BadRequestObjectResult("Không thể trừ thêm số lượng nữa");
+                    cartItems.Quantity = item.quantity;
+                    isUpdated = true;
+                }
+                else
+                {
+                    if (item.quantity <= 0) return new BadRequestObjectResult("Số lượng phải lớn hơn 0");
+                    var addCart = new AddToCart()
+                    {
+                        ProductId = item.productId,
+                        Quantity = item.quantity
+                    };
+                    existingCart.Items.Add(addCart);
+                    isUpdated = true;
+                }
+
+                if (isUpdated)
+                {
+                    await document.UpdateAsync("items", existingCart.Items);
+                    await document.UpdateAsync("last-update", Timestamp.GetCurrentTimestamp());
+                }
+            }
+
+            return new OkObjectResult("Toàn bộ sản phẩm đã được thêm vào giỏ hàng khách hàng thành công!");
         }
     }
 }

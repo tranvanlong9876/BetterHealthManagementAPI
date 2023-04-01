@@ -1,4 +1,5 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductExportRepos;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductExportRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ExportProductModels;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +27,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductExp
             if (siteInventoryModel.Quantity < exportDamageProduct.ExportQuantity) return new BadRequestObjectResult("Số lượng cần xuất hỏng đang lớn hơn số lượng tồn kho đang có.");
 
             siteInventoryModel.Quantity -= exportDamageProduct.ExportQuantity;
+            siteInventoryModel.UpdatedDate = CustomDateTime.Now;
 
             await _siteInventoryRepo.Update();
 

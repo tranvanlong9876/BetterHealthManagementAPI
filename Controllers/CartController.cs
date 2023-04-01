@@ -113,7 +113,7 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         [HttpPost]
-        [SwaggerOperation(Summary = "Thêm một sản phẩm vào giỏ hàng của khách hàng. Nếu giỏ hàng đã có sản phẩm thì sẽ update theo quantity vừa truyền vô. Lưu ý, truyền mã thiết bị DeviceID.")]
+        [SwaggerOperation(Summary = "Thêm một sản phẩm vào giỏ hàng của khách hàng. Nếu giỏ hàng đã có sản phẩm thì sẽ update theo quantity vừa truyền vô. Lưu ý, truyền mã thiết bị DeviceID.", Description = "Đây là tính năng riêng dành cho Guest và Khách hàng, nếu là Pharmacist thêm giỏ hàng vui lòng sử dụng API AddToCart khác.")]
         [AllowAnonymous]
         public async Task<IActionResult> UpdateCart(Cart cart)
         {
@@ -133,6 +133,14 @@ namespace BetterHealthManagementAPI.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpPost("Pharmacist/AddToCart")]
+        [Authorize(Roles = Commons.PHARMACIST_NAME)]
+        [SwaggerOperation(Summary = "Chức năng thêm giỏ hàng của riêng Pharmacist. Role duy nhất: Pharmacist.")]
+        public async Task<IActionResult> UpdateCartWithPharmacist(AddToCartPharmacistEntrance cartEntrance)
+        {
+            return await _cartService.AddToCartPharmacist(cartEntrance);
         }
 
         [HttpDelete]

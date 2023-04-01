@@ -12,6 +12,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
         public Task<bool> UpdateCustomerCartPoint(CustomerCartPoint cartPoint);
         public Task<ViewCart> GetCart(string deviceId, string CustomerId);
         public Task<bool> UpdateCart(Cart cart, string CustomerId);
+
+        public Task<IActionResult> AddToCartPharmacist(AddToCartPharmacistEntrance cartEntrance);
         public Task<bool> RemoveItemFromCart(string productId, string IpAddressOrPhoneNo);
 
         public Task<IActionResult> RemoveCart(string cartId);

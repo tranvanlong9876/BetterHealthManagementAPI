@@ -10,5 +10,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.MainC
         public string Id { get; set; }
         public string CategoryName { get; set; }
         public string ImageUrl { get; set; }
+
+        public int NoOfProducts { get; set; }
     }
 }
