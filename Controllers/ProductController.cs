@@ -27,10 +27,11 @@ namespace BetterHealthManagementAPI.Controllers
         public async Task<IActionResult> GetAllProducts([FromQuery] ProductPagingRequest pagingRequest)
         {
             bool isInternal = CheckInternalUser();
-            if(!isInternal)
+            if (!isInternal)
             {
                 return Ok(await _productService.GetAllProductsPagingForCustomer(pagingRequest));
-            } else
+            }
+            else
             {
                 return Ok(await _productService.GetAllProductsPagingForInternalUser(pagingRequest, GetWholeToken()));
             }
@@ -59,18 +60,32 @@ namespace BetterHealthManagementAPI.Controllers
         [Authorize(Roles = Commons.OWNER_NAME)]
         public async Task<IActionResult> CreateProduct(CreateProductModel createProductModel)
         {
-            var checkError = await _productService.CreateProduct(createProductModel);
-            if (checkError.isError) return BadRequest(checkError);
-            return Created("", "Sản phẩm mới đã tạo thành công");
+            try
+            {
+                var checkError = await _productService.CreateProduct(createProductModel);
+                if (checkError.isError) return BadRequest(checkError);
+                return Created("", "Sản phẩm mới đã tạo thành công");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut]
         [Authorize(Roles = Commons.OWNER_NAME)]
         public async Task<IActionResult> UpdateProduct(UpdateProductEntranceModel updateProductModel)
         {
-            var checkError = await _productService.UpdateProduct(updateProductModel);
-            if (checkError.isError) return BadRequest(checkError);
-            return Ok(checkError.productViewModel);
+            try
+            {
+                var checkError = await _productService.UpdateProduct(updateProductModel);
+                if (checkError.isError) return BadRequest(checkError);
+                return Ok(checkError.productViewModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         private bool CheckInternalUser()

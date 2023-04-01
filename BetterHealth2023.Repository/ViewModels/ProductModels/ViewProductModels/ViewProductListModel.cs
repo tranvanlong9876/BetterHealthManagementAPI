@@ -18,6 +18,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
 
         public bool IsBatches { get; set; }
 
+        public int? UserTarget { get; set; }
+
+        public string UserTargetString { get; set; }
         public string UnitId { get; set; }
         public int UnitLevel { get; set; }
         public int Quantitative { get; set; }

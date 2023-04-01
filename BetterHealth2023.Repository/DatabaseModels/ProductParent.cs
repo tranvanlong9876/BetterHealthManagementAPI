@@ -37,6 +37,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         public bool IsPrescription { get; set; }
         [Column("isBatches")]
         public bool IsBatches { get; set; }
+        [Column("userTarget")]
+        public int? UserTarget { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime CreatedDate { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime UpdatedDate { get; set; }
         [Column("isDelete")]
         public bool IsDelete { get; set; }
 

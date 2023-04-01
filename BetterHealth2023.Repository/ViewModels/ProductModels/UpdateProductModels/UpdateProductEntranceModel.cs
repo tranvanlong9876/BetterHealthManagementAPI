@@ -14,6 +14,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public string manufacturerId { get; set; }
         public bool isPrescription { get; set; }
 
+        [Range(1, 4)]
+        public string UserTarget { get; set; }
+
         public List<UpdateProductDetailModel> productDetailModel { get; set; }
 
         public UpdateProductDescriptionModel descriptionModel { get; set; }

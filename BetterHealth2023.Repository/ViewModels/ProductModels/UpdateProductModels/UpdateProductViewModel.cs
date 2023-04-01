@@ -22,6 +22,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
 
         public bool IsBatches { get; set; }
 
+        public int? UserTarget { get; set; }
+
         public List<UpdateProductDetailModel> productDetailModel { get; set; }
 
         public UpdateProductDescriptionModel descriptionModel { get; set; }
@@ -44,8 +46,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public int SellQuantity { get; set; }
         public double Price { get; set; }
         public bool IsSell { get; set; }
-
-        public bool IsVisible { get; set; }
         public string BarCode { get; set; }
     }
 

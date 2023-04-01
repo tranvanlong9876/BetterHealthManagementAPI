@@ -96,6 +96,32 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Commons
             }
         }
 
+        public enum UserTarget
+        {
+            Children = 1,
+            Audult = 2,
+            Elderly = 3,
+            BreastfeedingWoman = 4
+        }
+
+        public static string ALL_USER_TARGET_USAGE = "Phù hợp với mọi đối tượng";
+        public static string ConvertToUserTargetString(this UserTarget userTarget)
+        {
+            switch (userTarget)
+            {
+                case UserTarget.Children:
+                    return "Trẻ em";
+                case UserTarget.Audult:
+                    return "Người lớn";
+                case UserTarget.Elderly:
+                    return "Người cao tuổi";
+                case UserTarget.BreastfeedingWoman:
+                    return "Phụ nữ cho con bú";
+                default:
+                    return "Mọi đối tượng";
+            }
+        }
+
         //Error Message
 
         public static readonly string ERROR_403_FORBIDDEN_MSG = "Forbidden: You don't have permission to access this resource";

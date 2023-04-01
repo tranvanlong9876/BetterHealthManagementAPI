@@ -41,10 +41,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
                         from maincategory in context.CategoryMains.Where(x => x.Id == subcategory.MainCategoryId).DefaultIfEmpty()
                         select new { details, parent, subcategory, maincategory };
+            
 
             if (!string.IsNullOrEmpty(pagingRequest.mainCategoryID))
             {
                 pagingRequest.subCategoryID = null;
+            }
+
+            if (!string.IsNullOrEmpty(pagingRequest.userTarget))
+            {
+                query = query.Where(x => x.parent.UserTarget.Value.Equals(int.Parse(pagingRequest.userTarget)) || !x.parent.UserTarget.HasValue);
             }
 
             if (!string.IsNullOrEmpty(pagingRequest.productName))
@@ -90,7 +96,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                     SellQuantity = selector.details.SellQuantity,
                     Price = selector.details.Price,
                     IsSell = selector.details.IsSell,
-                    BarCode = selector.details.BarCode
+                    BarCode = selector.details.BarCode,
+                    UserTarget = selector.parent.UserTarget,
+                    UserTargetString = selector.parent.UserTarget.HasValue ? Commons.Commons.ConvertToUserTargetString((Commons.Commons.UserTarget)selector.parent.UserTarget.Value) : Commons.Commons.ALL_USER_TARGET_USAGE
                 }).ToListAsync();
 
             var pageResult = new PagedResult<ViewProductListModel>(productList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
@@ -181,6 +189,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 Name = selector.parent.Name,
                 IsPrescription = selector.parent.IsPrescription,
                 IsBatches = selector.parent.IsBatches,
+                UserTarget = selector.parent.UserTarget,
+                UserTargetString = selector.parent.UserTarget.HasValue ? Commons.Commons.ConvertToUserTargetString((Commons.Commons.UserTarget) selector.parent.UserTarget.Value) : Commons.Commons.ALL_USER_TARGET_USAGE,
                 ManufacturerId = selector.parent.ManufacturerId,
                 Price = selector.details.Price,
                 SubCategoryId = selector.parent.SubCategoryId,
@@ -281,7 +291,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 SellQuantity = selector.detail.SellQuantity,
                 Price = selector.detail.Price,
                 IsSell = selector.detail.IsSell,
-                BarCode = selector.detail.BarCode
+                BarCode = selector.detail.BarCode,
+                UserTarget = selector.parent.UserTarget,
+                UserTargetString = selector.parent.UserTarget.HasValue ? Commons.Commons.ConvertToUserTargetString((Commons.Commons.UserTarget)selector.parent.UserTarget.Value) : Commons.Commons.ALL_USER_TARGET_USAGE
             }).ToListAsync();
 
             return data;

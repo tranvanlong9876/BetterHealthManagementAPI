@@ -24,6 +24,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         [Required]
         public bool IsBatches { get; set; }
 
+        /// <summary>
+        /// Đối tượng sử dụng: null hoặc "" (mọi đối tượng), 1 (trẻ em), 2 (người lớn), 3 (người cao tuổi), 4 (phụ nữ cho con bú).
+        /// </summary>
+        [Range(1, 4, ErrorMessage = "Dữ liệu không hợp lệ, vui lòng nằm trong khoảng 1 -> 4 hoặc rỗng.")]
+        public string UserUsageTarget { get; set; }
+
         [Required]
         public List<CreateProductDetailModel> productDetailModel { get; set; }
 

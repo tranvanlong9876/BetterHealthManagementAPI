@@ -57,6 +57,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             var checkError = new CreateProductErrorModel();
             bool duplicateBarCode;
 
+            if (!string.IsNullOrEmpty(createProductModel.UserUsageTarget))
+            {
+                if (!int.TryParse(createProductModel.UserUsageTarget, out _)) throw new ArgumentException("UserTarget buộc phải là kí tự số và nằm trong 1-4 hoặc kí tự rỗng/null.");
+            }
+
             foreach (var pro_details in createProductModel.productDetailModel)
             {
                 if (!string.IsNullOrWhiteSpace(pro_details.BarCode))
@@ -102,6 +107,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             productparentDB.IsDelete = false;
             productparentDB.Id = product_parent_id;
             productparentDB.ProductDescriptionId = desc_id;
+            productparentDB.UserTarget = string.IsNullOrEmpty(createProductModel.UserUsageTarget) ? null : int.Parse(createProductModel.UserUsageTarget);
+            productparentDB.CreatedDate = CustomDateTime.Now;
+            productparentDB.UpdatedDate = CustomDateTime.Now;
             check = await _productParentRepo.Insert(productparentDB);
             //Done Insert Product Parent
 
@@ -132,6 +140,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 productDetailDB.IsSell = product_details.UnitLevel == 1 ? true : product_details.IsSell;
                 productDetailDB.Quantitative = product_details.UnitLevel == 1 ? 1 : product_details.Quantitative;
                 productDetailDB.SellQuantity = 1;
+                if (string.IsNullOrEmpty(productDetailDB.BarCode)) productDetailDB.BarCode = null;
                 check = await _productDetailRepo.Insert(productDetailDB);
 
             }
@@ -144,7 +153,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 
         public async Task<PagedResult<ViewProductListModel>> GetAllProductsPagingForCustomer(ProductPagingRequest pagingRequest)
         {
-
+            if (!string.IsNullOrEmpty(pagingRequest.userTarget))
+            {
+                if (!int.TryParse(pagingRequest.userTarget, out _))
+                {
+                    throw new ArgumentException("UserTarger bắt buộc phải là số từ 1 - 4.");
+                }
+            }
             var pageResult = await _productDetailRepo.GetAllProductsPagingForCustomer(pagingRequest);
             for (var i = 0; i < pageResult.Items.Count; i++)
             {
@@ -177,6 +192,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 
         public async Task<PagedResult<ViewProductListModelForInternal>> GetAllProductsPagingForInternalUser(ProductPagingRequest pagingRequest, string userToken)
         {
+            if (!string.IsNullOrEmpty(pagingRequest.userTarget))
+            {
+                if (!int.TryParse(pagingRequest.userTarget, out _))
+                {
+                    throw new ArgumentException("UserTarger bắt buộc phải là số từ 1 - 4.");
+                }
+            }
             var roleName = JwtUserToken.DecodeAPITokenToRole(userToken);
             var siteId = (roleName.Equals(Commons.PHARMACIST_NAME) || roleName.Equals(Commons.MANAGER_NAME)) ? JwtUserToken.GetWorkingSiteFromManagerAndPharmacist(userToken) : string.Empty;
             var pageResult = await _productDetailRepo.GetAllProductsPagingForInternalUser(pagingRequest);
@@ -288,6 +310,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
         {
             var checkError = new UpdateProductErrorModel();
             //check duplicate bar code
+
+            if (!string.IsNullOrEmpty(updateProductModel.UserTarget))
+            {
+                if (!int.TryParse(updateProductModel.UserTarget, out _)) throw new ArgumentException("UserTarget buộc phải là kí tự số và nằm trong 1-4 hoặc kí tự rỗng/null.");
+            }
+
             var productDetailList = await _productDetailRepo.GetProductDetailLists(updateProductModel.Id);
             if (updateProductModel.productDetailModel.Count != productDetailList.Count)
             {
@@ -317,6 +345,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             productParentModel.Name = updateProductModel.Name;
             productParentModel.SubCategoryId = updateProductModel.subCategoryId;
             productParentModel.ManufacturerId = updateProductModel.manufacturerId;
+            productParentModel.UserTarget = string.IsNullOrEmpty(updateProductModel.UserTarget) ? null : int.Parse(updateProductModel.UserTarget);
+            productParentModel.UpdatedDate = CustomDateTime.Now;
 
             //await _productImageRepo.removeAllImages(updateProductModel.Id);
             //Load lên list tạm
@@ -374,7 +404,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 {
                     productDetailDB.IsSell = productDetailModelUpdate.IsSell;
                 }
-                productDetailDB.BarCode = productDetailModelUpdate.BarCode;
+                productDetailDB.BarCode = string.IsNullOrEmpty(productDetailModelUpdate.BarCode) ? null : productDetailModelUpdate.BarCode;
 
                 await _productDetailRepo.Update();
 
