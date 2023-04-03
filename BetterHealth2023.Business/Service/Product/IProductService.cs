@@ -4,6 +4,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingMod
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
         public Task<CartItem> AddMoreProductInformationToCart(string productId);
         public Task<CreateProductErrorModel> CreateProduct(CreateProductModel createProductModel);
 
+        public Task<IActionResult> GetAllProductsPagingForHomePage(ProductPagingHomePageRequest pagingRequest);
         public Task<PagedResult<ViewProductListModel>> GetAllProductsPagingForCustomer(ProductPagingRequest pagingRequest);
         public Task<PagedResult<ViewProductListModelForInternal>> GetAllProductsPagingForInternalUser(ProductPagingRequest pagingRequest, string userToken);
         public Task<ViewSpecificProductModel> GetViewProduct(string productId, bool isInternal);

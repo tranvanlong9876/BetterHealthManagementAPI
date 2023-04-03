@@ -14,6 +14,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingMod
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -188,6 +189,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 
             }
             return pageResult;
+        }
+
+        public async Task<IActionResult> GetAllProductsPagingForHomePage(ProductPagingHomePageRequest pagingRequest)
+        {
+            var pagedResult = await _productDetailRepo.GetAllProductsPagingForHomePage(pagingRequest);
+
+            return new OkObjectResult(pagedResult);
         }
 
         public async Task<PagedResult<ViewProductListModelForInternal>> GetAllProductsPagingForInternalUser(ProductPagingRequest pagingRequest, string userToken)

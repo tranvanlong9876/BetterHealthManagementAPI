@@ -19,6 +19,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public string userTarget { get; set; }
         public string mainCategoryID { get; set; }
         public string subCategoryID { get; set; }
+        /// <summary>
+        /// Search theo Tên sản phẩm, BarCode, Công Dụng và Thành Phần của sản phẩm.
+        /// </summary>
         public string productName { get; set; }
         //search theo Name, BarCode
         public string manufacturerID { get; set; }

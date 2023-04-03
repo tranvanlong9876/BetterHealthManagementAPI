@@ -37,6 +37,13 @@ namespace BetterHealthManagementAPI.Controllers
             }
         }
 
+        [HttpGet("HomePage")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllProductForHomePage([FromQuery] ProductPagingHomePageRequest pagingRequest)
+        {
+            return await _productService.GetAllProductsPagingForHomePage(pagingRequest);
+        }
+
         [HttpGet("View/{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetViewProducts(string id)

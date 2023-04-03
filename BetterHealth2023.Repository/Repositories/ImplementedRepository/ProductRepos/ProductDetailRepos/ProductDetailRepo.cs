@@ -9,8 +9,11 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductMo
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using static System.Linq.Enumerable;
 using System.Threading.Tasks;
 using static System.Linq.Queryable;
+using System;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDetailRepos
 {
@@ -36,13 +39,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         public async Task<PagedResult<ViewProductListModel>> GetAllProductsPagingForCustomer(ProductPagingRequest pagingRequest)
         {
-            var query = from details in context.ProductDetails.Where(x => x.UnitLevel == 1)
-                        from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
-                        from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
-                        from maincategory in context.CategoryMains.Where(x => x.Id == subcategory.MainCategoryId).DefaultIfEmpty()
-                        select new { details, parent, subcategory, maincategory };
-            
+            var query = (from details in context.ProductDetails.Where(x => x.UnitLevel == 1)
+                         from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
+                         from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
+                         from maincategory in context.CategoryMains.Where(x => x.Id == subcategory.MainCategoryId).DefaultIfEmpty()
+                         from description in context.ProductDescriptions.Where(x => x.Id == parent.ProductDescriptionId).DefaultIfEmpty()
+                         from ingredientDescription in context.ProductIngredientDescriptions.Where(x => x.ProductDescriptionId == description.Id).DefaultIfEmpty()
+                         from ingredient in context.ProductIngredients.Where(x => x.Id == ingredientDescription.IngredientId).DefaultIfEmpty()
+                         select new {details, parent, subcategory, maincategory, description, ingredient });
 
+            //Set null để ưu tiên quét theo Danh Mục Chính
             if (!string.IsNullOrEmpty(pagingRequest.mainCategoryID))
             {
                 pagingRequest.subCategoryID = null;
@@ -55,7 +61,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             if (!string.IsNullOrEmpty(pagingRequest.productName))
             {
-                query = query.Where(x => (x.parent.Name.Contains(pagingRequest.productName.Trim())) || (x.details.BarCode.Contains(pagingRequest.productName.Trim())));
+                query = query.Where(x => (x.parent.Name.Contains(pagingRequest.productName.Trim())) ||
+                                         (x.details.BarCode.Contains(pagingRequest.productName.Trim())) ||
+                                         (x.description.Effect.Contains(pagingRequest.productName.Trim())) ||
+                                         (x.ingredient.IngredientName.Contains(pagingRequest.productName.Trim())));
             }
 
             if (!string.IsNullOrEmpty(pagingRequest.subCategoryID))
@@ -78,10 +87,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 query = query.Where(x => x.parent.ManufacturerId.Equals(pagingRequest.manufacturerID.Trim()));
             }
 
-            int totalRow = await query.CountAsync();
+            int totalRow = await query.Select(x => x.details.Id).Distinct().CountAsync();
 
-            var productList = await query.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
-                .Take(pagingRequest.pageItems)
+            var productList = await query
                 .Select(selector => new ViewProductListModel()
                 {
                     Id = selector.details.Id,
@@ -99,7 +107,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                     BarCode = selector.details.BarCode,
                     UserTarget = selector.parent.UserTarget,
                     UserTargetString = selector.parent.UserTarget.HasValue ? Commons.Commons.ConvertToUserTargetString((Commons.Commons.UserTarget)selector.parent.UserTarget.Value) : Commons.Commons.ALL_USER_TARGET_USAGE
-                }).ToListAsync();
+                })
+                .Distinct()
+                .Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
+                .Take(pagingRequest.pageItems).ToListAsync();
 
             var pageResult = new PagedResult<ViewProductListModel>(productList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
 
@@ -190,7 +201,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 IsPrescription = selector.parent.IsPrescription,
                 IsBatches = selector.parent.IsBatches,
                 UserTarget = selector.parent.UserTarget,
-                UserTargetString = selector.parent.UserTarget.HasValue ? Commons.Commons.ConvertToUserTargetString((Commons.Commons.UserTarget) selector.parent.UserTarget.Value) : Commons.Commons.ALL_USER_TARGET_USAGE,
+                UserTargetString = selector.parent.UserTarget.HasValue ? Commons.Commons.ConvertToUserTargetString((Commons.Commons.UserTarget)selector.parent.UserTarget.Value) : Commons.Commons.ALL_USER_TARGET_USAGE,
                 ManufacturerId = selector.parent.ManufacturerId,
                 Price = selector.details.Price,
                 SubCategoryId = selector.parent.SubCategoryId,
@@ -317,11 +328,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         public async Task<PagedResult<ViewProductListModelForInternal>> GetAllProductsPagingForInternalUser(ProductPagingRequest pagingRequest)
         {
-            var query = from details in context.ProductDetails.Where(x => x.UnitLevel == 1)
-                        from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
-                        from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
-                        from maincategory in context.CategoryMains.Where(x => x.Id == subcategory.MainCategoryId).DefaultIfEmpty()
-                        select new { details, parent, subcategory, maincategory };
+            var query = (from details in context.ProductDetails.Where(x => x.UnitLevel == 1)
+                         from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
+                         from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
+                         from maincategory in context.CategoryMains.Where(x => x.Id == subcategory.MainCategoryId).DefaultIfEmpty()
+                         from description in context.ProductDescriptions.Where(x => x.Id == parent.ProductDescriptionId).DefaultIfEmpty()
+                         select new { details, parent, subcategory, maincategory, description });
+
 
             if (!string.IsNullOrEmpty(pagingRequest.mainCategoryID))
             {
@@ -330,7 +343,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             if (!string.IsNullOrEmpty(pagingRequest.productName))
             {
-                query = query.Where(x => (x.parent.Name.Contains(pagingRequest.productName.Trim())) || (x.details.BarCode.Contains(pagingRequest.productName.Trim())));
+                query = query.Where(x => (x.parent.Name.Contains(pagingRequest.productName.Trim())) ||
+                                         (x.details.BarCode.Contains(pagingRequest.productName.Trim())) ||
+                                         (x.description.Effect.Contains(pagingRequest.productName.Trim())));
             }
 
             if (!string.IsNullOrEmpty(pagingRequest.subCategoryID))
@@ -353,10 +368,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 query = query.Where(x => x.parent.ManufacturerId.Equals(pagingRequest.manufacturerID.Trim()));
             }
 
-            int totalRow = await query.CountAsync();
+            int totalRow = await query.Select(x => x.details.Id).Distinct().CountAsync();
 
-            var productList = await query.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
-                .Take(pagingRequest.pageItems)
+            var productList = await query
                 .Select(selector => new ViewProductListModelForInternal()
                 {
                     Id = selector.details.Id,
@@ -372,7 +386,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                     Price = selector.details.Price,
                     IsSell = selector.details.IsSell,
                     BarCode = selector.details.BarCode
-                }).ToListAsync();
+                })
+                .Distinct()
+                .Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
+                .Take(pagingRequest.pageItems).ToListAsync();
 
             var pageResult = new PagedResult<ViewProductListModelForInternal>(productList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
 
@@ -413,6 +430,91 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             }).FirstOrDefaultAsync();
 
             return result;
+        }
+
+        public async Task<PagedResult<ViewProductListModel>> GetAllProductsPagingForHomePage(ProductPagingHomePageRequest pagingRequest)
+        {
+            var query = from details in context.ProductDetails.Where(x => x.UnitLevel == 1)
+                        from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
+                        from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
+                        from maincategory in context.CategoryMains.Where(x => x.Id == subcategory.MainCategoryId).DefaultIfEmpty()
+                        select new { details, parent, subcategory, maincategory };
+
+            var totalRow = await query.CountAsync();
+
+            List<ViewProductListModel> productList = new List<ViewProductListModel>();
+            if (pagingRequest.GetProductType == 1)
+            {
+                var bestSellingProductList = await LoadBestSellingProduct(pagingRequest);
+                foreach (string productParentId in bestSellingProductList)
+                {
+                    var productModel = await query.Where(x => x.parent.Id.Equals(productParentId)).Select(selector => new ViewProductListModel()
+                    {
+                        Id = selector.details.Id,
+                        Name = selector.parent.Name,
+                        SubCategoryId = selector.parent.SubCategoryId,
+                        ManufacturerId = selector.parent.ManufacturerId,
+                        IsPrescription = selector.parent.IsPrescription,
+                        IsBatches = selector.parent.IsBatches,
+                        UnitId = selector.details.UnitId,
+                        UnitLevel = selector.details.UnitLevel,
+                        Quantitative = selector.details.Quantitative,
+                        SellQuantity = selector.details.SellQuantity,
+                        Price = selector.details.Price,
+                        IsSell = selector.details.IsSell,
+                        BarCode = selector.details.BarCode,
+                        UserTarget = selector.parent.UserTarget,
+                        UserTargetString = selector.parent.UserTarget.HasValue ? Commons.Commons.ConvertToUserTargetString((Commons.Commons.UserTarget)selector.parent.UserTarget.Value) : Commons.Commons.ALL_USER_TARGET_USAGE
+                    }).FirstOrDefaultAsync();
+
+                    productList.Add(productModel);
+                }
+            }
+
+            if (pagingRequest.GetProductType == 2)
+            {
+                query = query.OrderByDescending(x => x.parent.CreatedDate).Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems).Take(pagingRequest.pageItems);
+                productList = await query.Select(selector => new ViewProductListModel()
+                {
+                    Id = selector.details.Id,
+                    Name = selector.parent.Name,
+                    SubCategoryId = selector.parent.SubCategoryId,
+                    ManufacturerId = selector.parent.ManufacturerId,
+                    IsPrescription = selector.parent.IsPrescription,
+                    IsBatches = selector.parent.IsBatches,
+                    UnitId = selector.details.UnitId,
+                    UnitLevel = selector.details.UnitLevel,
+                    Quantitative = selector.details.Quantitative,
+                    SellQuantity = selector.details.SellQuantity,
+                    Price = selector.details.Price,
+                    IsSell = selector.details.IsSell,
+                    BarCode = selector.details.BarCode,
+                    UserTarget = selector.parent.UserTarget,
+                    UserTargetString = selector.parent.UserTarget.HasValue ? Commons.Commons.ConvertToUserTargetString((Commons.Commons.UserTarget)selector.parent.UserTarget.Value) : Commons.Commons.ALL_USER_TARGET_USAGE
+                }).ToListAsync();
+            }
+
+            return new PagedResult<ViewProductListModel>(productList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
+        }
+
+        private async Task<List<string>> LoadBestSellingProduct(ProductPagingHomePageRequest pagingRequest)
+        {
+            var query = from pp in context.ProductParents
+                        join pd in context.ProductDetails on pp.Id equals pd.ProductIdParent
+                        join od in context.OrderDetails on pd.Id equals od.ProductId into g
+                        from od in g.DefaultIfEmpty()
+                        group od by pp.Id into grp
+                        select new
+                        {
+                            ProductParentId = grp.Key,
+                            TotalOrder = grp.Count(od => od != null)
+                        };
+
+            query = query.OrderByDescending(x => x.TotalOrder);
+
+            return await query.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
+                .Take(pagingRequest.pageItems)
+                .Select(selector => new string(selector.ProductParentId)).ToListAsync();
         }
     }
 }

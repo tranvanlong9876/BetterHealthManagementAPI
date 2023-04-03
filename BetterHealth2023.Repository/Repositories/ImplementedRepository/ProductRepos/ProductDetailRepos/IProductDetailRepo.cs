@@ -14,6 +14,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
     {
         public Task<CartItem> AddMoreProductInformationToCart(string productId);
         public Task<bool> UpdateProductDetailRange(List<UpdateProductDetailModel> updateProductDetailModels);
+
+        public Task<PagedResult<ViewProductListModel>> GetAllProductsPagingForHomePage(ProductPagingHomePageRequest pagingRequest);
         public Task<PagedResult<ViewProductListModel>> GetAllProductsPagingForCustomer(ProductPagingRequest pagingRequest);
         public Task<PagedResult<ViewProductListModelForInternal>> GetAllProductsPagingForInternalUser(ProductPagingRequest pagingRequest);
         public Task<ViewSpecificProductModel> GetSpecificProduct(string productID, bool isInternal);

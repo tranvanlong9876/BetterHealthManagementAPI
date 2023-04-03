@@ -79,6 +79,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
             CustomerLoginStatus checkError = new CustomerLoginStatus();
             //check Valid
             //bool check = await _phoneOTPRepos.VerifyPhoneOTP(loginPhoneOTPModel);
+            loginPhoneOTPModel.firebaseToken = loginPhoneOTPModel.firebaseToken.Trim();
             try
             {
                 FirebaseToken decodeToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(loginPhoneOTPModel.firebaseToken);
