@@ -15,5 +15,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         [Required]
         [Range(1, 2, ErrorMessage = "Không được vượt quá 1 và 2")]
         public int GetProductType { get; set; }
+
+        /// <summary>
+        /// Filter thuốc kê đơn (true = có kê đơn, false = không kê đơn)
+        /// </summary>
+        public bool? isPrescription { get; set; }
     }
 }

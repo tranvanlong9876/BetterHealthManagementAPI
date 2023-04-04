@@ -14,6 +14,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 {
     public interface IProductService
     {
+        public Task<IActionResult> GetAllProductUserTarget();
         public Task<CartItem> AddMoreProductInformationToCart(string productId);
         public Task<CreateProductErrorModel> CreateProduct(CreateProductModel createProductModel);
 

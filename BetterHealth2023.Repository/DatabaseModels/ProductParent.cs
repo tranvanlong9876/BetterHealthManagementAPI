@@ -55,6 +55,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [ForeignKey(nameof(SubCategoryId))]
         [InverseProperty("ProductParents")]
         public virtual SubCategory SubCategory { get; set; }
+        [ForeignKey(nameof(UserTarget))]
+        [InverseProperty(nameof(ProductUserTarget.ProductParents))]
+        public virtual ProductUserTarget UserTargetNavigation { get; set; }
         [InverseProperty(nameof(ProductDetail.ProductIdParentNavigation))]
         public virtual ICollection<ProductDetail> ProductDetails { get; set; }
         [InverseProperty(nameof(ProductImage.Product))]

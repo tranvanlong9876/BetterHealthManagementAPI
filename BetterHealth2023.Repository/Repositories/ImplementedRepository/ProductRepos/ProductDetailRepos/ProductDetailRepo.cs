@@ -41,12 +41,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
             var query = (from details in context.ProductDetails.Where(x => x.UnitLevel == 1)
                          from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
+                         from userTarget in context.ProductUserTargets.Where(x => x.Id == parent.UserTarget).DefaultIfEmpty()
                          from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
                          from maincategory in context.CategoryMains.Where(x => x.Id == subcategory.MainCategoryId).DefaultIfEmpty()
                          from description in context.ProductDescriptions.Where(x => x.Id == parent.ProductDescriptionId).DefaultIfEmpty()
                          from ingredientDescription in context.ProductIngredientDescriptions.Where(x => x.ProductDescriptionId == description.Id).DefaultIfEmpty()
                          from ingredient in context.ProductIngredients.Where(x => x.Id == ingredientDescription.IngredientId).DefaultIfEmpty()
-                         select new {details, parent, subcategory, maincategory, description, ingredient });
+                         select new {details, parent, subcategory, maincategory, description, ingredient, userTarget });
 
             //Set null để ưu tiên quét theo Danh Mục Chính
             if (!string.IsNullOrEmpty(pagingRequest.mainCategoryID))
@@ -64,7 +65,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 query = query.Where(x => (x.parent.Name.Contains(pagingRequest.productName.Trim())) ||
                                          (x.details.BarCode.Contains(pagingRequest.productName.Trim())) ||
                                          (x.description.Effect.Contains(pagingRequest.productName.Trim())) ||
-                                         (x.ingredient.IngredientName.Contains(pagingRequest.productName.Trim())));
+                                         (x.ingredient.IngredientName.Contains(pagingRequest.productName.Trim())) ||
+                                         (x.details.Id.Equals(pagingRequest.productName.Trim())));
             }
 
             if (!string.IsNullOrEmpty(pagingRequest.subCategoryID))
@@ -106,7 +108,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                     IsSell = selector.details.IsSell,
                     BarCode = selector.details.BarCode,
                     UserTarget = selector.parent.UserTarget,
-                    UserTargetString = selector.parent.UserTarget.HasValue ? Commons.Commons.ConvertToUserTargetString((Commons.Commons.UserTarget)selector.parent.UserTarget.Value) : Commons.Commons.ALL_USER_TARGET_USAGE
+                    UserTargetString = selector.parent.UserTarget.HasValue ? selector.userTarget.UserTargetName : Commons.Commons.ALL_USER_TARGET_USAGE
                 })
                 .Distinct()
                 .Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
@@ -174,9 +176,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
             var query = from details in context.ProductDetails.Where(x => x.Id.Equals(productID))
                         from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
+                        from userTarget in context.ProductUserTargets.Where(x => x.Id == parent.UserTarget).DefaultIfEmpty()
                         from description in context.ProductDescriptions.Where(desc => desc.Id == parent.ProductDescriptionId).DefaultIfEmpty()
                         from unitOfProduct in context.Units.Where(unitPro => unitPro.Id == details.UnitId).DefaultIfEmpty()
-                        select new { details, parent, description, unitOfProduct };
+                        select new { details, parent, description, unitOfProduct, userTarget };
 
             if (!isInternal)
             {
@@ -201,7 +204,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 IsPrescription = selector.parent.IsPrescription,
                 IsBatches = selector.parent.IsBatches,
                 UserTarget = selector.parent.UserTarget,
-                UserTargetString = selector.parent.UserTarget.HasValue ? Commons.Commons.ConvertToUserTargetString((Commons.Commons.UserTarget)selector.parent.UserTarget.Value) : Commons.Commons.ALL_USER_TARGET_USAGE,
+                UserTargetString = selector.parent.UserTarget.HasValue ? selector.userTarget.UserTargetName : Commons.Commons.ALL_USER_TARGET_USAGE,
                 ManufacturerId = selector.parent.ManufacturerId,
                 Price = selector.details.Price,
                 SubCategoryId = selector.parent.SubCategoryId,
@@ -330,10 +333,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
             var query = (from details in context.ProductDetails.Where(x => x.UnitLevel == 1)
                          from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
+                         from userTarget in context.ProductUserTargets.Where(x => x.Id == parent.UserTarget).DefaultIfEmpty()
                          from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
                          from maincategory in context.CategoryMains.Where(x => x.Id == subcategory.MainCategoryId).DefaultIfEmpty()
                          from description in context.ProductDescriptions.Where(x => x.Id == parent.ProductDescriptionId).DefaultIfEmpty()
-                         select new { details, parent, subcategory, maincategory, description });
+                         select new { details, parent, subcategory, maincategory, description, userTarget });
 
 
             if (!string.IsNullOrEmpty(pagingRequest.mainCategoryID))
@@ -345,7 +349,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             {
                 query = query.Where(x => (x.parent.Name.Contains(pagingRequest.productName.Trim())) ||
                                          (x.details.BarCode.Contains(pagingRequest.productName.Trim())) ||
-                                         (x.description.Effect.Contains(pagingRequest.productName.Trim())));
+                                         (x.description.Effect.Contains(pagingRequest.productName.Trim())) ||
+                                         (x.details.Id.Equals(pagingRequest.productName.Trim())));
             }
 
             if (!string.IsNullOrEmpty(pagingRequest.subCategoryID))
@@ -385,7 +390,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                     SellQuantity = selector.details.SellQuantity,
                     Price = selector.details.Price,
                     IsSell = selector.details.IsSell,
-                    BarCode = selector.details.BarCode
+                    BarCode = selector.details.BarCode,
+                    UserTarget = selector.parent.UserTarget,
+                    UserTargetString = selector.parent.UserTarget.HasValue ? selector.userTarget.UserTargetName : Commons.Commons.ALL_USER_TARGET_USAGE
                 })
                 .Distinct()
                 .Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
@@ -436,9 +443,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
             var query = from details in context.ProductDetails.Where(x => x.UnitLevel == 1)
                         from parent in context.ProductParents.Where(parents => parents.Id == details.ProductIdParent).DefaultIfEmpty().Where(parents => parents.IsDelete.Equals(false))
+                        from userTarget in context.ProductUserTargets.Where(x => x.Id == parent.UserTarget).DefaultIfEmpty()
                         from subcategory in context.SubCategories.Where(sub_cate => sub_cate.Id == parent.SubCategoryId).DefaultIfEmpty()
                         from maincategory in context.CategoryMains.Where(x => x.Id == subcategory.MainCategoryId).DefaultIfEmpty()
-                        select new { details, parent, subcategory, maincategory };
+                        select new { details, parent, subcategory, maincategory, userTarget };
+
+            if (pagingRequest.isPrescription.HasValue)
+            {
+                query = query.Where(x => x.parent.IsPrescription.Equals(pagingRequest.isPrescription));
+            }
 
             var totalRow = await query.CountAsync();
 
@@ -464,7 +477,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         IsSell = selector.details.IsSell,
                         BarCode = selector.details.BarCode,
                         UserTarget = selector.parent.UserTarget,
-                        UserTargetString = selector.parent.UserTarget.HasValue ? Commons.Commons.ConvertToUserTargetString((Commons.Commons.UserTarget)selector.parent.UserTarget.Value) : Commons.Commons.ALL_USER_TARGET_USAGE
+                        UserTargetString = selector.parent.UserTarget.HasValue ? selector.userTarget.UserTargetName : Commons.Commons.ALL_USER_TARGET_USAGE
                     }).FirstOrDefaultAsync();
 
                     productList.Add(productModel);

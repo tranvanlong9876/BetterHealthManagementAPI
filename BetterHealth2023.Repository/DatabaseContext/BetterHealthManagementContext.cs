@@ -50,6 +50,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
         public virtual DbSet<ProductIngredient> ProductIngredients { get; set; }
         public virtual DbSet<ProductIngredientDescription> ProductIngredientDescriptions { get; set; }
         public virtual DbSet<ProductParent> ProductParents { get; set; }
+        public virtual DbSet<ProductUserTarget> ProductUserTargets { get; set; }
         public virtual DbSet<RoleInternal> RoleInternals { get; set; }
         public virtual DbSet<SiteInformation> SiteInformations { get; set; }
         public virtual DbSet<SiteInventoryBatch> SiteInventoryBatches { get; set; }
@@ -434,6 +435,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext
                     .HasForeignKey(d => d.SubCategoryId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Drug_Sub_Category");
+
+                entity.HasOne(d => d.UserTargetNavigation)
+                    .WithMany(p => p.ProductParents)
+                    .HasForeignKey(d => d.UserTarget)
+                    .HasConstraintName("FK_Product_Parent_Product_UserTarget");
+            });
+
+            modelBuilder.Entity<ProductUserTarget>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
             });
 
             modelBuilder.Entity<SiteInformation>(entity =>

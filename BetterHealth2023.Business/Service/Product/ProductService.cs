@@ -7,11 +7,13 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductImageRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductIngredientDescriptionRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductParentRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductUserTargetRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels.ProductErrorModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ProductUserTargetModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.AspNetCore.Mvc;
@@ -31,13 +33,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
         private readonly IProductImageRepo _productImageRepo;
         private readonly IProductEventDiscountRepo _productEventDiscountRepo;
         private readonly ISiteInventoryRepo _siteInventoryRepo;
+        private readonly IProductUserTargetRepo _productUserTargetRepo;
 
         public ProductService(IProductDescriptionRepo productDescriptionRepo
             , IProductIngredientDescriptionRepo productIngredientDescriptionRepo
             , IProductParentRepo productParentRepo
             , IProductDetailRepo productDetailRepo
             , IProductImageRepo productImageRepo
-            , IProductEventDiscountRepo productEventDiscountRepo, ISiteInventoryRepo siteInventoryRepo)
+            , IProductEventDiscountRepo productEventDiscountRepo, ISiteInventoryRepo siteInventoryRepo, IProductUserTargetRepo productUserTargetRepo)
         {
             _productDescriptionRepo = productDescriptionRepo;
             _productIngredientDescriptionRepo = productIngredientDescriptionRepo;
@@ -46,6 +49,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             _productImageRepo = productImageRepo;
             _productEventDiscountRepo = productEventDiscountRepo;
             _siteInventoryRepo = siteInventoryRepo;
+            _productUserTargetRepo = productUserTargetRepo;
         }
 
         public async Task<CartItem> AddMoreProductInformationToCart(string productId)
@@ -193,9 +197,35 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 
         public async Task<IActionResult> GetAllProductsPagingForHomePage(ProductPagingHomePageRequest pagingRequest)
         {
-            var pagedResult = await _productDetailRepo.GetAllProductsPagingForHomePage(pagingRequest);
+            var pageResult = await _productDetailRepo.GetAllProductsPagingForHomePage(pagingRequest);
+            
+            for (var i = 0; i < pageResult.Items.Count; i++)
+            {
+                var productIdParent = await _productDetailRepo.GetProductParentID(pageResult.Items[i].Id);
+                var image = await _productImageRepo.GetProductImage(productIdParent);
+                pageResult.Items[i].imageModel = image;
 
-            return new OkObjectResult(pagedResult);
+                var productDiscount = await _productEventDiscountRepo.GetProductDiscount(pageResult.Items[i].Id);
+                if (productDiscount != null)
+                {
+                    if (productDiscount.DiscountMoney.HasValue)
+                    {
+                        pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - productDiscount.DiscountMoney.Value;
+                    }
+
+                    if (productDiscount.DiscountPercent.HasValue)
+                    {
+                        pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - (pageResult.Items[i].Price * productDiscount.DiscountPercent.Value / 100);
+                    }
+                    pageResult.Items[i].discountModel = productDiscount;
+                }
+                else
+                {
+                    pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price;
+                }
+
+            }
+            return new OkObjectResult(pageResult);
         }
 
         public async Task<PagedResult<ViewProductListModelForInternal>> GetAllProductsPagingForInternalUser(ProductPagingRequest pagingRequest, string userToken)
@@ -253,6 +283,18 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 
             }
             return pageResult;
+        }
+
+        public async Task<IActionResult> GetAllProductUserTarget()
+        {
+            var userTargetList = await _productUserTargetRepo.GetAll<ViewUserTargetModel>();
+            userTargetList.Insert(0, new ViewUserTargetModel()
+            {
+                Id = null,
+                UserTargetName = Commons.ALL_USER_TARGET_USAGE
+            });
+
+            return new OkObjectResult(userTargetList);
         }
 
         public async Task<ViewSpecificProductModel> GetViewProduct(string productId, bool isInternal)

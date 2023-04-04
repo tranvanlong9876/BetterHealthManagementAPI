@@ -6,6 +6,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductMo
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading.Tasks;
 
@@ -22,6 +23,15 @@ namespace BetterHealthManagementAPI.Controllers
         {
             _productService = productService;
         }
+
+        [HttpGet("UserTarget")]
+        [AllowAnonymous]
+        [SwaggerOperation(Summary = "API hỗ trợ load DropDown List cho đối tượng sản phẩm")]
+        public async Task<IActionResult> GetAllProductUserTarget()
+        {
+            return await _productService.GetAllProductUserTarget();
+        }
+
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetAllProducts([FromQuery] ProductPagingRequest pagingRequest)
@@ -39,6 +49,7 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpGet("HomePage")]
         [AllowAnonymous]
+        [SwaggerOperation(Summary = "API load sản phẩm riêng trên trang Home, tạo tối ưu cho khách hàng.")]
         public async Task<IActionResult> GetAllProductForHomePage([FromQuery] ProductPagingHomePageRequest pagingRequest)
         {
             return await _productService.GetAllProductsPagingForHomePage(pagingRequest);

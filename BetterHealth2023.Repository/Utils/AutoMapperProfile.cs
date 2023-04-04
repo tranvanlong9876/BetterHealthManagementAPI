@@ -6,6 +6,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductDi
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductImportModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductIngredientModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.CreateProductModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ProductUserTargetModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.UpdateProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.SubCategoryModels;
@@ -66,6 +67,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Utils
 
             //
             CreateMap<OrderDetail, SendingEmailProductModel>();
+
+            //ProductUserTarget
+            CreateMap<ProductUserTarget, ViewUserTargetModel>();
         }
     }
 }
