@@ -78,9 +78,11 @@ namespace BetterHealthManagementAPI.Controllers
         [AllowAnonymous]
         public IActionResult GetDatePickUpAvailable()
         {
+            var currentHour = CustomDateTime.Now.Hour;
             var dateTime = CustomDateTime.Now.Date;
+            int load = currentHour >= 18 ? 1 : 0;
             List<PickUpDateModel> dateTimes = new List<PickUpDateModel>();
-            for (int i = 0; i < 10; i++)
+            for (var i = load; i < 10; i++)
             {
                 var nextday = dateTime.AddDays(i);
                 var dayofWeek = nextday.DayOfWeek;

@@ -864,7 +864,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
 
             var orderStatusDB = await _orderStatusRepo.Get(orderExecutionModel.OrderStatusId);
 
-            if (orderStatusDB == null) return new BadRequestObjectResult("Trạng thái đơn hàng tồn tại trong hệ thống");
+            if (orderStatusDB == null) return new BadRequestObjectResult("Trạng thái đơn hàng không tồn tại trong hệ thống");
 
             if (!orderStatusDB.ApplyForType.Equals(orderHeader.OrderTypeId)) return new BadRequestObjectResult("Trạng thái đơn hàng không hợp lệ, không dành cho loại đơn hàng này!");
 
@@ -896,6 +896,25 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     UserId = pharmacistId
                 };
                 await _orderExecutionRepo.Insert(doneExecution);
+
+                //cộng điểm khách hàng
+                var orderContactInfoDB = await _orderContactInfoRepo.GetCustomerInfoBasedOnOrderId(orderHeader.Id);
+                if (orderContactInfoDB != null)
+                {
+                    if (!string.IsNullOrEmpty(orderContactInfoDB.CustomerId) && orderHeader.TotalPrice >= 15000)
+                    {
+                        var customerPoint = new CustomerPoint()
+                        {
+                            CustomerId = orderContactInfoDB.CustomerId,
+                            CreateDate = CustomDateTime.Now,
+                            Id = Guid.NewGuid().ToString(),
+                            IsPlus = true,
+                            Point = (int)(orderHeader.TotalPrice / 15000) + (orderHeader.TotalPrice % 15000 == 0 ? 0 : 1),
+                            Description = $"Điểm tích lũy từ đơn hàng #{orderHeader.Id}"
+                        };
+                        await _customerPointRepo.Insert(customerPoint);
+                    }
+                }
             }
 
             orderHeader.OrderStatus = orderExecutionModel.OrderStatusId;

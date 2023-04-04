@@ -113,7 +113,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                                       TotalPrice = selector.header.TotalPrice,
                                       OrderStatus = selector.header.OrderStatus,
                                       NeedAcceptance = !selector.header.IsApproved.HasValue,
-                                      PharmacistId = selector.header.PharmacistId
+                                      PharmacistId = selector.header.PharmacistId,
+                                      SiteId = selector.header.SiteId,
+                                      OrderStatusName = selector.orderStatus.OrderStatusName
                                   }).ToListAsync();
 
             return new PagedResult<ViewOrderList>(data, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);

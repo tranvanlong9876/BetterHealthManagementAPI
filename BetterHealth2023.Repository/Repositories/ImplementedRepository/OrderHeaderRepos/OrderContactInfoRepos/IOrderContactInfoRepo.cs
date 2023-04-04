@@ -9,5 +9,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 {
     public interface IOrderContactInfoRepo : IRepository<OrderContactInfo>
     {
+        public Task<OrderContactInfo> GetCustomerInfoBasedOnOrderId(string orderId);
     }
 }

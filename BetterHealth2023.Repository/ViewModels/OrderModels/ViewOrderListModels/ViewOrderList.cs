@@ -15,12 +15,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         public string OrderTypeName { get; set; }
         public string SiteId { get; set; }
         public string OrderStatus { get; set; }
+        public string OrderStatusName { get; set; }
         public double TotalPrice { get; set; }
         public int UsedPoint { get; set; }
         public int PaymentMethodId { get; set; }
         public string PaymentMethod { get; set; }
         public bool IsPaid { get; set; }
-        public string Note { get; set; }
         public DateTime CreatedDate { get; set; }
 
         public bool NeedAcceptance { get; set; }
