@@ -179,6 +179,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
         {
             var siteList = await _siteRepo.GetAllSitePaging(pagingRequest);
 
+            for(int i = 0; i < siteList.Items.Count; i++)
+            {
+                var site = siteList.Items[i];
+
+                site.FullyAddress = await _dynamicAddressRepo.GetFullAddressFromAddressId(site.AddressId);
+            }
+
             return siteList;
         }
     }

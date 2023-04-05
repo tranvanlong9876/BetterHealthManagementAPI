@@ -55,6 +55,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Commons
 
         public const string ORDER_PICKUP_STATUS_DONE = "4";
         public const string ORDER_DELIVERY_STATUS_DONE = "8";
+
+        public static readonly string[] COMPLETED_ORDERSTATUS_ID = new string[] { "1", "4", "8", "10", "11" };
         public enum OrderType
         {
             AtStore = 1,

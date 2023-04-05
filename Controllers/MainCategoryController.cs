@@ -1,12 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.MainCategoryService;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.MainCategoryModels;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.Controllers

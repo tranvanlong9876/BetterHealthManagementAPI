@@ -37,7 +37,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             switch (userInformation.RoleName)
             {
                 case Commons.Commons.CUSTOMER_NAME:
-                    query = query.Where(x => x.info.CustomerId.Equals(userInformation.UserId)).OrderBy(o => o.header.CreatedDate);
+                    query = query.Where(x => x.info.CustomerId.Equals(userInformation.UserId)).OrderByDescending(o => o.header.CreatedDate);
                     break;
                 case Commons.Commons.PHARMACIST_NAME:
                 case Commons.Commons.MANAGER_NAME:
@@ -68,11 +68,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                     //Override OrderBy
                     if (hasOrderTypeId && hasBoolAccepable)
                     {
+                        //Đang muốn nhận đơn giao
                         if (pagingRequest.NotAcceptable.Value && pagingRequest.OrderTypeId.Value == Commons.Commons.ORDER_TYPE_DELIVERY)
                         {
                             query = query.OrderBy(o => o.header.OrderTypeId.Equals(Commons.Commons.ORDER_TYPE_DELIVERY) && o.address.WardId.Equals(userInformation.SiteWardId) ? 1 :
                                                   o.header.OrderTypeId.Equals(Commons.Commons.ORDER_TYPE_DELIVERY) && o.address.DistrictId.Equals(userInformation.SiteDistrictId) ? 2 : 3)
-                                 .ThenByDescending(o => o.header.CreatedDate);
+                                 .ThenBy(o => o.header.CreatedDate);
                             usedOrderBy = true;
                         }
                     }
@@ -83,16 +84,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         {
                             if (pagingRequest.NotAcceptable.Value)
                             {
-                                query = query.OrderByDescending(x => x.header.CreatedDate);
+                                query = query.OrderBy(x => x.header.CreatedDate);
                             }
                             else
                             {
-                                query = query.OrderBy(x => x.header.CreatedDate);
+                                query = query.OrderByDescending(x => x.header.CreatedDate);
                             }
                         }
                         else
                         {
-                            query = query.OrderBy(x => x.header.CreatedDate);
+                            query = query.OrderByDescending(x => x.header.CreatedDate);
                         }
                     }
 
@@ -125,10 +126,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
             //pick up order are executing by pharmacist ID
             var query = from order in context.OrderHeaders
-                        where (order.OrderStatus.Equals("2") || order.OrderStatus.Equals("3") || order.OrderStatus.Equals("5") || order.OrderStatus.Equals("6") || order.OrderStatus.Equals("7"))
+                        where (!Commons.Commons.COMPLETED_ORDERSTATUS_ID.Contains(order.OrderStatus))
                         && (order.PharmacistId.Trim().Equals(pharID.Trim()))
                         select new { order };
-            var orders = await query.Select(selector => new OrderHeader()).ToListAsync();
+            var orders = await query.Select(selector => new OrderHeader() {
+            }).ToListAsync();
 
             return orders;
         }

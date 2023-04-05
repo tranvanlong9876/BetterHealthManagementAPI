@@ -165,6 +165,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 customerId = await _customerRepo.GetCustomerIdBasedOnPhoneNo(checkOutOrderModel.ReveicerInformation.PhoneNumber);
             }
 
+            if (!string.IsNullOrEmpty(customerId))
+            {
+                userId = customerId;
+            }
+
             //Trừ điểm tích lũy
             var isUseSuccessfully = false;
 
@@ -616,20 +621,31 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             //Xử lý action nhận đơn
             if (orderProductLastUnitLevels != null)
             {
-                var missingProductList = await _siteInventoryRepo.CheckMissingProductOfSiteId(userInformation.SiteId, orderProductLastUnitLevels);
-                if (missingProductList.Count > 0)
+                var siteDB = await _siteRepo.Get(userInformation.SiteId);
+                if (siteDB.IsDelivery)
                 {
-                    order.actionStatus = new ViewSpecificActionStatus();
-                    order.actionStatus.CanAccept = false;
-                    order.actionStatus.missingProducts = missingProductList;
-                    order.actionStatus.StatusMessage = "Chi nhánh đang bị thiếu hàng, không thể tiếp nhận đơn giao hàng này!";
+                    var missingProductList = await _siteInventoryRepo.CheckMissingProductOfSiteId(userInformation.SiteId, orderProductLastUnitLevels);
+                    if (missingProductList.Count > 0)
+                    {
+                        order.actionStatus = new ViewSpecificActionStatus();
+                        order.actionStatus.CanAccept = false;
+                        order.actionStatus.missingProducts = missingProductList;
+                        order.actionStatus.StatusMessage = "Chi nhánh đang bị thiếu hàng, không thể tiếp nhận đơn giao hàng này!";
+                    }
+                    else
+                    {
+                        order.actionStatus = new ViewSpecificActionStatus();
+                        order.actionStatus.CanAccept = true;
+                        order.actionStatus.missingProducts = missingProductList;
+                        order.actionStatus.StatusMessage = "Bạn có thể tiếp nhận đơn giao hàng này";
+                    }
                 }
                 else
                 {
                     order.actionStatus = new ViewSpecificActionStatus();
-                    order.actionStatus.CanAccept = true;
-                    order.actionStatus.missingProducts = missingProductList;
-                    order.actionStatus.StatusMessage = "Bạn có thể tiếp nhận đơn giao hàng này";
+                    order.actionStatus.CanAccept = false;
+                    order.actionStatus.missingProducts = null;
+                    order.actionStatus.StatusMessage = "Chi nhánh của bạn chưa được Owner cho phép hỗ trợ giao hàng";
                 }
             }
             else if (order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
@@ -684,6 +700,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 {
                     return new BadRequestObjectResult("Đơn hàng này không thuộc về chi nhánh của bạn, không thể xử lý");
                 }
+            }
+            else
+            {
+                var siteDB = await _siteRepo.Get(siteId);
+                if (!siteDB.IsDelivery) return new BadRequestObjectResult("Chi nhánh của bạn chưa được Owner cho phép hỗ trợ giao hàng, không thể duyệt đơn hàng này. Mọi thông tin liên hệ Owner/Admin của bạn để được cấp quyền.");
             }
 
             if (!validateOrderModel.IsAccept && string.IsNullOrEmpty(validateOrderModel.Description))
@@ -971,9 +992,17 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     }
                     else
                     {
-                        var userModelDB = await _orderExecutionRepo.GetUserOrderExedution(orderHistoryDB.UserId, orderHistoryDB.IsInternal);
-                        information.users.Add(userModelDB);
-                        userName = userModelDB.UserName;
+                        if (!string.IsNullOrEmpty(orderHistoryDB.UserId))
+                        {
+                            var userModelDB = await _orderExecutionRepo.GetUserOrderExedution(orderHistoryDB.UserId, orderHistoryDB.IsInternal);
+                            information.users.Add(userModelDB);
+                            userName = userModelDB.UserName;
+                        }
+                        else
+                        {
+                            userName = "Khách hàng";
+                        }
+                        
                     }
 
                     if (findingStatusModel != null)
