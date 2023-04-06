@@ -175,6 +175,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Customer
             {
                 return false;
             }
+
             customer.Fullname = customerUpdateMOdel.FullName;
             customer.Email = customerUpdateMOdel.Email;
             customer.Dob = customerUpdateMOdel.Dob;

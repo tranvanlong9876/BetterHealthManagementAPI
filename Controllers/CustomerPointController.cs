@@ -1,4 +1,5 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.CustomerPointServices;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerPointModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -28,6 +29,14 @@ namespace BetterHealthManagementAPI.Controllers
         public async Task<IActionResult> GetCustomerAvailablePoint(string phoneNo)
         {
             return await _customerPointService.GetCustomerAvailablePoint(phoneNo);
+        }
+
+        [HttpGet("{phoneNo}/CustomerHistoryPoint")]
+        [AllowAnonymous]
+        [SwaggerOperation(Summary = "Lấy lịch sử sử dụng điểm của khách hàng. Đầu vào là số điện thoại.")]
+        public async Task<IActionResult> GetCustomerHistoryPoint([FromQuery] CustomerPointPagingRequest pagingRequest, string phoneNo)
+        {
+            return await _customerPointService.GetCustomerPointHistory(phoneNo, pagingRequest);
         }
     }
 }

@@ -197,7 +197,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                             CreateDate = CustomDateTime.Now,
                             CustomerId = customerId,
                             Point = checkOutOrderModel.UsedPoint,
-                            Description = $"Sử dụng {checkOutOrderModel.UsedPoint} điểm cho đơn hàng {checkOutOrderModel.OrderId} vào lúc {CustomDateTime.Now}"
+                            Description = $"Sử dụng {checkOutOrderModel.UsedPoint} điểm cho đơn hàng {checkOutOrderModel.OrderId} vào lúc {Commons.ConvertToVietNamDatetime(CustomDateTime.Now)}"
                         };
                         await _customerPointRepo.Insert(customerPointModel);
                         isUseSuccessfully = true;

@@ -33,6 +33,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public ProductImageView imageModel { get; set; }
         public ProductDiscountViewList discountModel { get; set; }
 
+        public List<ProductUnitModel> productUnitReferences { get; set; }
+
     }
 
     public class ProductImageView
@@ -52,8 +54,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
 
     public class ViewProductListModelForInternal : ViewProductListModel
     {
-        public List<ProductUnitModel> productUnitReferences { get; set; }
-
         public ProductInventoryModel productInventoryModel { get; set; }
     }
 

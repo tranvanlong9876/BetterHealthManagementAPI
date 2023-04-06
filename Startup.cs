@@ -190,6 +190,10 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IOrderVNPayRepo, OrderVNPayRepo>();
             services.AddTransient<IProductExportRepo, ProductExportRepo>();
             services.AddTransient<IProductUserTargetRepo, ProductUserTargetRepo>();
+
+            var serviceProvider = services.BuildServiceProvider();
+            var task = new BackGroundTask(serviceProvider.GetService<ICartService>());
+            task.Start();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

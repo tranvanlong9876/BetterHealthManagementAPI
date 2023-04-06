@@ -17,5 +17,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public int UnitLevel { get; set; }
 
         public int Quantitative { get; set; }
+        public double Price { get; set; }
+        public double PriceAfterDiscount { get; set; }
     }
 }

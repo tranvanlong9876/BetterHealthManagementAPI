@@ -11,15 +11,19 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Custo
         public string Fullname { get; set; }
 
         [Required]
+        [DataType(DataType.PhoneNumber)]
         public string PhoneNo { get; set; }
 
         [Required]
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
         [Required]
         public int? Gender { get; set; }
         [Required]
+        [DataType(DataType.ImageUrl)]
         public string ImageUrl { get; set; }
 
+        [DataType(DataType.Date)]
         public DateTime? Dob { get; set; }
         [Required]
         public string CityId { get; set; }

@@ -43,6 +43,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
     public class CreateProductImage
     {
         [Required]
+        [RegularExpression(@"\b(?:https?://|www\.)\S+\b", ErrorMessage = "Invalid image URL")]
         public string imageURL { get; set; }
         public bool? IsFirstImage { get; set; }
 

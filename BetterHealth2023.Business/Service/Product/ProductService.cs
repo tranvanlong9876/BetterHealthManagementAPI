@@ -169,26 +169,55 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             for (var i = 0; i < pageResult.Items.Count; i++)
             {
                 var productIdParent = await _productDetailRepo.GetProductParentID(pageResult.Items[i].Id);
+                var productUnitList = await _productDetailRepo.GetProductLaterUnit(productIdParent, pageResult.Items[i].UnitLevel);
+                pageResult.Items[i].productUnitReferences = productUnitList;
                 var image = await _productImageRepo.GetProductImage(productIdParent);
                 pageResult.Items[i].imageModel = image;
 
-                var productDiscount = await _productEventDiscountRepo.GetProductDiscount(pageResult.Items[i].Id);
-                if (productDiscount != null)
+                for(int j = 0; j < pageResult.Items[i].productUnitReferences.Count; j++)
                 {
-                    if (productDiscount.DiscountMoney.HasValue)
+                    var productReferences = pageResult.Items[i].productUnitReferences[j];
+
+                    var productDiscount = await _productEventDiscountRepo.GetProductDiscount(productReferences.Id);
+
+                    if (productReferences.Id.Equals(pageResult.Items[i].Id))
                     {
-                        pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - productDiscount.DiscountMoney.Value;
+                        if (productDiscount != null)
+                        {
+                            if (productDiscount.DiscountMoney.HasValue)
+                            {
+                                pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - productDiscount.DiscountMoney.Value;
+                            }
+
+                            if (productDiscount.DiscountPercent.HasValue)
+                            {
+                                pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - (pageResult.Items[i].Price * productDiscount.DiscountPercent.Value / 100);
+                            }
+                            pageResult.Items[i].discountModel = productDiscount;
+                        }
+                        else
+                        {
+                            pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price;
+                        }
                     }
 
-                    if (productDiscount.DiscountPercent.HasValue)
+                    //gán references
+                    if (productDiscount != null)
                     {
-                        pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - (pageResult.Items[i].Price * productDiscount.DiscountPercent.Value / 100);
+                        if (productDiscount.DiscountMoney.HasValue)
+                        {
+                            productReferences.PriceAfterDiscount = productReferences.Price - productDiscount.DiscountMoney.Value;
+                        }
+
+                        if (productDiscount.DiscountPercent.HasValue)
+                        {
+                            productReferences.PriceAfterDiscount = productReferences.Price - (productReferences.Price * productDiscount.DiscountPercent.Value / 100);
+                        }
                     }
-                    pageResult.Items[i].discountModel = productDiscount;
-                }
-                else
-                {
-                    pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price;
+                    else
+                    {
+                        productReferences.PriceAfterDiscount = productReferences.Price;
+                    }
                 }
 
             }
@@ -202,26 +231,55 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             for (var i = 0; i < pageResult.Items.Count; i++)
             {
                 var productIdParent = await _productDetailRepo.GetProductParentID(pageResult.Items[i].Id);
+                var productUnitList = await _productDetailRepo.GetProductLaterUnit(productIdParent, pageResult.Items[i].UnitLevel);
+                pageResult.Items[i].productUnitReferences = productUnitList;
                 var image = await _productImageRepo.GetProductImage(productIdParent);
                 pageResult.Items[i].imageModel = image;
 
-                var productDiscount = await _productEventDiscountRepo.GetProductDiscount(pageResult.Items[i].Id);
-                if (productDiscount != null)
+                for (int j = 0; j < pageResult.Items[i].productUnitReferences.Count; j++)
                 {
-                    if (productDiscount.DiscountMoney.HasValue)
+                    var productReferences = pageResult.Items[i].productUnitReferences[j];
+
+                    var productDiscount = await _productEventDiscountRepo.GetProductDiscount(productReferences.Id);
+
+                    if (productReferences.Id.Equals(pageResult.Items[i].Id))
                     {
-                        pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - productDiscount.DiscountMoney.Value;
+                        if (productDiscount != null)
+                        {
+                            if (productDiscount.DiscountMoney.HasValue)
+                            {
+                                pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - productDiscount.DiscountMoney.Value;
+                            }
+
+                            if (productDiscount.DiscountPercent.HasValue)
+                            {
+                                pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - (pageResult.Items[i].Price * productDiscount.DiscountPercent.Value / 100);
+                            }
+                            pageResult.Items[i].discountModel = productDiscount;
+                        }
+                        else
+                        {
+                            pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price;
+                        }
                     }
 
-                    if (productDiscount.DiscountPercent.HasValue)
+                    //gán references
+                    if (productDiscount != null)
                     {
-                        pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - (pageResult.Items[i].Price * productDiscount.DiscountPercent.Value / 100);
+                        if (productDiscount.DiscountMoney.HasValue)
+                        {
+                            productReferences.PriceAfterDiscount = productReferences.Price - productDiscount.DiscountMoney.Value;
+                        }
+
+                        if (productDiscount.DiscountPercent.HasValue)
+                        {
+                            productReferences.PriceAfterDiscount = productReferences.Price - (productReferences.Price * productDiscount.DiscountPercent.Value / 100);
+                        }
                     }
-                    pageResult.Items[i].discountModel = productDiscount;
-                }
-                else
-                {
-                    pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price;
+                    else
+                    {
+                        productReferences.PriceAfterDiscount = productReferences.Price;
+                    }
                 }
 
             }
@@ -262,23 +320,50 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                     pageResult.Items[i].productInventoryModel = productInventoryModel;
                 }
 
-                var productDiscount = await _productEventDiscountRepo.GetProductDiscount(pageResult.Items[i].Id);
-                if (productDiscount != null)
+                for (int j = 0; j < pageResult.Items[i].productUnitReferences.Count; j++)
                 {
-                    if (productDiscount.DiscountMoney.HasValue)
+                    var productReferences = pageResult.Items[i].productUnitReferences[j];
+
+                    var productDiscount = await _productEventDiscountRepo.GetProductDiscount(productReferences.Id);
+
+                    if (productReferences.Id.Equals(pageResult.Items[i].Id))
                     {
-                        pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - productDiscount.DiscountMoney.Value;
+                        if (productDiscount != null)
+                        {
+                            if (productDiscount.DiscountMoney.HasValue)
+                            {
+                                pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - productDiscount.DiscountMoney.Value;
+                            }
+
+                            if (productDiscount.DiscountPercent.HasValue)
+                            {
+                                pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - (pageResult.Items[i].Price * productDiscount.DiscountPercent.Value / 100);
+                            }
+                            pageResult.Items[i].discountModel = productDiscount;
+                        }
+                        else
+                        {
+                            pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price;
+                        }
                     }
 
-                    if (productDiscount.DiscountPercent.HasValue)
+                    //gán references
+                    if (productDiscount != null)
                     {
-                        pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price - (pageResult.Items[i].Price * productDiscount.DiscountPercent.Value / 100);
+                        if (productDiscount.DiscountMoney.HasValue)
+                        {
+                            productReferences.PriceAfterDiscount = productReferences.Price - productDiscount.DiscountMoney.Value;
+                        }
+
+                        if (productDiscount.DiscountPercent.HasValue)
+                        {
+                            productReferences.PriceAfterDiscount = productReferences.Price - (productReferences.Price * productDiscount.DiscountPercent.Value / 100);
+                        }
                     }
-                    pageResult.Items[i].discountModel = productDiscount;
-                }
-                else
-                {
-                    pageResult.Items[i].PriceAfterDiscount = pageResult.Items[i].Price;
+                    else
+                    {
+                        productReferences.PriceAfterDiscount = productReferences.Price;
+                    }
                 }
 
             }

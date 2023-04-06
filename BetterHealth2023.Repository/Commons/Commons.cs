@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -68,6 +69,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Commons
         {
             COD = 1,
             VNPay = 2
+        }
+
+        public static string ConvertToVietNamDatetime(DateTime dateTime)
+        {
+            return DateTime.ParseExact(dateTime.ToString(), "M/d/yyyy h:mm:ss tt", CultureInfo.InvariantCulture).ToString("HH:mm 'ngày' dd/MM/yyyy");
         }
 
         public static string ConvertToOrderPayTypeString(this OrderPayType orderPayType)

@@ -2,6 +2,8 @@
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerPointModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using static System.Linq.Queryable;
@@ -42,6 +44,36 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             if (customerId == null) return null;
 
             return await GetCustomerPointBasedOnCustomerId(customerId);
+        }
+
+        public async Task<PagedResult<CustomerPointList>> GetCustomerUsageHistoryPoint(CustomerPointPagingRequest pagingRequest, string customerId)
+        {
+            var query = from point in context.CustomerPoints.Where(x => x.CustomerId == customerId)
+                        select point;
+
+            if (pagingRequest.sortDateBySoonest)
+            {
+                query = query.OrderByDescending(x => x.CreateDate);
+            } else
+            {
+                query = query.OrderBy(x => x.CreateDate);
+            }
+
+            if (pagingRequest.FilterIsPlus.HasValue)
+            {
+                query = query.Where(x => x.IsPlus == pagingRequest.FilterIsPlus.Value);
+            }
+
+            var totalRow = await query.CountAsync();
+
+            var data = await query.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems).Take(pagingRequest.pageItems).Select(selector => new CustomerPointList()
+            {
+                Id = selector.Id,
+                Description = selector.Description,
+                Point = selector.Point
+            }).ToListAsync();
+
+            return new PagedResult<CustomerPointList>(data, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
         }
     }
 }

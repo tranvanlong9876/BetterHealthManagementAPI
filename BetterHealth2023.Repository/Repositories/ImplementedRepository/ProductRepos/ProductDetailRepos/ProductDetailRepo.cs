@@ -139,7 +139,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 UnitId = selector.details.UnitId,
                 UnitName = selector.units.UnitName,
                 Quantitative = selector.details.Quantitative,
-                UnitLevel = selector.details.UnitLevel
+                UnitLevel = selector.details.UnitLevel,
+                Price = selector.details.Price
             }).ToListAsync();
 
             return productLists;

@@ -1,4 +1,5 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDetailRepos;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDetailRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductParentRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartModels;
 using Google.Cloud.Firestore;
@@ -331,6 +332,33 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
             }
 
             return new OkObjectResult("Toàn bộ sản phẩm đã được thêm vào giỏ hàng khách hàng thành công!");
+        }
+
+        public async Task RunRemoveCartHourly()
+        {
+            try
+            {
+                var currentTime7DaysAgo = DateTime.SpecifyKind(CustomDateTime.Now.AddDays(-7), DateTimeKind.Utc);
+                var dateTime7DaysAgo = Timestamp.FromDateTime(currentTime7DaysAgo);
+                var collectionReference = firestore.Collection("carts");
+
+                var query = collectionReference.WhereLessThan("last-update", dateTime7DaysAgo);
+
+                var querySnapshot = await query.GetSnapshotAsync();
+
+                if (querySnapshot.Count > 0)
+                {
+                    foreach (var documentSnapshot in querySnapshot.Documents)
+                    {
+                        await collectionReference.Document(documentSnapshot.Id).DeleteAsync();
+                    }
+                }
+                await Task.CompletedTask;
+            }
+            catch
+            {
+
+            }
         }
     }
 }

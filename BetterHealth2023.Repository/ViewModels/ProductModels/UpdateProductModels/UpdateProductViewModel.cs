@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -52,6 +53,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
     public class UpdateProductImageModel
     {
         public string Id { get; set; }
+
+        [RegularExpression(@"\b(?:https?://|www\.)\S+\b", ErrorMessage = "Invalid image URL")]
         public string ImageUrl { get; set; }
         public bool IsFirstImage { get; set; }
     }

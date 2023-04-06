@@ -1,5 +1,6 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerPointRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CustomerPointModels;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CustomerPo
 
             return new OkObjectResult(currentPoint);
 
+        }
+
+        public async Task<IActionResult> GetCustomerPointHistory(string phoneNo, CustomerPointPagingRequest pagingRequest)
+        {
+            var customerDB = await _customerRepo.getCustomerBasedOnPhoneNo(phoneNo);
+
+            if (customerDB == null) return new NotFoundObjectResult("Không tìm thấy khách hàng trong hệ thống");
+
+            return new OkObjectResult(await _customerPointRepo.GetCustomerUsageHistoryPoint(pagingRequest, customerDB.Id));
         }
     }
 }
