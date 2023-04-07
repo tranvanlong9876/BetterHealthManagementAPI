@@ -9,5 +9,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
     {
         public string Name { get; set; }
         public string ImageUrl { get; set; }
+
+        public string UnitName { get; set; }
     }
 }

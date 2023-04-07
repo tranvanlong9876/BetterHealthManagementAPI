@@ -145,7 +145,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     orderProductLastUnitLevels.Add(new OrderProductLastUnitLevel()
                     {
                         productId = productLastUnitDetail.Id,
-                        productQuantity = CountTotalQuantityFromFirstToLastUnit(productLaterList)
+                        productQuantity = productsInOrder.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList),
+                        UnitName = productLastUnitDetail.UnitName
                     });
 
                     var missingProduct = await _siteInventoryRepo.CheckMissingProductOfSiteId(checkOutOrderModel.SiteId, orderProductLastUnitLevels);
@@ -281,6 +282,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     //StartAddressId: Khi check out xong chưa có.
                     DestinationAddressId = addressId,
                     ShippingFee = checkOutOrderModel.ShippingPrice,
+                    EstimateDeliveryTime = EmailService.GetEstimateDeliveryTime(CustomDateTime.Now)
                 };
 
                 await _orderShipmentRepo.Insert(orderShipmentDB);
@@ -394,6 +396,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     var informationToSendEmail = await _productDetailRepo.GetImageAndProductName(orderProductModelDB.ProductId);
                     productSendingEmailModel.imageUrl = informationToSendEmail.ImageUrl;
                     productSendingEmailModel.ProductName = informationToSendEmail.Name;
+                    productSendingEmailModel.UnitName = informationToSendEmail.UnitName;
                     productSendingEmailModels.Add(productSendingEmailModel);
                 }
                 await _orderDetailRepo.Insert(orderProductModelDB);
@@ -609,7 +612,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     orderProductLastUnitLevels.Add(new OrderProductLastUnitLevel()
                     {
                         productId = productLastUnitDetail.Id,
-                        productQuantity = CountTotalQuantityFromFirstToLastUnit(productLaterList)
+                        productQuantity = productsInOrder.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList),
+                        UnitName = productLastUnitDetail.UnitName
                     });
                 }
                 else if (productsInOrder.IsBatches)

@@ -44,6 +44,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         public string FullyAddress { get; set; }
         public double ShippingFee { get; set; }
         public string AddressId { get; set; }
+
+        public string EstimatedDeliveryTime { get; set; }
     }
 
     public class ViewSpecificActionStatus

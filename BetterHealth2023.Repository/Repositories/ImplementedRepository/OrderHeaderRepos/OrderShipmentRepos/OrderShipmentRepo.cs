@@ -30,7 +30,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 DistrictId = selector.address.DistrictId,
                 WardId = selector.address.WardId,
                 HomeNumber = selector.address.HomeAddress,
-                AddressId = selector.address.Id
+                AddressId = selector.address.Id,
+                EstimatedDeliveryTime = string.IsNullOrEmpty(selector.deliveryOrder.EstimateDeliveryTime) ? "Chưa có lịch trình giao hàng cụ thể" : selector.deliveryOrder.EstimateDeliveryTime
             }).FirstOrDefaultAsync();
         }
     }

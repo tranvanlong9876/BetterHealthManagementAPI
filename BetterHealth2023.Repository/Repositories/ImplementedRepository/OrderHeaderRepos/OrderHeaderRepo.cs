@@ -62,7 +62,18 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         {
                             query = query.Where(x => x.header.IsApproved != null);
                         }
+                    }
 
+                    if (pagingRequest.isCompleted.HasValue)
+                    {
+                        if (pagingRequest.isCompleted.Value)
+                        {
+                            query = query.Where(x => Commons.Commons.COMPLETED_ORDERSTATUS_ID.Contains(x.header.OrderStatus));
+                        }
+                        else
+                        {
+                            query = query.Where(x => !Commons.Commons.COMPLETED_ORDERSTATUS_ID.Contains(x.header.OrderStatus));
+                        }
                     }
                     bool usedOrderBy = false;
                     //Override OrderBy

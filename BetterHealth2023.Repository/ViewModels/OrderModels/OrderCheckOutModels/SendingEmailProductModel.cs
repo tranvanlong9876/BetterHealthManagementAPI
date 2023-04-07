@@ -13,7 +13,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         public double OriginalPrice { get; set; }
         public double DiscountPrice { get; set; }
         public double TotalPrice { get; set; }
-
+        public string UnitName { get; set; }
         public string imageUrl { get; set; }
         public string ProductName { get; set; }
     }

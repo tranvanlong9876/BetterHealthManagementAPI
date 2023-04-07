@@ -13,8 +13,18 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
 {
     public class GetOrderListPagingRequest : PagingRequestBase
     {
+        /// <summary>
+        /// Filter theo loại đơn hàng
+        /// </summary>
         public int? OrderTypeId { get; set; }
 
+        /// <summary>
+        /// Filter các đơn hàng chưa hoàn thành (false), đã hoàn thành (true)
+        /// </summary>
+        public bool? isCompleted { get; set; }
+        /// <summary>
+        /// Truyền true (đối với đơn chưa nhận, false đối với đơn đã nhận)
+        /// </summary>
         public bool? NotAcceptable { get; set; }
     }
 }

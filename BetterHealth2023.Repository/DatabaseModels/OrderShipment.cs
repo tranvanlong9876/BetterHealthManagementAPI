@@ -23,6 +23,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels
         [StringLength(50)]
         public string DestinationAddressId { get; set; }
         public double ShippingFee { get; set; }
+        [StringLength(200)]
+        public string EstimateDeliveryTime { get; set; }
 
         [ForeignKey(nameof(DestinationAddressId))]
         [InverseProperty(nameof(DynamicAddress.OrderShipmentDestinationAddresses))]

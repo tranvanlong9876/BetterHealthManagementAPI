@@ -174,7 +174,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 var image = await _productImageRepo.GetProductImage(productIdParent);
                 pageResult.Items[i].imageModel = image;
 
-                for(int j = 0; j < pageResult.Items[i].productUnitReferences.Count; j++)
+                for (int j = 0; j < pageResult.Items[i].productUnitReferences.Count; j++)
                 {
                     var productReferences = pageResult.Items[i].productUnitReferences[j];
 
@@ -227,7 +227,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
         public async Task<IActionResult> GetAllProductsPagingForHomePage(ProductPagingHomePageRequest pagingRequest)
         {
             var pageResult = await _productDetailRepo.GetAllProductsPagingForHomePage(pagingRequest);
-            
+
             for (var i = 0; i < pageResult.Items.Count; i++)
             {
                 var productIdParent = await _productDetailRepo.GetProductParentID(pageResult.Items[i].Id);
@@ -306,7 +306,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 pageResult.Items[i].productUnitReferences = productUnitList;
                 pageResult.Items[i].imageModel = image;
 
-                if(roleName.Equals(Commons.PHARMACIST_NAME) || roleName.Equals(Commons.MANAGER_NAME))
+                if (roleName.Equals(Commons.PHARMACIST_NAME) || roleName.Equals(Commons.MANAGER_NAME))
                 {
                     var productLastUnit = productUnitList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
 
@@ -391,24 +391,49 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             var productUnitPreferences = await _productDetailRepo.GetProductUnitButThis(productModel.ProductIdParent, productModel.UnitLevel);
             productModel.productUnitReferences = productUnitPreferences;
 
-            var productDiscount = await _productEventDiscountRepo.GetProductDiscount(productId);
-
-            if (productDiscount != null)
+            var productDiscountHeader = await _productEventDiscountRepo.GetProductDiscount(productModel.Id);
+            if (productDiscountHeader != null)
             {
-                if (productDiscount.DiscountMoney.HasValue)
+                if (productDiscountHeader.DiscountMoney.HasValue)
                 {
-                    productModel.PriceAfterDiscount = productModel.Price - productDiscount.DiscountMoney.Value;
+                    productModel.PriceAfterDiscount = productModel.Price - productDiscountHeader.DiscountMoney.Value;
                 }
 
-                if (productDiscount.DiscountPercent.HasValue)
+                if (productDiscountHeader.DiscountPercent.HasValue)
                 {
-                    productModel.PriceAfterDiscount = productModel.Price - (productModel.Price * productDiscount.DiscountPercent.Value / 100);
+                    productModel.PriceAfterDiscount = productModel.Price - (productModel.Price * productDiscountHeader.DiscountPercent.Value / 100);
                 }
-                productModel.discountModel = _productEventDiscountRepo.TransferBetweenTwoModels<ProductDiscountViewList, ProductDiscountViewSpecific>(productDiscount);
+                productModel.discountModel = _productEventDiscountRepo.TransferBetweenTwoModels<ProductDiscountViewList, ProductDiscountViewSpecific>(productDiscountHeader);
             }
             else
             {
                 productModel.PriceAfterDiscount = productModel.Price;
+            }
+
+
+            for (int j = 0; j < productModel.productUnitReferences.Count; j++)
+            {
+                var productReferences = productModel.productUnitReferences[j];
+
+                var productDiscount = await _productEventDiscountRepo.GetProductDiscount(productReferences.Id);
+
+                //gán references
+                if (productDiscount != null)
+                {
+                    if (productDiscount.DiscountMoney.HasValue)
+                    {
+                        productReferences.PriceAfterDiscount = productReferences.Price - productDiscount.DiscountMoney.Value;
+                    }
+
+                    if (productDiscount.DiscountPercent.HasValue)
+                    {
+                        productReferences.PriceAfterDiscount = productReferences.Price - (productReferences.Price * productDiscount.DiscountPercent.Value / 100);
+                    }
+                }
+                else
+                {
+                    productReferences.PriceAfterDiscount = productReferences.Price;
+                }
             }
 
             return productModel;
@@ -535,7 +560,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 //productDetailDB.UnitLevel = productDetailModelUpdate.UnitLevel;
                 //productDetailDB.Quantitative = productDetailModelUpdate.Quantitative;
                 productDetailDB.Price = productDetailModelUpdate.Price;
-                if(productDetailModelUpdate.UnitLevel != 1)
+                if (productDetailModelUpdate.UnitLevel != 1)
                 {
                     productDetailDB.IsSell = productDetailModelUpdate.IsSell;
                 }

@@ -167,7 +167,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 UnitId = selector.details.UnitId,
                 UnitName = selector.units.UnitName,
                 Quantitative = selector.details.Quantitative,
-                UnitLevel = selector.details.UnitLevel
+                UnitLevel = selector.details.UnitLevel,
+                Price = selector.details.Price
             }).ToListAsync();
 
             return productLists;
@@ -412,13 +413,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             var query = from detail in context.ProductDetails
                         from parent in context.ProductParents.Where(x => x.Id == detail.ProductIdParent).DefaultIfEmpty()
                         from image in context.ProductImages.Where(x => x.ProductId == parent.Id && x.IsFirstImage).DefaultIfEmpty()
+                        from unit in context.Units.Where(x => x.Id == detail.UnitId).DefaultIfEmpty()
                         where detail.Id == productId
-                        select new { parent.Name, image.ImageUrl };
+                        select new { parent.Name, image.ImageUrl, unit.UnitName };
 
             return await query.Select(selector => new InformationToSendEmail()
             {
                 ImageUrl = selector.ImageUrl,
-                Name = selector.Name
+                Name = selector.Name,
+                UnitName = selector.UnitName
             }).FirstOrDefaultAsync();
         }
 

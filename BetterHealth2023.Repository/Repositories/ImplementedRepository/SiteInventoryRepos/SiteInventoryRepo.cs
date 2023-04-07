@@ -50,7 +50,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                     {
                         missingQuantity = product.productQuantity - selector.TotalQuantity,
                         ProductId = product.productId,
-                        StatusMessage = $"Sản phẩm đang bị thiếu tồn kho {product.productQuantity - selector.TotalQuantity} đơn vị"
+                        StatusMessage = $"Sản phẩm đang bị thiếu tồn kho {product.productQuantity - selector.TotalQuantity} {product.UnitName}"
                     }).FirstOrDefaultAsync();
 
                     if (missingProductModel == null)

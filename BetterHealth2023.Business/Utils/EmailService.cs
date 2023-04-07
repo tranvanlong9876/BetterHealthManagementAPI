@@ -20,9 +20,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
         public static string body;
         private static IConfiguration _configuration;
 
-        private static string CHECKOUTCARTPARTIAL_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/CheckOutCartPartial.html?alt=media&token=3b115883-1257-4272-bfbe-33f8209a1295";
-        private static string CHECKOUTCARTTEMPLATE_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/CheckOutCartTemplate.html?alt=media&token=b989acf9-1bfc-4f14-ac17-040ef15286a6";
+        private static string CHECKOUTCARTPARTIAL_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/CheckOutCartPartial.html?alt=media&token=c4025bce-420c-418b-85e9-8332934dadc6";
+        private static string CHECKOUTCARTTEMPLATE_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/CheckOutCartTemplate.html?alt=media&token=feef7628-1924-41ca-8b4c-fe7c8937ae7b";
         private static string INTERNALUSER_REGISTER_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/InternalUserRegisteration.html?alt=media&token=a6d34bb8-ef8d-42ad-890f-048eebf40dd6";
+        private static string BETTERHEALTH_LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/BetterHealth-Logo.png?alt=media&token=d0832ae8-eabb-4642-afdf-ebdf93b587ae";
 
         public static void Initialize(IConfiguration configuration)
         {
@@ -66,8 +67,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
                 //string eachRow = File.ReadAllText(Directory.GetCurrentDirectory() + @"\Assets\WebTemplate\CheckOutCartPartial.html");
                 eachRow = eachRow.Replace("{{imageUrl}}", "cid:productImage" + (i + 1));
                 eachRow = eachRow.Replace("{{productName}}", productModel.ProductName);
-                eachRow = eachRow.Replace("{{productPrice}}", ConvertToVietNamCurrency(productModel.OriginalPrice));
-                eachRow = eachRow.Replace("{{productDiscountPrice}}", ConvertToVietNamCurrency(productModel.OriginalPrice - productModel.DiscountPrice));
+                eachRow = eachRow.Replace("{{unitName}}", productModel.UnitName);
+                eachRow = eachRow.Replace("{{productPrice}}", ConvertToVietNamCurrency(productModel.DiscountPrice));
                 eachRow = eachRow.Replace("{{productQuantity}}", productModel.Quantity.ToString());
                 eachRow = eachRow.Replace("{{productPriceTotal}}", ConvertToVietNamCurrency(productModel.TotalPrice));
 
@@ -76,7 +77,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             body = await ReadFileFromCloudStorage.ReadFileFromGoogleCloudStorage(CHECKOUTCARTTEMPLATE_URL);
             body = body.Replace("{{orderId}}", checkOutOrderModel.OrderId);
             body = body.Replace("{{createdDate}}", "(" + String.Format("{0:dd/MM/yyyy HH:mm:ss}", createdDate) + ")");
-
+            body = body.Replace("{{websiteUrl}}", _configuration.GetSection("SendEmail:HomeUrl").Value);
             //Thông tin thanh toán
             if (checkOutOrderModel.PayType.Equals(2))
             {
@@ -122,6 +123,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             var webClient = new WebClient();
             AlternateView alternateView = default(AlternateView);
             alternateView = AlternateView.CreateAlternateViewFromString(body.ToString(), null, "text/html");
+            LinkedResource linkedResourceLogo = AddImagesToEmail(BETTERHEALTH_LOGO_URL, "betterhealth-logo", webClient);
+            alternateView.LinkedResources.Add(linkedResourceLogo);
             for(int i = 0; i < sendingEmailProductModels.Count; i++)
             {
                 var sendingEmailProductModel = sendingEmailProductModels[i];
@@ -137,7 +140,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             return price.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) + "đ";
         }
 
-        private static string GetEstimateDeliveryTime(DateTime createdOrderTime)
+        public static string GetEstimateDeliveryTime(DateTime createdOrderTime)
         {
             if(createdOrderTime.Hour > 19)
             {
