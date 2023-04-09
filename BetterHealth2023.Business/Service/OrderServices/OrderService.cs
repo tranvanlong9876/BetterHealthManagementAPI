@@ -716,6 +716,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 return new BadRequestObjectResult("Từ chối đơn hàng cần lý do chính đáng");
             }
 
+            if(!validateOrderModel.IsAccept && validateOrderModel.Description.Length < 10)
+            {
+                return new BadRequestObjectResult("Lý do từ chối đơn hàng phải có trên 10 kí tự.");
+            }
+
             if (!validateOrderModel.IsAccept && orderHeader.PayType.Equals(2))
             {
                 var refundModel = await _orderVNPayRepo.GetRefundVNPayModel(validateOrderModel.OrderId);
@@ -913,7 +918,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 {
                     Id = Guid.NewGuid().ToString(),
                     DateOfCreate = CustomDateTime.Now,
-                    Description = "Đã giao hàng thành công cho khách hàng và thu hộ số tiền (nếu có).",
+                    Description = orderExecutionModel.OrderStatusId.Equals(Commons.ORDER_DELIVERY_STATUS_DONE) ? "Đã giao hàng thành công cho khách hàng và thu hộ số tiền." : "Khách hàng đã nhận hàng thành công và thu hộ số tiền.",
                     IsInternalUser = true,
                     OrderId = orderHeader.Id,
                     StatusChangeFrom = orderExecutionModel.OrderStatusId,
@@ -921,6 +926,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     UserId = pharmacistId
                 };
                 await _orderExecutionRepo.Insert(doneExecution);
+
+                orderHeader.IsPaid = true;
+                await _orderHeaderRepo.Update();
 
                 //cộng điểm khách hàng
                 var orderContactInfoDB = await _orderContactInfoRepo.GetCustomerInfoBasedOnOrderId(orderHeader.Id);

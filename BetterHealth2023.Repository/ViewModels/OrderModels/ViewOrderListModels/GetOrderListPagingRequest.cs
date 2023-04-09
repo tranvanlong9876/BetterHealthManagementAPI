@@ -26,5 +26,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
         /// Truyền true (đối với đơn chưa nhận, false đối với đơn đã nhận)
         /// </summary>
         public bool? NotAcceptable { get; set; }
+
+        /// <summary>
+        /// Hiển thị đơn duy nhất của Pharmacist trong token. Chỉ nên sử dụng khi NotAcceptable = false.
+        /// Không thực hiện bộ lọc khi truyền False hoặc không truyền (null).
+        /// </summary>
+        public bool? ShowOnlyPharmacist { get; set; }
     }
 }

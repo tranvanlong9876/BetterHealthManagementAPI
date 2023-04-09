@@ -75,6 +75,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                             query = query.Where(x => !Commons.Commons.COMPLETED_ORDERSTATUS_ID.Contains(x.header.OrderStatus));
                         }
                     }
+
+                    if (pagingRequest.ShowOnlyPharmacist.HasValue)
+                    {
+                        if (pagingRequest.ShowOnlyPharmacist.Value)
+                        {
+                            query = query.Where(x => x.header.PharmacistId == userInformation.UserId);
+                        }
+                    }
                     bool usedOrderBy = false;
                     //Override OrderBy
                     if (hasOrderTypeId && hasBoolAccepable)
