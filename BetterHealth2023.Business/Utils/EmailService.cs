@@ -135,7 +135,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             await EmailService.SendEmailAsync(checkOutOrderModel.ReveicerInformation.Email, "BetterHealth: Xác nhận đơn hàng #" + checkOutOrderModel.OrderId, true, alternateView);
         }
 
-        private static string ConvertToVietNamCurrency(double price)
+        public static string ConvertToVietNamCurrency(double price)
         {
             return price.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) + "đ";
         }
@@ -209,7 +209,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             await EmailService.SendEmailAsync(registerEmployee.Email, subject, isHtml, alternateView);
         }
 
-        private static LinkedResource AddImagesToEmail(string imageURL, string contentId, WebClient webClient)
+        public static LinkedResource AddImagesToEmail(string imageURL, string contentId, WebClient webClient)
         {
             MemoryStream ms = new MemoryStream(webClient.DownloadData(imageURL));
             LinkedResource linkedResource = new LinkedResource(ms, MediaTypeNames.Image.Jpeg);

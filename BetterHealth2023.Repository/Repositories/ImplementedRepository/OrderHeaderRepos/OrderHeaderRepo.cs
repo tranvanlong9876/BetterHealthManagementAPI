@@ -184,6 +184,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 OrderTypeName = Commons.Commons.ConvertToOrderTypeString((Commons.Commons.OrderType)selector.header.OrderTypeId),
                 SiteId = selector.header.SiteId,
                 TotalPrice = selector.header.TotalPrice,
+                SubTotalPrice = selector.header.SubTotalPrice,
+                DiscountPrice = selector.header.DiscountPrice,
                 UsedPoint = selector.header.UsedPoint,
                 orderContactInfo = new ViewSpecificOrderContactInfo()
                 {
