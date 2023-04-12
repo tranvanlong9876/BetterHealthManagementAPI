@@ -47,7 +47,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                          from description in context.ProductDescriptions.Where(x => x.Id == parent.ProductDescriptionId).DefaultIfEmpty()
                          from ingredientDescription in context.ProductIngredientDescriptions.Where(x => x.ProductDescriptionId == description.Id).DefaultIfEmpty()
                          from ingredient in context.ProductIngredients.Where(x => x.Id == ingredientDescription.IngredientId).DefaultIfEmpty()
-                         select new {details, parent, subcategory, maincategory, description, ingredient, userTarget });
+                         select new { details, parent, subcategory, maincategory, description, ingredient, userTarget });
 
             //Set null để ưu tiên quét theo Danh Mục Chính
             if (!string.IsNullOrEmpty(pagingRequest.mainCategoryID))
@@ -452,18 +452,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         from maincategory in context.CategoryMains.Where(x => x.Id == subcategory.MainCategoryId).DefaultIfEmpty()
                         select new { details, parent, subcategory, maincategory, userTarget };
 
-            if (pagingRequest.isPrescription.HasValue)
-            {
-                query = query.Where(x => x.parent.IsPrescription.Equals(pagingRequest.isPrescription));
-            }
-
-            var totalRow = await query.CountAsync();
+            var totalRow = 0;
 
             List<ViewProductListModel> productList = new List<ViewProductListModel>();
             if (pagingRequest.GetProductType == 1)
             {
-                var bestSellingProductList = await LoadBestSellingProduct(pagingRequest);
-                foreach (string productParentId in bestSellingProductList)
+                var bestSellingProductModel = await LoadBestSellingProduct(pagingRequest);
+                totalRow = bestSellingProductModel.totalRow;
+
+                foreach (string productParentId in bestSellingProductModel.productParentIds)
                 {
                     var productModel = await query.Where(x => x.parent.Id.Equals(productParentId)).Select(selector => new ViewProductListModel()
                     {
@@ -490,6 +487,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             if (pagingRequest.GetProductType == 2)
             {
+                if (pagingRequest.isPrescription.HasValue)
+                {
+                    query = query.Where(x => x.parent.IsPrescription.Equals(pagingRequest.isPrescription));
+                }
+                totalRow = await query.CountAsync();
                 query = query.OrderByDescending(x => x.parent.CreatedDate).Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems).Take(pagingRequest.pageItems);
                 productList = await query.Select(selector => new ViewProductListModel()
                 {
@@ -514,24 +516,42 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             return new PagedResult<ViewProductListModel>(productList, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
         }
 
-        private async Task<List<string>> LoadBestSellingProduct(ProductPagingHomePageRequest pagingRequest)
+        private async Task<BestSellingProduct> LoadBestSellingProduct(ProductPagingHomePageRequest pagingRequest)
         {
             var query = from pp in context.ProductParents
                         join pd in context.ProductDetails on pp.Id equals pd.ProductIdParent
                         join od in context.OrderDetails on pd.Id equals od.ProductId into g
                         from od in g.DefaultIfEmpty()
-                        group od by pp.Id into grp
+                        group od by new { pp.Id, pp.IsPrescription } into grp
                         select new
                         {
-                            ProductParentId = grp.Key,
-                            TotalOrder = grp.Count(od => od != null)
+                            ProductParentId = grp.Key.Id,
+                            IsPrescription = grp.Key.IsPrescription,
+                            TotalOrder = grp.Count(od => od.Id != null)
                         };
+
+            if (pagingRequest.isPrescription.HasValue)
+            {
+                query = query.Where(x => x.IsPrescription.Equals(pagingRequest.isPrescription));
+            }
 
             query = query.OrderByDescending(x => x.TotalOrder);
 
-            return await query.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
+            var bestSellingModel = new BestSellingProduct();
+
+            bestSellingModel.totalRow = await query.CountAsync();
+
+            bestSellingModel.productParentIds = await query.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems)
                 .Take(pagingRequest.pageItems)
                 .Select(selector => new string(selector.ProductParentId)).ToListAsync();
+
+            return bestSellingModel;
         }
+    }
+
+    class BestSellingProduct
+    {
+        public int totalRow { get; set; }
+        public List<string> productParentIds { get; set; }
     }
 }

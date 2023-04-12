@@ -1,19 +1,16 @@
 ﻿using AutoMapper;
 using BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServices;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseContext;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.GenericRepository;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewSpecificOrderModels;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using static System.Linq.Queryable;
 using static System.Linq.Enumerable;
-using System;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewSpecificOrderModels;
-using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
+using static System.Linq.Queryable;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos
 {
@@ -28,15 +25,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
             List<ViewSpecificMissingProduct> missingProducts = new List<ViewSpecificMissingProduct>();
             var query = from sib in context.SiteInventoryBatches
-                        group sib by new { sib.SiteId, sib.ProductId } into grp
+                        from pi in context.ProductImportBatches.Where(x => x.Id == sib.ImportBatchId).DefaultIfEmpty()
+                        group sib by new { sib.SiteId, sib.ProductId, sib.ImportBatchId, pi.ExpireDate } into grp
                         select new
                         {
+                            ExpireDate = grp.Key.ExpireDate,
                             Site_ID = grp.Key.SiteId,
                             Product_ID = grp.Key.ProductId,
+                            Batch_ID = grp.Key.ImportBatchId,
                             TotalQuantity = grp.Sum(x => x.Quantity)
                         };
 
             query = query.Where(x => x.Site_ID.Equals(SiteId));
+
+            query = query.Where(x => string.IsNullOrEmpty(x.Batch_ID) || x.ExpireDate >= CustomDateTime.Now);
 
             for (int i = 0; i < orderProducts.Count; i++)
             {
@@ -74,7 +76,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         from productImportBatch in context.ProductImportBatches.Where(x => x.Id == batch.ImportBatchId).DefaultIfEmpty()
                         select new { batch, productImportBatch };
 
-            var productBatches = await query.Where(x => x.batch.ProductId.Equals(productId) && x.productImportBatch.ExpireDate > CustomDateTime.Now && x.batch.Quantity > 0 && x.batch.SiteId.Equals(siteId)).OrderBy(x => x.productImportBatch.ExpireDate).Select(x => x.batch).ToListAsync();
+            var productBatches = await query.Where(x => x.batch.ProductId.Equals(productId) && x.productImportBatch.ExpireDate >= CustomDateTime.Now && x.batch.Quantity > 0 && x.batch.SiteId.Equals(siteId)).OrderBy(x => x.productImportBatch.ExpireDate).Select(x => x.batch).ToListAsync();
 
             return productBatches;
         }
@@ -91,9 +93,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         public async Task<int> GetInventoryOfProductOfSite(string productId, string siteId)
         {
-            var totalQuantity = await context.SiteInventoryBatches
-                .Where(x => x.SiteId.Equals(siteId) && x.ProductId.Equals(productId))
-                .SumAsync(x => (int?) x.Quantity) ?? 0;
+            var query = from sib in context.SiteInventoryBatches
+                        from batch in context.ProductImportBatches.Where(x => x.Id == sib.ImportBatchId).DefaultIfEmpty()
+                        select new { sib, batch };
+
+            query = query.Where(x => x.sib.SiteId.Equals(siteId) && x.sib.ProductId.Equals(productId));
+            query = query.Where(x => string.IsNullOrEmpty(x.sib.ImportBatchId) || x.batch.ExpireDate >= CustomDateTime.Now);
+
+            var totalQuantity = await query.SumAsync(x => (int?) x.sib.Quantity) ?? 0;
 
             return totalQuantity;
         }
@@ -124,6 +131,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             //Big List.
 
             var queryToCheck = from sib in context.SiteInventoryBatches
+                               from batch in context.ProductImportBatches.Where(x => x.Id == sib.ImportBatchId).DefaultIfEmpty()
+                               where string.IsNullOrEmpty(sib.ImportBatchId) || batch.ExpireDate >= CustomDateTime.Now
                                group sib by new { sib.SiteId, sib.ProductId } into grp
                                select new
                                {

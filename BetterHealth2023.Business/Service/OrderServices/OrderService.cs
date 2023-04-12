@@ -319,10 +319,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
                     var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
                     int currentQuantity = productModel.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList);
+
                     //Có quản lý theo lô
                     if (isBatches)
                     {
-
                         var listOfProductBatches = new List<OrderBatch>();
                         var availableBatches = await _siteInventoryRepo.GetAllProductBatchesAvailable(productLastUnitDetail.Id, checkOutOrderModel.SiteId);
 
