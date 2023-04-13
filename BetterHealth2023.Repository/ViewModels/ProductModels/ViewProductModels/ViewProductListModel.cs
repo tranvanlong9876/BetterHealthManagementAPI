@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.SiteInventoryModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -60,6 +61,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
     public class ProductInventoryModel
     {
         public int Quantity { get; set; }
+        public SiteInventoryModel siteInventoryModel { get; set; }
         public string UnitId { get; set; }
         public string UnitName { get; set; }
     }

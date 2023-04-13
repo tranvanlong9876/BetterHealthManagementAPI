@@ -303,6 +303,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 var productIdParent = await _productDetailRepo.GetProductParentID(pageResult.Items[i].Id);
                 var image = await _productImageRepo.GetProductImage(productIdParent);
                 var productUnitList = await _productDetailRepo.GetProductLaterUnit(productIdParent, pageResult.Items[i].UnitLevel);
+                var quantityConvert = CountTotalQuantityFromFirstToLastUnit(productUnitList);
                 pageResult.Items[i].productUnitReferences = productUnitList;
                 pageResult.Items[i].imageModel = image;
 
@@ -314,8 +315,22 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                     {
                         UnitId = productLastUnit.UnitId,
                         UnitName = productLastUnit.UnitName,
-                        Quantity = await _siteInventoryRepo.GetInventoryOfProductOfSite(productLastUnit.Id, siteId)
+                        siteInventoryModel = await _siteInventoryRepo.GetInventoryOfProductOfSite(productLastUnit.Id, siteId, quantityConvert)
                     };
+
+                    productInventoryModel.Quantity = productInventoryModel.siteInventoryModel.TotalQuantity;
+
+                    var siteInventoryModel = productInventoryModel.siteInventoryModel;
+                    var intfirstUnit = (int)(siteInventoryModel.TotalQuantityForFirst / quantityConvert);
+                    if (siteInventoryModel.TotalQuantity != siteInventoryModel.TotalQuantityForFirst)
+                    {
+                        var duThua = siteInventoryModel.TotalQuantity - siteInventoryModel.TotalQuantityForFirst;
+                        productInventoryModel.siteInventoryModel.Message = $"Trong đó, còn lại {intfirstUnit} {productUnitList.Find(x => x.UnitLevel == 1).UnitName} (chưa động đến) và {duThua} {productLastUnit.UnitName}";
+                    }
+                    else
+                    {
+                        productInventoryModel.siteInventoryModel.Message = $"Trong đó, còn lại {intfirstUnit} {productUnitList.Find(x => x.UnitLevel == 1).UnitName} (chưa động đến).";
+                    }
 
                     pageResult.Items[i].productInventoryModel = productInventoryModel;
                 }
@@ -466,6 +481,19 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             return productModel;
         }
 
+        private int CountTotalQuantityFromFirstToLastUnit(List<ProductUnitModel> productDetailList)
+        {
+            int totalQuantity = 1;
+
+            if (productDetailList.Count <= 1) return totalQuantity;
+
+            for (int i = 0; i < productDetailList.Count - 1; i++)
+            {
+                totalQuantity = totalQuantity * productDetailList.Find(x => x.UnitLevel == (i + 2)).Quantitative;
+            }
+
+            return totalQuantity;
+        }
         public async Task<UpdateProductErrorModel> UpdateProduct(UpdateProductEntranceModel updateProductModel)
         {
             var checkError = new UpdateProductErrorModel();

@@ -141,12 +141,17 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     var productDetailDB = await _productDetailRepo.Get(productsInOrder.ProductId);
                     var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
                     var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+                    var manageByBatch = await _productImportRepo.checkProductManageByBatches(productLastUnitDetail.Id);
+
+                    //int QuantityAfterConvert = CountTotalQuantityFromFirstToLastUnit(productLaterList);
 
                     orderProductLastUnitLevels.Add(new OrderProductLastUnitLevel()
                     {
                         productId = productLastUnitDetail.Id,
                         productQuantity = productsInOrder.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList),
-                        UnitName = productLastUnitDetail.UnitName
+                        UnitName = productLastUnitDetail.UnitName,
+                        productQuantityButOnlyOne = CountTotalQuantityFromFirstToLastUnit(productLaterList),
+                        isBatches = manageByBatch
                     });
 
                     var missingProduct = await _siteInventoryRepo.CheckMissingProductOfSiteId(checkOutOrderModel.SiteId, orderProductLastUnitLevels);
@@ -320,6 +325,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
                     int currentQuantity = productModel.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList);
 
+                    bool differentUnitAfterConvert = productLaterList.Count >= 2;
+                    int QuantityAfterConvert = CountTotalQuantityFromFirstToLastUnit(productLaterList);
+
                     //Có quản lý theo lô
                     if (isBatches)
                     {
@@ -330,39 +338,90 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                         //Quantity sau khi convert thành đơn vị cuối
                         while (currentQuantity > 0)
                         {
-                            if (availableBatches[loopBatch].Quantity > currentQuantity)
+                            if (differentUnitAfterConvert) //nếu không làm được, sửa thành False.
                             {
-                                listOfProductBatches.Add(new OrderBatch()
+                                if ((availableBatches[loopBatch].Quantity / QuantityAfterConvert) < 1)
                                 {
-                                    Id = Guid.NewGuid().ToString(),
-                                    SiteInventoryBatchId = availableBatches[loopBatch].Id,
-                                    OrderId = checkOutOrderModel.OrderId,
-                                    SoldQuantity = currentQuantity
-                                });
-                                //Đã trừ
-                                var thisBatch = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
-                                thisBatch.Quantity = thisBatch.Quantity - currentQuantity;
-                                thisBatch.UpdatedDate = CustomDateTime.Now;
-                                await _siteInventoryRepo.Update();
-                                currentQuantity = 0;
+                                    //bỏ qua lô này
+                                    loopBatch++;
+                                    continue;
+                                }
+                                else
+                                {
+                                    int NumberEnoughForHighestUnit = availableBatches[loopBatch].Quantity / QuantityAfterConvert;
+                                    int ConvertToLatestUnitQuantity = NumberEnoughForHighestUnit * QuantityAfterConvert;
 
-                            }
+                                    if (ConvertToLatestUnitQuantity >= currentQuantity) //chỉ cần sử dụng lô này
+                                    {
+                                        listOfProductBatches.Add(new OrderBatch()
+                                        {
+                                            Id = Guid.NewGuid().ToString(),
+                                            SiteInventoryBatchId = availableBatches[loopBatch].Id,
+                                            OrderId = checkOutOrderModel.OrderId,
+                                            SoldQuantity = currentQuantity
+                                        });
+                                        //Đã trừ
+                                        var thisBatch = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
+                                        thisBatch.Quantity = thisBatch.Quantity - currentQuantity;
+                                        thisBatch.UpdatedDate = CustomDateTime.Now;
+                                        await _siteInventoryRepo.Update();
+                                        currentQuantity = 0;
+                                    }
+                                    else
+                                    {
+                                        listOfProductBatches.Add(new OrderBatch()
+                                        {
+                                            Id = Guid.NewGuid().ToString(),
+                                            SiteInventoryBatchId = availableBatches[loopBatch].Id,
+                                            OrderId = checkOutOrderModel.OrderId,
+                                            SoldQuantity = ConvertToLatestUnitQuantity
+                                        });
+
+                                        currentQuantity = currentQuantity - ConvertToLatestUnitQuantity;
+                                        var batchDB = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
+                                        batchDB.Quantity -= ConvertToLatestUnitQuantity;
+                                        batchDB.UpdatedDate = CustomDateTime.Now;
+                                        await _siteInventoryRepo.Update();
+                                        loopBatch++;
+                                    }
+                                }
+                            } //here is same unit
                             else
                             {
-                                listOfProductBatches.Add(new OrderBatch()
+                                if (availableBatches[loopBatch].Quantity > currentQuantity)
                                 {
-                                    Id = Guid.NewGuid().ToString(),
-                                    SiteInventoryBatchId = availableBatches[loopBatch].Id,
-                                    OrderId = checkOutOrderModel.OrderId,
-                                    SoldQuantity = availableBatches[loopBatch].Quantity
-                                });
+                                    listOfProductBatches.Add(new OrderBatch()
+                                    {
+                                        Id = Guid.NewGuid().ToString(),
+                                        SiteInventoryBatchId = availableBatches[loopBatch].Id,
+                                        OrderId = checkOutOrderModel.OrderId,
+                                        SoldQuantity = currentQuantity
+                                    });
+                                    //Đã trừ
+                                    var thisBatch = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
+                                    thisBatch.Quantity = thisBatch.Quantity - currentQuantity;
+                                    thisBatch.UpdatedDate = CustomDateTime.Now;
+                                    await _siteInventoryRepo.Update();
+                                    currentQuantity = 0;
 
-                                currentQuantity = currentQuantity - availableBatches[loopBatch].Quantity;
-                                var batchDB = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
-                                batchDB.Quantity = 0;
-                                batchDB.UpdatedDate = CustomDateTime.Now;
-                                await _siteInventoryRepo.Update();
-                                loopBatch++;
+                                }
+                                else
+                                {
+                                    listOfProductBatches.Add(new OrderBatch()
+                                    {
+                                        Id = Guid.NewGuid().ToString(),
+                                        SiteInventoryBatchId = availableBatches[loopBatch].Id,
+                                        OrderId = checkOutOrderModel.OrderId,
+                                        SoldQuantity = availableBatches[loopBatch].Quantity
+                                    });
+
+                                    currentQuantity = currentQuantity - availableBatches[loopBatch].Quantity;
+                                    var batchDB = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
+                                    batchDB.Quantity = 0;
+                                    batchDB.UpdatedDate = CustomDateTime.Now;
+                                    await _siteInventoryRepo.Update();
+                                    loopBatch++;
+                                }
                             }
                         }
 
@@ -489,7 +548,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     {
                         ProductId = productLastUnitDetail.Id,
                         Quantity = productQuantityList[i] * CountTotalQuantityFromFirstToLastUnit(productLaterList),
-                        isBatches = await _productImportRepo.checkProductManageByBatches(productIdList[i])
+                        isBatches = await _productImportRepo.checkProductManageByBatches(productIdList[i]),
+                        QuantityConvert = CountTotalQuantityFromFirstToLastUnit(productLaterList)
                     });
                 }
             }
@@ -600,6 +660,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 var productDetailDB = await _productDetailRepo.Get(productsInOrder.ProductId);
                 var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
                 var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+                var isBatches = await _productImportRepo.checkProductManageByBatches(productLastUnitDetail.Id);
 
                 //Nếu đơn hàng là giao hàng và chưa được chấp nhận
                 if (order.OrderTypeId == Commons.ORDER_TYPE_DELIVERY && order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
@@ -613,7 +674,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     {
                         productId = productLastUnitDetail.Id,
                         productQuantity = productsInOrder.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList),
-                        UnitName = productLastUnitDetail.UnitName
+                        UnitName = productLastUnitDetail.UnitName,
+                        productQuantityButOnlyOne = CountTotalQuantityFromFirstToLastUnit(productLaterList),
+                        isBatches = isBatches
                     });
                 }
                 else if (productsInOrder.IsBatches)
@@ -716,7 +779,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 return new BadRequestObjectResult("Từ chối đơn hàng cần lý do chính đáng");
             }
 
-            if(!validateOrderModel.IsAccept && validateOrderModel.Description.Length < 10)
+            if (!validateOrderModel.IsAccept && validateOrderModel.Description.Length < 10)
             {
                 return new BadRequestObjectResult("Lý do từ chối đơn hàng phải có trên 10 kí tự.");
             }
@@ -805,6 +868,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                         var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
                         var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
                         int currentQuantity = productModel.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList);
+
+                        bool differentUnitAfterConvert = productLaterList.Count >= 2;
+                        int QuantityAfterConvert = CountTotalQuantityFromFirstToLastUnit(productLaterList);
                         //Có quản lý theo lô
                         if (isBatches)
                         {
@@ -816,38 +882,89 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                             //Quantity sau khi convert thành đơn vị cuối
                             while (currentQuantity > 0)
                             {
-                                if (availableBatches[loopBatch].Quantity > currentQuantity)
+                                if (differentUnitAfterConvert)
                                 {
-                                    listOfProductBatches.Add(new OrderBatch()
+                                    if ((availableBatches[loopBatch].Quantity / QuantityAfterConvert) < 1)
                                     {
-                                        Id = Guid.NewGuid().ToString(),
-                                        SiteInventoryBatchId = availableBatches[loopBatch].Id,
-                                        OrderId = validateOrderModel.OrderId,
-                                        SoldQuantity = currentQuantity
-                                    });
-                                    //Đã trừ
-                                    var thisBatch = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
-                                    thisBatch.Quantity = thisBatch.Quantity - currentQuantity;
-                                    thisBatch.UpdatedDate = CustomDateTime.Now;
-                                    await _siteInventoryRepo.Update();
-                                    currentQuantity = 0;
+                                        //bỏ qua lô này
+                                        loopBatch++;
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        int NumberEnoughForHighestUnit = availableBatches[loopBatch].Quantity / QuantityAfterConvert;
+                                        int ConvertToLatestUnitQuantity = NumberEnoughForHighestUnit * QuantityAfterConvert;
+
+                                        if (ConvertToLatestUnitQuantity >= currentQuantity) //chỉ cần sử dụng lô này
+                                        {
+                                            listOfProductBatches.Add(new OrderBatch()
+                                            {
+                                                Id = Guid.NewGuid().ToString(),
+                                                SiteInventoryBatchId = availableBatches[loopBatch].Id,
+                                                OrderId = validateOrderModel.OrderId,
+                                                SoldQuantity = currentQuantity
+                                            });
+                                            //Đã trừ
+                                            var thisBatch = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
+                                            thisBatch.Quantity = thisBatch.Quantity - currentQuantity;
+                                            thisBatch.UpdatedDate = CustomDateTime.Now;
+                                            await _siteInventoryRepo.Update();
+                                            currentQuantity = 0;
+                                        }
+                                        else
+                                        {
+                                            listOfProductBatches.Add(new OrderBatch()
+                                            {
+                                                Id = Guid.NewGuid().ToString(),
+                                                SiteInventoryBatchId = availableBatches[loopBatch].Id,
+                                                OrderId = validateOrderModel.OrderId,
+                                                SoldQuantity = ConvertToLatestUnitQuantity
+                                            });
+
+                                            currentQuantity = currentQuantity - ConvertToLatestUnitQuantity;
+                                            var batchDB = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
+                                            batchDB.Quantity -= ConvertToLatestUnitQuantity;
+                                            batchDB.UpdatedDate = CustomDateTime.Now;
+                                            await _siteInventoryRepo.Update();
+                                            loopBatch++;
+                                        }
+                                    }
                                 }
                                 else
                                 {
-                                    listOfProductBatches.Add(new OrderBatch()
+                                    if (availableBatches[loopBatch].Quantity > currentQuantity)
                                     {
-                                        Id = Guid.NewGuid().ToString(),
-                                        SiteInventoryBatchId = availableBatches[loopBatch].Id,
-                                        OrderId = validateOrderModel.OrderId,
-                                        SoldQuantity = availableBatches[loopBatch].Quantity
-                                    });
+                                        listOfProductBatches.Add(new OrderBatch()
+                                        {
+                                            Id = Guid.NewGuid().ToString(),
+                                            SiteInventoryBatchId = availableBatches[loopBatch].Id,
+                                            OrderId = validateOrderModel.OrderId,
+                                            SoldQuantity = currentQuantity
+                                        });
+                                        //Đã trừ
+                                        var thisBatch = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
+                                        thisBatch.Quantity = thisBatch.Quantity - currentQuantity;
+                                        thisBatch.UpdatedDate = CustomDateTime.Now;
+                                        await _siteInventoryRepo.Update();
+                                        currentQuantity = 0;
+                                    }
+                                    else
+                                    {
+                                        listOfProductBatches.Add(new OrderBatch()
+                                        {
+                                            Id = Guid.NewGuid().ToString(),
+                                            SiteInventoryBatchId = availableBatches[loopBatch].Id,
+                                            OrderId = validateOrderModel.OrderId,
+                                            SoldQuantity = availableBatches[loopBatch].Quantity
+                                        });
 
-                                    currentQuantity = currentQuantity - availableBatches[loopBatch].Quantity;
-                                    var batchDB = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
-                                    batchDB.Quantity = 0;
-                                    batchDB.UpdatedDate = CustomDateTime.Now;
-                                    await _siteInventoryRepo.Update();
-                                    loopBatch++;
+                                        currentQuantity = currentQuantity - availableBatches[loopBatch].Quantity;
+                                        var batchDB = await _siteInventoryRepo.Get(availableBatches[loopBatch].Id);
+                                        batchDB.Quantity = 0;
+                                        batchDB.UpdatedDate = CustomDateTime.Now;
+                                        await _siteInventoryRepo.Update();
+                                        loopBatch++;
+                                    }
                                 }
                             }
                             await _orderBatchRepo.InsertRange(listOfProductBatches);
@@ -1014,7 +1131,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                         {
                             userName = "Khách hàng";
                         }
-                        
+
                     }
 
                     if (findingStatusModel != null)
@@ -1130,5 +1247,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
         public string ProductId { get; set; }
         public int Quantity { get; set; }
         public bool isBatches { get; set; }
+
+        public int QuantityConvert { get; set; }
     }
 }

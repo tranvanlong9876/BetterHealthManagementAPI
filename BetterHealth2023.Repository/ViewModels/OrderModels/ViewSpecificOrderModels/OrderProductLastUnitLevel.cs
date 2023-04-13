@@ -9,7 +9,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
     {
         public string productId { get; set; }
         public int productQuantity { get; set; }
-
+        public int productQuantityButOnlyOne { get; set; }
         public string UnitName { get; set; }
+        public bool isBatches { get; set; }
     }
 }
