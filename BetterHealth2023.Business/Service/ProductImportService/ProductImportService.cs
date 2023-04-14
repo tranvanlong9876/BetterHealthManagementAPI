@@ -357,7 +357,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductImp
 
             for (int i = 0; i < productDetailList.Count - 1; i++)
             {
-                totalQuantity = totalQuantity * productDetailList.Find(x => x.UnitLevel == (i + 2)).Quantitative;
+                totalQuantity = totalQuantity * productDetailList[(i + 1)].Quantitative;
             }
 
             return totalQuantity;

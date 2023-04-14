@@ -34,6 +34,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             for (int i = 0; i < orderProducts.Count; i++)
             {
                 var product = orderProducts[i];
+                var quantityCanThem = 0;
                 if (product.productQuantityButOnlyOne > 1 && product.isBatches)
                 {
                     var currentQuantity = product.productQuantity;
@@ -41,9 +42,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                     var notEditableCurrentQuantity = currentQuantity;
 
                     var isExistProductModel = existProductModels.Find(x => x.productId == product.productId);
+
                     if (isExistProductModel != null)
                     {
-                        currentQuantity += isExistProductModel.Quantity;
+                        quantityCanThem += isExistProductModel.Quantity;
                     }
 
                     var query = from sib in context.SiteInventoryBatches
@@ -95,14 +97,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
                     if (findExist != null)
                     {
-                        findExist.Quantity += notEditableCurrentQuantity;
-                        findExist.checkResultIsEnough = currentQuantity == 0 ? true : false;
+                        findExist.Quantity = notEditableCurrentQuantity + quantityCanThem;
+                        findExist.checkResultIsEnough = currentQuantity <= 0 ? true : false;
                     }
                     else
                     {
                         existProductModels.Add(new ExistProductModel()
                         {
-                            checkResultIsEnough = currentQuantity == 0 ? true : false,
+                            checkResultIsEnough = currentQuantity <= 0 ? true : false,
                             productId = product.productId,
                             Quantity = notEditableCurrentQuantity
                         });
@@ -127,10 +129,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
                     if (existProduct != null)
                     {
-                        if (existProduct.checkResultIsEnough)
-                        {
-                            currentQuantity += existProduct.Quantity;
-                        }
+                        currentQuantity += existProduct.Quantity;
                     }
 
                     bool isEnough = true;
@@ -156,6 +155,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
                         isEnough = false;
                         var existMissingProduct = missingProducts.Find(x => x.ProductId == product.productId);
+
                         if (existMissingProduct != null)
                         {
                             existMissingProduct.missingQuantity += missingProductModel.missingQuantity;
@@ -171,7 +171,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
                     if (findExist != null)
                     {
-                        findExist.Quantity += notEditableQuantity;
+                        findExist.Quantity = notEditableQuantity + quantityCanThem;
                         findExist.checkResultIsEnough = isEnough;
                     }
                     else
@@ -220,10 +220,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             query = query.Where(x => x.sib.SiteId.Equals(siteId) && x.sib.ProductId.Equals(productId));
             var queryTotalQuantity = query.Where(x => string.IsNullOrEmpty(x.sib.ImportBatchId) || x.batch.ExpireDate >= CustomDateTime.Now);
-            var queryTotalQuantityForFirstUnit = query.Where(x => (string.IsNullOrEmpty(x.sib.ImportBatchId) || x.batch.ExpireDate >= CustomDateTime.Now) && x.sib.Quantity >= quantityConvert);
+            var queryTotalQuantityForFirstUnit = query.Where(x => (string.IsNullOrEmpty(x.sib.ImportBatchId) || x.batch.ExpireDate >= CustomDateTime.Now) && (x.sib.Quantity % quantityConvert != 0));
 
             var totalQuantity = await queryTotalQuantity.SumAsync(x => (int?)x.sib.Quantity) ?? 0;
-            var totalQuantityFirstUnit = await queryTotalQuantityForFirstUnit.SumAsync(x => (int?)x.sib.Quantity) ?? 0;
+            var totalQuantityFirstUnit = 0;
+
+            var batchesNotDivine = await queryTotalQuantityForFirstUnit.ToListAsync();
+            var leTe = 0;
+
+            for (int i = 0; i < batchesNotDivine.Count; i++)
+            {
+                leTe += batchesNotDivine[i].sib.Quantity % quantityConvert;
+            }
+
+            totalQuantityFirstUnit = totalQuantity - leTe;
 
             return new SiteInventoryModel()
             {

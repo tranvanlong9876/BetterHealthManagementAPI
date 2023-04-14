@@ -338,11 +338,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                     if (siteInventoryModel.TotalQuantity != siteInventoryModel.TotalQuantityForFirst)
                     {
                         var duThua = siteInventoryModel.TotalQuantity - siteInventoryModel.TotalQuantityForFirst;
-                        productInventoryModel.siteInventoryModel.Message = $"Trong đó, còn lại {intfirstUnit} {productUnitList.Find(x => x.UnitLevel == 1).UnitName} (chưa động đến) và {duThua} {productLastUnit.UnitName}";
+                        productInventoryModel.siteInventoryModel.Message = $"Trong đó, còn lại {intfirstUnit} {productUnitList.Find(x => x.UnitLevel == 1).UnitName} và {duThua} {productLastUnit.UnitName} lẻ.";
                     }
                     else
                     {
-                        productInventoryModel.siteInventoryModel.Message = $"Trong đó, còn lại {intfirstUnit} {productUnitList.Find(x => x.UnitLevel == 1).UnitName} (chưa động đến).";
+                        productInventoryModel.siteInventoryModel.Message = $"Trong đó, còn lại {intfirstUnit} {productUnitList.Find(x => x.UnitLevel == 1).UnitName}.";
                     }
 
                     pageResult.Items[i].productInventoryModel = productInventoryModel;
@@ -502,11 +502,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 
             for (int i = 0; i < productDetailList.Count - 1; i++)
             {
-                totalQuantity = totalQuantity * productDetailList.Find(x => x.UnitLevel == (i + 2)).Quantitative;
+                totalQuantity = totalQuantity * productDetailList[(i + 1)].Quantitative;
             }
 
             return totalQuantity;
         }
+
         public async Task<UpdateProductErrorModel> UpdateProduct(UpdateProductEntranceModel updateProductModel)
         {
             var checkError = new UpdateProductErrorModel();

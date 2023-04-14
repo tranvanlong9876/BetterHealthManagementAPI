@@ -309,6 +309,22 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             }
             //Insert Xong Header.
             List<SendingEmailProductModel> productSendingEmailModels = new List<SendingEmailProductModel>();
+            for(int i = 0; i < checkOutOrderModel.Products.Count; i++)
+            {
+                var productModel = checkOutOrderModel.Products[i];
+                var productParentId = await _productDetailRepo.GetProductParentID(productModel.ProductId);
+                var productDetailDB = await _productDetailRepo.Get(productModel.ProductId);
+                var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
+                var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+                checkOutOrderModel.Products[i].QuantityAfterConvert = CountTotalQuantityFromFirstToLastUnit(productLaterList);
+                checkOutOrderModel.Products[i].ParentId = productParentId;
+                checkOutOrderModel.Products[i].productDetail = productDetailDB;
+                checkOutOrderModel.Products[i].listUnit = productLaterList;
+                checkOutOrderModel.Products[i].lastUnit = productLastUnitDetail;
+            }
+
+            checkOutOrderModel.Products = checkOutOrderModel.Products.OrderByDescending(x => x.QuantityAfterConvert).ToList();
+
             for (int i = 0; i < checkOutOrderModel.Products.Count; i++)
             {
                 var productModel = checkOutOrderModel.Products[i];
@@ -319,10 +335,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     var isBatches = await _productImportRepo.checkProductManageByBatches(productModel.ProductId);
 
                     //Convert thành unit cuối cùng
-                    var productParentId = await _productDetailRepo.GetProductParentID(productModel.ProductId);
-                    var productDetailDB = await _productDetailRepo.Get(productModel.ProductId);
-                    var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
-                    var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+                    var productParentId = checkOutOrderModel.Products[i].ParentId;
+                    var productDetailDB = checkOutOrderModel.Products[i].productDetail;
+                    var productLaterList = checkOutOrderModel.Products[i].listUnit;
+                    var productLastUnitDetail = checkOutOrderModel.Products[i].lastUnit;
                     int currentQuantity = productModel.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList);
 
                     bool differentUnitAfterConvert = productLaterList.Count >= 2;
@@ -858,15 +874,32 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 if (validateOrderModel.IsAccept)
                 {
                     var productList = await _orderDetailRepo.GetListOfProductInsideOrderId(validateOrderModel.OrderId);
+
+                    for (int i = 0; i < productList.Count; i++) 
+                    { 
+                        var productModel = productList[i];
+                        var productParentId = await _productDetailRepo.GetProductParentID(productModel.ProductId);
+                        var productDetailDB = await _productDetailRepo.Get(productModel.ProductId);
+                        var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
+                        var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+                        productList[i].QuantityAfterConvert = CountTotalQuantityFromFirstToLastUnit(productLaterList);
+                        productList[i].ParentId = productParentId;
+                        productList[i].productDetail = productDetailDB;
+                        productList[i].listUnit = productLaterList;
+                        productList[i].lastUnit = productLastUnitDetail;
+                    }
+
+                    productList = productList.OrderByDescending(x => x.QuantityAfterConvert).ToList();
+                    //
                     foreach (var productModel in productList)
                     {
                         var isBatches = await _productImportRepo.checkProductManageByBatches(productModel.ProductId);
 
                         //Convert thành unit cuối cùng
-                        var productParentId = await _productDetailRepo.GetProductParentID(productModel.ProductId);
-                        var productDetailDB = await _productDetailRepo.Get(productModel.ProductId);
-                        var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
-                        var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+                        var productParentId = productModel.ParentId;
+                        var productDetailDB = productModel.productDetail;
+                        var productLaterList = productModel.listUnit;
+                        var productLastUnitDetail = productModel.lastUnit;
                         int currentQuantity = productModel.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList);
 
                         bool differentUnitAfterConvert = productLaterList.Count >= 2;
@@ -1212,7 +1245,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
 
             for (int i = 0; i < productDetailList.Count - 1; i++)
             {
-                totalQuantity = totalQuantity * productDetailList.Find(x => x.UnitLevel == (i + 2)).Quantitative;
+                totalQuantity = totalQuantity * productDetailList[(i + 1)].Quantitative;
             }
 
             return totalQuantity;
