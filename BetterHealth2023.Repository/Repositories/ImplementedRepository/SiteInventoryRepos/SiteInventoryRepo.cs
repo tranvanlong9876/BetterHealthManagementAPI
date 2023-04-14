@@ -8,6 +8,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderMode
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewSpecificOrderModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.SiteInventoryModels;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using static System.Linq.Enumerable;
@@ -35,6 +36,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             {
                 var product = orderProducts[i];
                 var quantityCanThem = 0;
+
                 if (product.productQuantityButOnlyOne > 1 && product.isBatches)
                 {
                     var currentQuantity = product.productQuantity;
@@ -47,6 +49,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                     {
                         quantityCanThem += isExistProductModel.Quantity;
                     }
+
+                    currentQuantity += quantityCanThem;
 
                     var query = from sib in context.SiteInventoryBatches
                                 from pi in context.ProductImportBatches.Where(x => x.Id == sib.ImportBatchId).DefaultIfEmpty()
@@ -62,7 +66,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         if (quantityAfterDivide >= 1)
                         {
                             currentQuantity = currentQuantity - (quantityAfterDivide * product.productQuantityButOnlyOne);
-                            if (currentQuantity == 0)
+                            if (currentQuantity <= 0)
                             {
                                 hasQuantity = false;
                             }
@@ -78,7 +82,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         var existProductMissing = missingProducts.Find(x => x.ProductId == product.productId);
                         if (existProductMissing != null)
                         {
-                            existProductMissing.missingQuantity += currentQuantity;
+                            existProductMissing.missingQuantity = currentQuantity;
                             existProductMissing.StatusMessage = $"Sản phẩm đang bị thiếu tồn kho.";
                         }
                         else
@@ -91,6 +95,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                             };
                             missingProducts.Add(missingProductModel);
                         }
+
                     }
 
                     var findExist = existProductModels.Find(x => x.productId == product.productId);
@@ -122,17 +127,18 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                                     Product_ID = grp.Key.ProductId,
                                     TotalQuantity = grp.Sum(x => x.Quantity)
                                 };
-                    var existProduct = existProductModels.Find(x => x.productId == product.productId);
 
                     var currentQuantity = product.productQuantity;
                     var notEditableQuantity = currentQuantity;
+                    var existProduct = existProductModels.Find(x => x.productId == product.productId);
 
                     if (existProduct != null)
                     {
-                        currentQuantity += existProduct.Quantity;
+                        quantityCanThem += existProduct.Quantity;
                     }
 
-                    bool isEnough = true;
+                    currentQuantity += quantityCanThem;
+
                     if (await query.Where(x => x.TotalQuantity >= currentQuantity).CountAsync() == 0)
                     {
                         //thiếu sản phẩm
@@ -153,18 +159,18 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                             };
                         }
 
-                        isEnough = false;
                         var existMissingProduct = missingProducts.Find(x => x.ProductId == product.productId);
 
                         if (existMissingProduct != null)
                         {
-                            existMissingProduct.missingQuantity += missingProductModel.missingQuantity;
+                            existMissingProduct.missingQuantity = missingProductModel.missingQuantity;
                             existMissingProduct.StatusMessage = $"Sản phẩm đang bị thiếu tồn kho.";
                         }
                         else
                         {
                             missingProducts.Add(missingProductModel);
                         }
+                        Console.WriteLine("Missing: " + missingProducts[0].missingQuantity);
                     }
 
                     var findExist = existProductModels.Find(x => x.productId == product.productId);
@@ -172,13 +178,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                     if (findExist != null)
                     {
                         findExist.Quantity = notEditableQuantity + quantityCanThem;
-                        findExist.checkResultIsEnough = isEnough;
+                        findExist.checkResultIsEnough = currentQuantity <= 0 ? true : false;
                     }
                     else
                     {
                         existProductModels.Add(new ExistProductModel()
                         {
-                            checkResultIsEnough = isEnough,
+                            checkResultIsEnough = currentQuantity <= 0 ? true : false,
                             productId = product.productId,
                             Quantity = notEditableQuantity
                         });
@@ -366,11 +372,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
                     var currentQuantity = cartModel.Quantity;
                     var notEditableQuantity = currentQuantity;
-                    currentQuantity += quantityCanThem;
+
                     if (existProduct != null)
                     {
-                        currentQuantity += existProduct.Quantity;
+                        quantityCanThem += existProduct.Quantity;
                     }
+
+                    currentQuantity += quantityCanThem;
+
                     bool isEnough = true;
                     var data = await queryToCheck.Where(x => (x.Product_ID.Equals(cartModel.ProductId) && x.TotalQuantity >= currentQuantity)).Select(selector => selector.Site_ID).ToListAsync();
 
