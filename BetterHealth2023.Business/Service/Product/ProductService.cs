@@ -169,7 +169,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             for (var i = 0; i < pageResult.Items.Count; i++)
             {
                 var productIdParent = await _productDetailRepo.GetProductParentID(pageResult.Items[i].Id);
-                var productUnitList = await _productDetailRepo.GetProductLaterUnit(productIdParent, pageResult.Items[i].UnitLevel);
+                var filterRequest = new ProductUnitFilterRequest()
+                {
+                    isSell = true
+                };
+                var productUnitList = await _productDetailRepo.GetProductLaterUnitWithFilter(productIdParent, pageResult.Items[i].UnitLevel, filterRequest);
                 pageResult.Items[i].productUnitReferences = productUnitList;
                 var image = await _productImageRepo.GetProductImage(productIdParent);
                 pageResult.Items[i].imageModel = image;
@@ -231,7 +235,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
             for (var i = 0; i < pageResult.Items.Count; i++)
             {
                 var productIdParent = await _productDetailRepo.GetProductParentID(pageResult.Items[i].Id);
-                var productUnitList = await _productDetailRepo.GetProductLaterUnit(productIdParent, pageResult.Items[i].UnitLevel);
+                var filterRequest = new ProductUnitFilterRequest()
+                {
+                    isSell = true
+                };
+                var productUnitList = await _productDetailRepo.GetProductLaterUnitWithFilter(productIdParent, pageResult.Items[i].UnitLevel, filterRequest);
                 pageResult.Items[i].productUnitReferences = productUnitList;
                 var image = await _productImageRepo.GetProductImage(productIdParent);
                 pageResult.Items[i].imageModel = image;
@@ -303,8 +311,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                 var productIdParent = await _productDetailRepo.GetProductParentID(pageResult.Items[i].Id);
                 var image = await _productImageRepo.GetProductImage(productIdParent);
                 var productUnitList = await _productDetailRepo.GetProductLaterUnit(productIdParent, pageResult.Items[i].UnitLevel);
+                var filterRequest = new ProductUnitFilterRequest()
+                {
+                    isSell = pagingRequest.isSell
+                };
+                var productUnitListAfterFilter = await _productDetailRepo.GetProductLaterUnitWithFilter(productIdParent, pageResult.Items[i].UnitLevel, filterRequest);
                 var quantityConvert = CountTotalQuantityFromFirstToLastUnit(productUnitList);
-                pageResult.Items[i].productUnitReferences = productUnitList;
+                pageResult.Items[i].productUnitReferences = productUnitListAfterFilter;
                 pageResult.Items[i].imageModel = image;
 
                 if (roleName.Equals(Commons.PHARMACIST_NAME) || roleName.Equals(Commons.MANAGER_NAME))

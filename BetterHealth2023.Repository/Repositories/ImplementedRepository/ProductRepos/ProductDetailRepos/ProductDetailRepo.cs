@@ -89,6 +89,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 query = query.Where(x => x.parent.ManufacturerId.Equals(pagingRequest.manufacturerID.Trim()));
             }
 
+            //bắt buộc chỉ load isSell = true đối với khách hàng
+            query = query.Where(x => x.details.IsSell);
+
             int totalRow = await query.Select(x => x.details.Id).Distinct().CountAsync();
 
             var productList = await query
@@ -124,6 +127,31 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             var results = context.ProductDetails.Where(x => x.ProductIdParent.Trim().Equals(productParentID.Trim())).OrderBy(x => x.UnitLevel);
             return await results.Select(model => mapper.Map<UpdateProductDetailModel>(model)).ToListAsync();
 
+        }
+
+        public async Task<List<ProductUnitModel>> GetProductLaterUnitWithFilter(string productID, int unitLevel, ProductUnitFilterRequest filterRequest)
+        {
+            var query = from details in context.ProductDetails.Where(x => x.UnitLevel >= unitLevel).Where(x => x.ProductIdParent.Equals(productID))
+                        from units in context.Units.Where(unit => unit.Id == details.UnitId).DefaultIfEmpty()
+                        orderby details.UnitLevel ascending
+                        select new { details, units };
+
+            if (filterRequest.isSell.HasValue)
+            {
+                query = query.Where(x => x.details.IsSell.Equals(filterRequest.isSell));
+            }
+
+            var productLists = await query.Select(selector => new ProductUnitModel()
+            {
+                Id = selector.details.Id,
+                UnitId = selector.details.UnitId,
+                UnitName = selector.units.UnitName,
+                Quantitative = selector.details.Quantitative,
+                UnitLevel = selector.details.UnitLevel,
+                Price = selector.details.Price
+            }).ToListAsync();
+
+            return productLists;
         }
 
         public async Task<List<ProductUnitModel>> GetProductLaterUnit(string productID, int unitLevel)
@@ -370,6 +398,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 query = query.Where(x => x.parent.IsPrescription.Equals(pagingRequest.isPrescription));
             }
 
+            if (pagingRequest.isSell.HasValue)
+            {
+                query = query.Where(x => x.details.IsSell == pagingRequest.isSell);
+            }
+
             if (!string.IsNullOrEmpty(pagingRequest.manufacturerID))
             {
                 query = query.Where(x => x.parent.ManufacturerId.Equals(pagingRequest.manufacturerID.Trim()));
@@ -491,6 +524,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                 {
                     query = query.Where(x => x.parent.IsPrescription.Equals(pagingRequest.isPrescription));
                 }
+                query = query.Where(x => x.details.IsSell);
                 totalRow = await query.CountAsync();
                 query = query.OrderByDescending(x => x.parent.CreatedDate).Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems).Take(pagingRequest.pageItems);
                 productList = await query.Select(selector => new ViewProductListModel()
@@ -519,7 +553,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         private async Task<BestSellingProduct> LoadBestSellingProduct(ProductPagingHomePageRequest pagingRequest)
         {
             var query = from pp in context.ProductParents
-                        join pd in context.ProductDetails on pp.Id equals pd.ProductIdParent
+                        join pd in context.ProductDetails on pp.Id equals pd.ProductIdParent where pd.IsSell
                         join od in context.OrderDetails on pd.Id equals od.ProductId into g
                         from od in g.DefaultIfEmpty()
                         group od by new { pp.Id, pp.IsPrescription } into grp

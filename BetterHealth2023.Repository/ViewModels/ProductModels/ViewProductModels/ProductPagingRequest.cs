@@ -9,7 +9,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
 {
     public class ProductPagingRequest : PagingRequestBase
     {
+        /// <summary>
+        /// Filter thuốc kê đơn.
+        /// </summary>
         public bool? isPrescription { get; set; }
+        /// <summary>
+        /// Filter thuốc đang bán hay không, chỉ xài được cho nội bộ. Customer Load luôn luôn chỉ load IsSell = true (không thể ghi đè).
+        /// Lưu ý: Không nên Filter isSell = false, sẽ không load ra cái nào cả.
+        /// </summary>
         public bool? isSell { get; set; }
 
         /// <summary>

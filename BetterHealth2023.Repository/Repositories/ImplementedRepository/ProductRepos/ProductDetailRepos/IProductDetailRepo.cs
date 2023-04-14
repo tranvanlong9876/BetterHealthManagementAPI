@@ -26,6 +26,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
         public Task<bool> CheckDuplicateBarCodeUpdate(string BarCode, string productID);
 
+        public Task<List<ProductUnitModel>> GetProductLaterUnitWithFilter(string productID, int unitLevel, ProductUnitFilterRequest filterRequest);
         public Task<List<ProductUnitModel>> GetProductLaterUnit(string productID, int unitLevel);
         public Task<List<ProductUnitModel>> GetProductUnitButThis(string productID, int unitLevel);
         public Task<List<ViewProductListModel>> GetAllProductForInternal(string productParentID, bool? isSell);
