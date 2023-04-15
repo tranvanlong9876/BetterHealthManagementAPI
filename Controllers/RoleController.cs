@@ -1,4 +1,5 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalRole;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.RoleModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,9 +24,9 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllRole()
+        public async Task<IActionResult> GetAllRole([FromQuery] RoleFilterRequest filterRequest)
         {
-            var listRole = await _roleService.GetRoleList();
+            var listRole = await _roleService.GetRoleList(filterRequest);
 
             return Ok(listRole);
         }

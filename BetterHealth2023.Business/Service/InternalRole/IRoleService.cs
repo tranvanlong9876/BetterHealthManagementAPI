@@ -8,6 +8,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalRo
 {
     public interface IRoleService
     {
-        Task<List<RoleViewModel>> GetRoleList();
+        Task<List<RoleViewModel>> GetRoleList(RoleFilterRequest filterRequest);
     }
 }

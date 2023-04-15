@@ -110,6 +110,7 @@ namespace BetterHealthManagementAPI
                 c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
             });
 
+
             services.AddAutoMapper(typeof(Program).Assembly);
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddJwtBearer(options =>
@@ -192,15 +193,14 @@ namespace BetterHealthManagementAPI
             services.AddTransient<IOrderVNPayRepo, OrderVNPayRepo>();
             services.AddTransient<IProductExportRepo, ProductExportRepo>();
             services.AddTransient<IProductUserTargetRepo, ProductUserTargetRepo>();
-
-            var serviceProvider = services.BuildServiceProvider();
-            var task = new BackGroundTask(serviceProvider.GetService<ICartService>());
-            task.Start();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
+            var task = new BackGroundTask(serviceProvider.GetService<ICartService>());
+            task.Start();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

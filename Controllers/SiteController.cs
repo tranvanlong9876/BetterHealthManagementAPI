@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace BetterHealthManagementAPI.Controllers
 {
@@ -31,10 +32,6 @@ namespace BetterHealthManagementAPI.Controllers
             try
             {
                 var siteList = await _siteService.GetListSitePaging(pagingRequest);
-                if (siteList.TotalRecord == 0)
-                {
-                    return BadRequest("Site is empty");
-                }
                 return Ok(siteList);
             }
             catch (ArgumentNullException ex)
@@ -85,6 +82,14 @@ namespace BetterHealthManagementAPI.Controllers
             {
                 return StatusCode(500, "Internal server exception");
             }
+        }
+
+        [SwaggerOperation(Summary = "Load nhân viên làm việc tại chi nhánh")]
+        [HttpGet("{SiteId}/User")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllUserWorkingAtSite(string SiteId, [FromQuery] EmployeeWorkingSitePagingRequest pagingRequest)
+        {
+            return await _siteService.GetUserWorkingAtSite(pagingRequest, SiteId);
         }
 
         [HttpPost]

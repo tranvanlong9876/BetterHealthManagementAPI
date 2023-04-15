@@ -188,5 +188,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Site
 
             return siteList;
         }
+
+        public async Task<IActionResult> GetUserWorkingAtSite(EmployeeWorkingSitePagingRequest pagingRequest, string siteId)
+        {
+            var siteDB = await _siteRepo.Get(siteId);
+
+            if (siteDB == null) return new BadRequestObjectResult("Không tìm thấy chi nhánh làm việc, vui lòng kiểm tra lại SiteId");
+
+            var result = await _userWorkingSiteRepo.GetUserWorkingAtSite(pagingRequest, siteId);
+
+            return new OkObjectResult(result);
+        }
     }
 }

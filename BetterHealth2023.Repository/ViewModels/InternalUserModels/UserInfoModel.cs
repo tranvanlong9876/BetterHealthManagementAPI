@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels
@@ -23,6 +25,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Inter
         public string WardID { get; set; }
         public string HomeNumber { get; set; }
         public string AddressID { get; set; }
+        public string FullyAddress { get; set; }
         public string ImageUrl { get; set; }
 
         public int Status { get; set; }

@@ -66,7 +66,7 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         [HttpGet("Update/{id}")]
-        [Authorize(Roles = Commons.OWNER_NAME)]
+        [Authorize(Roles = Commons.OWNER_NAME + "," + Commons.MANAGER_NAME)]
         public async Task<IActionResult> GetViewUpdateProducts(string id)
         {
             var productView = await _productService.GetViewProductForUpdate(id);

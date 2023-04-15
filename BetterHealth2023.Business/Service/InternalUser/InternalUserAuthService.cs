@@ -231,6 +231,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
             //lấy ra mã khóa chính từ username của nhân viên.
             var EmpGuid = await _employeeAuthRepo.GetInternalUserID(user.Username.Trim());
 
+            if (string.IsNullOrEmpty(EmpGuid))
+            {
+                checkError.isError = true;
+                checkError.Notfound = "Không tìm thấy nhân viên";
+                return checkError;
+            }
+
             //kiểm tra trùng lặp email và số điện thoại so với các nhân viên khác.
             if (await _employeeAuthRepo.CheckDuplicateEmail(user.Username, user.Email, true))
             {
@@ -249,7 +256,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
             if (user.isChangePassword) 
             {
                 //kiểm tra thông tin cần để thay đổi mật khẩu nhân viên đã nhập đủ chưa?
-                if(user.OldPassword == null || user.NewPassword == null || user.ConfirmPassword == null)
+                if(string.IsNullOrEmpty(user.OldPassword) || string.IsNullOrEmpty(user.NewPassword) || string.IsNullOrEmpty(user.ConfirmPassword))
                 {
                     checkError.isError = true;
                     checkError.RequireChangePasswordFailed = "Thông tin cần thay đổi mật khẩu nhập không đầy đủ, vui lòng kiểm tra lại.";
@@ -304,7 +311,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
             //kiểm tra nhân viên đã có địa chỉ khi tạo chưa ?
 
             //nếu chưa có
-            if(currentUser.AddressId == null || currentUser.AddressId.Equals(String.Empty))
+            if(string.IsNullOrEmpty(currentUser.AddressId))
             {
                 //tạo mới địa chỉ
                 var newAddressId = Guid.NewGuid().ToString();
@@ -442,12 +449,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
         public async Task<UserInfoModel> GetUserInfoModel(string guid)
         {
             UserInfoModel infoModel = await _employeeAuthRepo.GetUserInfo(guid);
+            infoModel.FullyAddress = string.IsNullOrEmpty(infoModel.AddressID) ? "Chưa cập nhật thông tin địa chỉ" : await _dynamicAddressRepo.GetFullAddressFromAddressId(infoModel.AddressID);
             return infoModel;
         }
 
         public async Task<PagedResult<UserInfoModel>> GetAllUserPaging(GetInternalUserPagingRequest pagingRequest)
         {
             var userInfoList = await _employeeAuthRepo.GetAllPaging(pagingRequest);
+            userInfoList.Items.ForEach(x => x.FullyAddress = "Không trả ở list");
             return userInfoList;
         }
     }

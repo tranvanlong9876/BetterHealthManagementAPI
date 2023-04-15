@@ -11,6 +11,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Error
         
         public string RequireChangePasswordFailed { get; set; }
         public string ConfirmPasswordFailed { get; set; }
+        public string Notfound { get; set; }
         public string DuplicateEmail { get; set; }
         public string DuplicatePhoneNo { get; set; }
         public string OtherError { get; set; }

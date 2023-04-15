@@ -15,5 +15,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         public Task DeleteSite(SiteInformation siteInformation);
         public Task<SiteViewModel> GetSiteById(string id);
         public Task<PagedResult<SiteViewModel>> GetAllSitePaging(GetSitePagingRequest pagingRequest);
+
+        
     }
 }

@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using static System.Linq.Queryable;
 using System.Threading.Tasks;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UserWorkingSiteRepos
 {
@@ -69,6 +71,43 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             return workingSite;
 
+        }
+
+        public async Task<PagedResult<UserWorkingSiteModel>> GetUserWorkingAtSite(EmployeeWorkingSitePagingRequest pagingRequest, string siteId)
+        {
+            var query = from workingSite in context.InternalUserWorkingSites.Where(x => x.IsWorking)
+                        from user in context.InternalUsers.Where(x => x.Id == workingSite.UserId)
+                        from role in context.RoleInternals.Where(x => x.Id == user.RoleId)
+                        select new { user, workingSite, role };
+
+            //Filter
+            query = query.Where(x => x.workingSite.SiteId.Equals(siteId));
+
+            if (!string.IsNullOrEmpty(pagingRequest.RoleId))
+            {
+                query = query.Where(x => x.user.RoleId.Equals(pagingRequest.RoleId));
+            }
+
+            if (!string.IsNullOrEmpty(pagingRequest.FullName))
+            {
+                query = query.Where(x => x.user.Fullname.Contains(pagingRequest.FullName));
+            }
+
+            query = query.OrderBy(x => x.user.Fullname);
+
+            var totalRow = await query.CountAsync();
+
+            var data = await query.Skip((pagingRequest.pageIndex - 1) * pagingRequest.pageItems).Take(pagingRequest.pageItems)
+                        .Select(selector => new UserWorkingSiteModel()
+                        {
+                            Id = selector.workingSite.Id,
+                            FullName = selector.user.Fullname,
+                            RoleId = selector.user.RoleId,
+                            RoleName = selector.role.RoleName,
+                            UserId = selector.user.Id,
+                            SiteId = selector.workingSite.SiteId
+                        }).ToListAsync();
+            return new PagedResult<UserWorkingSiteModel>(data, totalRow, pagingRequest.pageIndex, pagingRequest.pageItems);
         }
 
         public async Task<bool> InsertWorkingSite(InternalUserWorkingSite internalUserWorkingSite)
