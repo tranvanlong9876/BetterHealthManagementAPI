@@ -484,8 +484,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             {
                 Id = Guid.NewGuid().ToString(),
                 DateOfCreate = CustomDateTime.Now,
-                Description = checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_PICKUP) ? "Đơn hàng đã được bày bán thành công, cảm ơn bạn đã mua hàng" : "Đơn hàng đã được đặt thành công và sẽ được nhân viên xử lý sớm.",
-                IsInternalUser = checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_PICKUP) ? true : false,
+                Description = checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_DIRECTLY) ? "Đơn tại chỗ đã bán xong, cảm ơn bạn đã mua hàng!" : "Đơn hàng đã được đặt thành công và sẽ được nhân viên xử lý sớm.",
+                IsInternalUser = checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_DIRECTLY) ? true : false,
                 OrderId = checkOutOrderModel.OrderId,
                 StatusChangeFrom = OrderStatusIdCheckOut(checkOutOrderModel.OrderTypeId),
                 StatusChangeTo = OrderStatusIdCheckOut(checkOutOrderModel.OrderTypeId),
@@ -814,7 +814,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     var updateExecution = new OrderExecution()
                     {
                         Id = Guid.NewGuid().ToString(),
-                        DateOfCreate = CustomDateTime.Now,
+                        DateOfCreate = CustomDateTime.Now.AddSeconds(3),
                         Description = "Đơn hàng đã được yêu cầu hoàn tiền thành công và sẽ được hoàn tiền trong vòng 48 giờ làm việc.",
                         IsInternalUser = true,
                         OrderId = orderHeader.Id,
@@ -826,11 +826,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 }
             }
 
-            if (validateOrderModel.IsAccept && string.IsNullOrEmpty(validateOrderModel.Description))
-            {
-                validateOrderModel.Description = "Đơn hàng đã được duyệt và đang trong quá trình xử lý";
-            }
-
             if (orderHeader.OrderTypeId.Equals(Commons.ORDER_TYPE_PICKUP))
             {
                 orderHeader.IsApproved = validateOrderModel.IsAccept;
@@ -839,11 +834,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 orderHeader.ApprovedDate = CustomDateTime.Now;
                 await _orderHeaderRepo.Update();
 
+                var message = validateOrderModel.IsAccept ? "Đơn hàng đã được nhân viên phê duyệt và đang tiến hành chuẩn bị sản phẩm cho quý khách. Ghi chú của nhân viên: " : "Đơn hàng đã bị từ chối bởi nhân viên với lý do: ";
                 var updateExecution = new OrderExecution()
                 {
                     Id = Guid.NewGuid().ToString(),
                     DateOfCreate = CustomDateTime.Now,
-                    Description = validateOrderModel.Description,
+                    Description = string.IsNullOrEmpty(validateOrderModel.Description) ? "Trống." : validateOrderModel.Description,
                     IsInternalUser = true,
                     OrderId = orderHeader.Id,
                     StatusChangeFrom = Commons.CHECKOUT_ORDER_PICKUP_ID,
@@ -1011,12 +1007,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                         }
                     }
                 }
+                var message = validateOrderModel.IsAccept ? "Đơn hàng đã được nhân viên phê duyệt và đang tiến hành chuẩn bị sản phẩm cho quý khách. Ghi chú của nhân viên: " : "Đơn hàng đã bị từ chối bởi nhân viên với lý do: ";
 
                 var updateExecution = new OrderExecution()
                 {
                     Id = Guid.NewGuid().ToString(),
                     DateOfCreate = CustomDateTime.Now,
-                    Description = validateOrderModel.Description,
+                    Description = string.IsNullOrEmpty(validateOrderModel.Description) ? "Trống." : validateOrderModel.Description,
                     IsInternalUser = true,
                     OrderId = orderHeader.Id,
                     StatusChangeFrom = Commons.CHECKOUT_ORDER_DELIVERY_ID,
@@ -1027,6 +1024,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 await _orderExecutionRepo.Insert(updateExecution);
                 return new OkObjectResult(validateOrderModel.IsAccept ? "Đơn hàng đã được duyệt thành công" : "Đơn hàng đã từ chối thành công");
             }
+
 
             //Xử lý hoàn tiền nếu thanh toán VN Pay
 
@@ -1040,7 +1038,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
 
             if (orderHeader == null) return new BadRequestObjectResult("Đơn hàng không tồn tại trong hệ thống");
 
-            if (!pharmacistId.Equals(orderHeader.PharmacistId)) return new BadRequestObjectResult("Pharmacist không đại diện xử lý đơn hàng này, không thể yêu cầu chuyển trạng thái.");
+            if (!pharmacistId.Equals(orderHeader.PharmacistId) && !orderHeader.OrderTypeId.Equals(Commons.ORDER_TYPE_PICKUP)) return new BadRequestObjectResult("Pharmacist không đại diện xử lý đơn hàng này, không thể yêu cầu chuyển trạng thái.");
 
             var orderStatusDB = await _orderStatusRepo.Get(orderExecutionModel.OrderStatusId);
 
@@ -1048,27 +1046,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
 
             if (!orderStatusDB.ApplyForType.Equals(orderHeader.OrderTypeId)) return new BadRequestObjectResult("Trạng thái đơn hàng không hợp lệ, không dành cho loại đơn hàng này!");
 
-            var updateExecution = new OrderExecution()
-            {
-                Id = Guid.NewGuid().ToString(),
-                DateOfCreate = CustomDateTime.Now,
-                Description = orderExecutionModel.Description,
-                IsInternalUser = true,
-                OrderId = orderHeader.Id,
-                StatusChangeFrom = orderHeader.OrderStatus,
-                StatusChangeTo = orderExecutionModel.OrderStatusId,
-                UserId = pharmacistId
-            };
-
-            await _orderExecutionRepo.Insert(updateExecution);
-
             if (orderExecutionModel.OrderStatusId.Equals(Commons.ORDER_DELIVERY_STATUS_DONE) || orderExecutionModel.OrderStatusId.Equals(Commons.ORDER_PICKUP_STATUS_DONE))
             {
                 var doneExecution = new OrderExecution()
                 {
                     Id = Guid.NewGuid().ToString(),
                     DateOfCreate = CustomDateTime.Now,
-                    Description = orderExecutionModel.OrderStatusId.Equals(Commons.ORDER_DELIVERY_STATUS_DONE) ? "Đã giao hàng thành công cho khách hàng và thu hộ số tiền." : "Khách hàng đã nhận hàng thành công và thu hộ số tiền.",
+                    Description = orderExecutionModel.OrderStatusId.Equals(Commons.ORDER_DELIVERY_STATUS_DONE) ? "Đã giao hàng thành công cho khách hàng và thu hộ số tiền." : "Khách hàng đã nhận hàng thành công và đã thu hộ số tiền.",
                     IsInternalUser = true,
                     OrderId = orderHeader.Id,
                     StatusChangeFrom = orderExecutionModel.OrderStatusId,
@@ -1098,6 +1082,24 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                         await _customerPointRepo.Insert(customerPoint);
                     }
                 }
+            }
+            else
+            {
+                string orderDescription = Commons.RecommendDescription(orderExecutionModel.OrderStatusId);
+                var updateExecution = new OrderExecution()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    DateOfCreate = CustomDateTime.Now,
+                    Description = orderDescription + (string.IsNullOrEmpty(orderExecutionModel.Description) ? "Trống" : orderExecutionModel.Description),
+                    IsInternalUser = true,
+                    OrderId = orderHeader.Id,
+                    StatusChangeFrom = orderHeader.OrderStatus,
+                    StatusChangeTo = orderExecutionModel.OrderStatusId,
+                    UserId = pharmacistId
+                };
+
+                await _orderExecutionRepo.Insert(updateExecution);
+
             }
 
             orderHeader.OrderStatus = orderExecutionModel.OrderStatusId;
@@ -1162,7 +1164,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                         }
                         else
                         {
-                            userName = "Khách hàng";
+                            userName = "Khách vãng lai";
                         }
 
                     }

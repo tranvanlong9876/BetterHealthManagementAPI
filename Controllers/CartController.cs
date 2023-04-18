@@ -79,6 +79,8 @@ namespace BetterHealthManagementAPI.Controllers
                         listCart.Items[i].Price = cartInformation.Price;
                         listCart.Items[i].ProductImageUrl = cartInformation.ProductImageUrl;
                         listCart.Items[i].ProductName = cartInformation.ProductName;
+                        listCart.Items[i].UnitId = cartInformation.UnitId;
+                        listCart.Items[i].UnitName = cartInformation.UnitName;
                         var productDiscount = await _productEventDiscountRepo.GetProductDiscount(listCart.Items[i].ProductId);
                         if (productDiscount != null)
                         {

@@ -104,6 +104,21 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Commons
             }
         }
 
+        public const string ORDER_DELIVERY_7 = "Đơn hàng đã được nhân viên chuẩn bị và đang tiến hành giao hàng đến bạn. Ghi chú của nhân viên: ";
+        public const string ORDER_PICKUP_9 = "Đơn giao đã được nhân viên chuẩn bị xong. Ghi chú của nhân viên: ";
+
+        public static string RecommendDescription(string orderStatusId)
+        {
+            switch (orderStatusId)
+            {
+                case "7": return ORDER_DELIVERY_7;
+
+                case "9": return ORDER_PICKUP_9;
+
+                default: return "Ghi chú: ";
+            }
+        }
+
         public enum UserTarget
         {
             Children = 1,

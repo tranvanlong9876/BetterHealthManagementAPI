@@ -463,14 +463,17 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
             var query = (from detail in context.ProductDetails
                          from parent in context.ProductParents.Where(x => x.Id == detail.ProductIdParent).DefaultIfEmpty()
                          from image in context.ProductImages.Where(x => x.ProductId == parent.Id && x.IsFirstImage).DefaultIfEmpty()
-                         select new { detail.Price, parent.Name, image.ImageUrl, detail.Id });
+                         from unit in context.Units.Where(x => x.Id == detail.UnitId).DefaultIfEmpty()
+                         select new { detail.Price, parent.Name, image.ImageUrl, detail.Id, UnitId = unit.Id, unit.UnitName });
 
             var result = await query.Where(x => x.Id.Equals(productId)).Select(selector => new CartItem()
             {
                 Price = selector.Price,
                 ProductId = selector.Id,
                 ProductImageUrl = selector.ImageUrl,
-                ProductName = selector.Name
+                ProductName = selector.Name,
+                UnitId = selector.UnitId,
+                UnitName = selector.UnitName
             }).FirstOrDefaultAsync();
 
             return result;

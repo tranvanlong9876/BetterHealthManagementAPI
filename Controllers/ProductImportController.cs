@@ -5,6 +5,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductIm
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,13 @@ namespace BetterHealthManagementAPI.Controllers
             var pagedResult = await _productImportService.ViewListProductImportPaging(pagingRequest);
 
             return Ok(pagedResult);
+        }
+        [SwaggerOperation(Summary = "Lấy ra tin nhắn message từ ProductId và số lượng sản phẩm nhập kho.")]
+        [HttpGet("Message")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetProductImportMessage([FromQuery] ProductImportMessageEntrance messageEntrance)
+        {
+            return await _productImportService.GetProductCalculateTemplate(messageEntrance);
         }
 
         [HttpPost]

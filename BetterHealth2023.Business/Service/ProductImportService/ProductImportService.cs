@@ -8,6 +8,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductImportModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -363,5 +364,49 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductImp
             return totalQuantity;
         }
 
+        public async Task<IActionResult> GetProductCalculateTemplate(ProductImportMessageEntrance messageEntrance)
+        {
+            var productParentId = await _productDetailRepo.GetProductParentID(messageEntrance.ProductId);
+
+            if (string.IsNullOrEmpty(productParentId)) return new BadRequestObjectResult("Không tìm thấy sản phẩm trong hệ thống");
+
+            var productDetailDB = await _productDetailRepo.Get(messageEntrance.ProductId);
+            //Get All Unit 
+            var productLaterList = await _productDetailRepo.GetProductLaterUnit(productParentId, productDetailDB.UnitLevel);
+
+            if(productLaterList.Count == 1)
+            {
+                var message = new ProductImportTemplate()
+                {
+                    TemplateMessage = "Sau khi nhập hàng, hệ thống sẽ tự động chuyển đổi sang đơn vị thấp nhất để quản lý tồn kho.\n" +
+                                      $"Hiện tại bạn đang nhập hàng đơn vị thấp nhất. Hệ thống sẽ nhập kho với số lượng {messageEntrance.Quantity} {productLaterList[0].UnitName}.",
+                    QuantityAfterConvert = messageEntrance.Quantity,
+                    Calculation = $"{messageEntrance.Quantity} x 1 = {messageEntrance.Quantity}",
+                    UnitAfterConvert = $"{productLaterList[0].UnitName}"
+                };
+
+                return new OkObjectResult(message);
+            }
+            //Lấy cấp bậc thấp nhất của unit
+            var productLastUnitDetail = productLaterList.OrderByDescending(x => x.UnitLevel).FirstOrDefault();
+            int quantityAfterConvert = messageEntrance.Quantity * CountTotalQuantityFromFirstToLastUnit(productLaterList);
+            string calculation = "";
+            for(int i = 1; i < productLaterList.Count; i++)
+            {
+                calculation += $"{productLaterList[i].Quantitative}";
+
+                if (i != productLaterList.Count - 1) calculation += " x ";
+            }
+            var message1 = new ProductImportTemplate()
+            {
+                TemplateMessage = "Sau khi nhập hàng, hệ thống sẽ tự động chuyển đổi sang đơn vị thấp nhất để quản lý tồn kho.\n" +
+                                      $"Hiện tại bạn đang nhập hàng với số lượng {messageEntrance.Quantity} {productLaterList[0].UnitName}. Hệ thống sẽ tự động chuyển đổi và nhập vào kho với số lượng {quantityAfterConvert} {productLastUnitDetail.UnitName}.",
+                QuantityAfterConvert = quantityAfterConvert,
+                Calculation = $"{messageEntrance.Quantity} x {calculation} = {quantityAfterConvert}",
+                UnitAfterConvert = $"{productLastUnitDetail.UnitName}"
+            };
+
+            return new OkObjectResult(message1);
+        }
     }
 }

@@ -16,6 +16,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartM
 
         public string ProductName { get; set; }
         public string ProductImageUrl { get; set; }
+        public string UnitId { get; set; }
+        public string UnitName { get; set; }
         public double Price { get; set; }
         public double PriceAfterDiscount { get; set; }
         public double PriceTotal { get; set; }

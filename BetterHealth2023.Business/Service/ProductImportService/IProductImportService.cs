@@ -1,5 +1,6 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductImportModels;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductImp
         public Task<ViewSpecificProductImportModel> ViewSpecificProductImport(string productImportID);
 
         public Task<PagedResult<ViewListProductImportModel>> ViewListProductImportPaging(GetProductImportPagingRequest pagingRequest);
-        
+
+        public Task<IActionResult> GetProductCalculateTemplate(ProductImportMessageEntrance messageEntrance);
     }
 }
