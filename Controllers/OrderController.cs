@@ -135,7 +135,7 @@ namespace BetterHealthManagementAPI.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.StackTrace);
+                return StatusCode(500, ex.StackTrace);
             }
         }
 

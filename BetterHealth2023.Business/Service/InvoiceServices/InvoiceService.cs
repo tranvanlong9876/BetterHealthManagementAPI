@@ -94,14 +94,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InvoiceSer
                 await storage.UploadObjectAsync(bucketName, objectName, contentType, memoryStream);
             }
 
-            var storageObject = await storage.GetObjectAsync(bucketName, objectName);
+            var url = await new FirebaseStorage(bucketName).Child(objectName).GetDownloadUrlAsync();
 
-            var url = await new FirebaseStorage("better-health-3e75a.appspot.com").Child(objectName).GetDownloadUrlAsync();
-
-            //var options = new SignUrlOptions { ResponseContentType = "application/pdf", Expires = DateTime.UtcNow.AddDays(1) };
-            //var url = storageObject.SignedUrl(options);
-
-            // Return the URL of the uploaded file
             return new OkObjectResult(url);
         }
     }

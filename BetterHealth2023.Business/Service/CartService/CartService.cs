@@ -1,4 +1,8 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Service.CustomerPointServices;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product;
+using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductDiscountRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDetailRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductParentRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.CartModels;
@@ -16,11 +20,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
         private static FirestoreDb firestore = FirestoreDb.Create("better-health-3e75a");
         private readonly IProductDetailRepo _productDetailRepo;
         private readonly IProductParentRepo _productParentRepo;
+        private readonly IProductService _productService;
+        private readonly IProductEventDiscountRepo _productEventDiscountRepo;
+        private readonly ICustomerRepo _customerRepo;
+        private readonly ICustomerPointService _customerPointService;
 
-        public CartService(IProductDetailRepo productDetailRepo, IProductParentRepo productParentRepo)
+
+        public CartService(IProductDetailRepo productDetailRepo, IProductParentRepo productParentRepo, IProductEventDiscountRepo productEventDiscountRepo, IProductService productService, ICustomerRepo customerRepo, ICustomerPointService customerPointService)
         {
             _productDetailRepo = productDetailRepo;
             _productParentRepo = productParentRepo;
+            _productEventDiscountRepo = productEventDiscountRepo;
+            _productService = productService;
+            _customerRepo = customerRepo;
+            _customerPointService = customerPointService;
         }
 
         public async Task<bool> UpdateCart(Cart cart, string CustomerId)
@@ -171,6 +184,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
                 }
                 for (int i = 0; i < CustomerCart.Items.Count; i++)
                 {
+                    if(DeviceCart.Items == null)
+                    {
+                        DeviceCart.Items = new List<CartItem>();
+                    }
                     if (DeviceCart.Items.Where(x => x.ProductId.Equals(CustomerCart.Items[i].ProductId)).Count() == 0)
                     {
                         DeviceCart.Items.Add(CustomerCart.Items[i]);
@@ -247,20 +264,83 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.CartServic
 
         }
 
-        public async Task<bool> UpdateCustomerCartPoint(CustomerCartPoint cartPoint)
+        public async Task<IActionResult> UpdateCustomerCartPoint(CustomerCartPoint cartPoint)
         {
             var collectionReference = firestore.Collection("carts");
             var documentReference = collectionReference.Document(cartPoint.CartId);
             var snapShot = await documentReference.GetSnapshotAsync();
+
             if (snapShot.Exists)
             {
+                var viewCart = snapShot.ConvertTo<ViewCart>();
+                viewCart = await AddFullInformationToCart(viewCart);
+
+                var customerDB = await _customerRepo.Get(viewCart.customerId);
+
+                if (customerDB == null) return new NotFoundObjectResult("Giỏ hàng này không có khách hàng đại diện, không thể dùng điểm!");
+
+                int maxPointCanUse = 0;
+
+                var objectResult = await _customerPointService.GetCustomerAvailablePoint(customerDB.PhoneNo);
+
+                if(objectResult is OkObjectResult customerPoint)
+                {
+                    maxPointCanUse = Convert.ToInt32(customerPoint.Value);
+                }
+
+                if (maxPointCanUse < cartPoint.UsingPoint) return new BadRequestObjectResult($"Không thể áp dụng điểm do số điểm dùng ({cartPoint.UsingPoint}) lớn hơn số điểm khách hàng đang có ({maxPointCanUse}).");
+
+                maxPointCanUse = (int) (viewCart.SubTotalPrice / 1000);
+
+                if (maxPointCanUse < cartPoint.UsingPoint) return new BadRequestObjectResult(new { message = $"Không thể sử dụng điểm vào giỏ hàng, số điểm tối đa có thể sử dụng là {maxPointCanUse}",
+                                                                                                   maxPoint = maxPointCanUse});
+
                 var existingCart = snapShot.ConvertTo<CustomerCartPoint>();
                 existingCart.UsingPoint = cartPoint.UsingPoint;
                 await documentReference.UpdateAsync("point", existingCart.UsingPoint);
                 await documentReference.UpdateAsync("last-update", Timestamp.GetCurrentTimestamp());
-                return true;
+                return new OkObjectResult("Apply điểm vào giỏ hàng thành công!");
             }
-            return false;
+            return new NotFoundObjectResult("Không tìm thấy giỏ hàng của khách hàng");
+        }
+
+        private async Task<ViewCart> AddFullInformationToCart(ViewCart listCart)
+        {
+            var SubTotalPrice = 0D;
+            if (listCart.Items != null)
+            {
+                for (int i = 0; i < listCart.Items.Count; i++)
+                {
+                    var cartInformation = await _productService.AddMoreProductInformationToCart(listCart.Items[i].ProductId);
+                    listCart.Items[i].Price = cartInformation.Price;
+                    listCart.Items[i].ProductImageUrl = cartInformation.ProductImageUrl;
+                    listCart.Items[i].ProductName = cartInformation.ProductName;
+                    listCart.Items[i].UnitId = cartInformation.UnitId;
+                    listCart.Items[i].UnitName = cartInformation.UnitName;
+                    var productDiscount = await _productEventDiscountRepo.GetProductDiscount(listCart.Items[i].ProductId);
+                    if (productDiscount != null)
+                    {
+                        if (productDiscount.DiscountMoney.HasValue)
+                        {
+                            listCart.Items[i].PriceAfterDiscount = listCart.Items[i].Price - productDiscount.DiscountMoney.Value;
+                        }
+
+                        if (productDiscount.DiscountPercent.HasValue)
+                        {
+                            listCart.Items[i].PriceAfterDiscount = listCart.Items[i].Price - (listCart.Items[i].Price * productDiscount.DiscountPercent.Value / 100);
+                        }
+                    }
+                    else
+                    {
+                        listCart.Items[i].PriceAfterDiscount = listCart.Items[i].Price;
+                    }
+                    listCart.Items[i].PriceTotal = listCart.Items[i].PriceAfterDiscount * listCart.Items[i].Quantity;
+                    SubTotalPrice += listCart.Items[i].PriceTotal;
+                }
+            }
+            listCart.SubTotalPrice = SubTotalPrice;
+
+            return listCart;
         }
 
         public async Task<IActionResult> RemoveCart(string cartId)

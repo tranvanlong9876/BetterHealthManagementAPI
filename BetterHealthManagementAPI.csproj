@@ -13,6 +13,7 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+    <PackageReference Include="BarcodeLib" Version="2.4.0" />
     <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="FirebaseAdmin" Version="2.3.0" />
     <PackageReference Include="FirebaseStorage.net" Version="1.0.3" />

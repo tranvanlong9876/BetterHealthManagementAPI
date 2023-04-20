@@ -450,6 +450,8 @@
                             <a href="{{websiteUrl}}" class="f-fallback email-masthead_name">
                                 <img style="display: block; margin-left: auto; margin-right: auto; " src='cid:betterhealth-logo' width="220" height="100" />
                                 <p>Cửa Hàng Dược Phẩm BetterHealth</p>
+                                <img style="display: block; margin-left:auto; margin-right:auto;" height="100" width="300" src='cid:orderid-barcode' />
+                                <p>{{orderId}}</p>
                             </a>
                         </td>
                     </tr>
@@ -464,7 +466,8 @@
                                             <h1>Cảm ơn bạn {{name}} đã đặt hàng tại BetterHealth!</h1>
                                             <p>Cửa hàng chúng tôi rất vui được sự tin tưởng mua hàng của bạn, hiện tại đơn hàng #{{orderId}} của quý khách đã được tiếp nhận và đang trong quá trình xử lý. Đây là một số thông tin về đơn hàng của bạn!</p>
 
-                                            <h3 style="font-size:13px;font-weight:bold;color:#02acea;text-transform:uppercase;margin:20px 0 0 0;border-bottom:1px solid #ddd">THÔNG TIN ĐƠN HÀNG #{{orderId}}
+                                            <h3 style="font-size:13px;font-weight:bold;color:#02acea;text-transform:uppercase;margin:20px 0 0 0;border-bottom:1px solid #ddd">
+                                                THÔNG TIN ĐƠN HÀNG #{{orderId}}
                                                 <span style="font-size:12px;color:#777;text-transform:none;font-weight:normal">{{createdDate}}</span>
                                             </h3>
                                             <!-- Action -->
@@ -488,7 +491,7 @@
                                                             <span>{{name}}</span><br />
                                                             <span><a href="mailto:{{email}}" target="_blank">{{email}}</a></span><br />
                                                             <span>{{address}}</span><br />
-                                                            <span>{{more_info}}</span><br/>
+                                                            <span>{{more_info}}</span><br />
                                                             <span>SĐT: {{phone}}</span>
                                                         </td>
                                                     </tr>
@@ -499,35 +502,35 @@
                                             <table style="margin-top: 10px;" border="0" cellpadding="0" cellspacing="0" width="100%">
                                                 <thead>
                                                     <tr>
-                                                        <th align="left" bgcolor="#152238" style="padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px">Hình Ảnh</th>
-                                                        <th align="left" bgcolor="#152238" style="padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px">Sản phẩm</th>
-                                                        <th align="left" bgcolor="#152238" style="padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px">Đơn vị tính</th>
-                                                        <th align="left" bgcolor="#152238" style="padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px">Đơn giá</th>
-                                                        <th align="left" bgcolor="#152238" style="padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px">Số lượng</th>
-                                                        <th align="right" bgcolor="#152238" style="padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px">Tổng tạm</th>
+                                                        <th align="left" bgcolor="#152238" style="padding: 6px 9px; color: #fff; font-family: Arial,Helvetica,sans-serif; font-size: 12px; line-height: 14px; white-space: nowrap;">Hình Ảnh</th>
+                                                        <th align="left" bgcolor="#152238" style="padding: 6px 9px; color: #fff; font-family: Arial,Helvetica,sans-serif; font-size: 12px; line-height: 14px; white-space: nowrap;">Sản phẩm</th>
+                                                        <th align="left" bgcolor="#152238" style="padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px; white-space: nowrap;">Đơn vị tính</th>
+                                                        <th align="left" bgcolor="#152238" style="padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px; white-space: nowrap;">Đơn giá</th>
+                                                        <th align="left" bgcolor="#152238" style="padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px; white-space: nowrap;">Số lượng</th>
+                                                        <th align="right" bgcolor="#152238" style="padding: 6px 9px; color: #fff; font-family: Arial,Helvetica,sans-serif; font-size: 12px; line-height: 14px; white-space: nowrap;">Tổng tạm</th>
                                                     </tr>
                                                 </thead>
-                                                
+
                                                 <tbody style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;">
                                                     {{cart}}
                                                 </tbody>
                                                 <tfoot style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#444;line-height:18px">
                                                     <tr>
                                                         <td align="right" colspan="5" style="padding:5px 9px"><span style="font-size:14px;">Tạm tính</span></td>
-                                                        <td align="right" style="padding:5px 9px"><span style="font-size:13px;">{{sub_total}}</span></td>
+                                                        <td align="right" style="padding:5px 9px"><span style="font-size: 13px; white-space: nowrap;">{{sub_total}}</span></td>
                                                     </tr>
                                                     <tr>
                                                         <td align="right" colspan="5" style="padding:5px 9px"><span style="font-size:14px;">Giá giảm</span></td>
-                                                        <td align="right" style="padding:5px 9px"><span style="font-size:13px;">{{discount_total}}</span></td>
+                                                        <td align="right" style="padding:5px 9px"><span style="font-size: 13px; white-space: nowrap;">{{discount_total}}</span></td>
                                                     </tr>
                                                     <tr>
                                                         <td align="right" colspan="5" style="padding:5px 9px"><span style="font-size:14px;">{{other_fee}}</span></td>
-                                                        <td align="right" style="padding:5px 9px"><span style="font-size:13px;">{{shipping_fee}}</span></td>
+                                                        <td align="right" style="padding:5px 9px"><span style="font-size: 13px; white-space: nowrap;">{{shipping_fee}}</span></td>
                                                     </tr>
 
                                                     <tr>
                                                         <td align="right" colspan="5" style="padding:5px 9px"><span style="font-size:14px;">Thành tiền</span></td>
-                                                        <td align="right" style="padding:5px 9px; white-space: nowrap";><span style="font-size:13px;">{{total_order}}</span></td>
+                                                        <td align="right" style="padding:5px 9px; white-space: nowrap;"><span style="font-size:13px; white-space: nowrap;">{{total_order}}</span></td>
                                                     </tr>
 
 
@@ -538,7 +541,7 @@
                                             </p>
                                             <p>
                                                 Trân trọng,
-                                                <br>Ban Quản Lý chuỗi cửa hàng BetterHealth.
+                                                <br />Ban Quản Lý chuỗi cửa hàng BetterHealth.
                                             </p>
                                             <p></p>
                                             <!-- Sub copy -->

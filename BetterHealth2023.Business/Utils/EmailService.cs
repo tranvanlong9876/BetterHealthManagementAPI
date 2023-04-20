@@ -1,9 +1,12 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
+﻿using BarcodeLib;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -20,8 +23,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
         public static string body;
         private static IConfiguration _configuration;
 
-        private static string CHECKOUTCARTPARTIAL_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/CheckOutCartPartial.html?alt=media&token=c4025bce-420c-418b-85e9-8332934dadc6";
-        private static string CHECKOUTCARTTEMPLATE_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/CheckOutCartTemplate.html?alt=media&token=feef7628-1924-41ca-8b4c-fe7c8937ae7b";
+        private static string CHECKOUTCARTPARTIAL_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/CheckOutCartPartial.html?alt=media&token=3f56dec3-a0a6-4ffb-8be6-4dbfd10ff6c5";
+        private static string CHECKOUTCARTTEMPLATE_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/CheckOutCartTemplate.html?alt=media&token=3ebbd290-eb8d-4d37-ba4c-f1a3559d143b";
         private static string INTERNALUSER_REGISTER_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/InternalUserRegisteration.html?alt=media&token=a6d34bb8-ef8d-42ad-890f-048eebf40dd6";
         private static string BETTERHEALTH_LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/BetterHealth-Logo.png?alt=media&token=d0832ae8-eabb-4642-afdf-ebdf93b587ae";
 
@@ -41,7 +44,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
                 mail.Body = body.ToString();
                 mail.IsBodyHtml = isHtml;
                 mail.Priority = MailPriority.High;
-                if(alternateView != null) mail.AlternateViews.Add(alternateView);
+                if (alternateView != null) mail.AlternateViews.Add(alternateView);
                 _smtpClient.Host = "smtp.gmail.com";
                 _smtpClient.Port = 587;
                 _smtpClient.Credentials = new NetworkCredential(_configuration.GetSection("SendEmail:LoginAccount").Value, _configuration.GetSection("SendEmail:LoginPassword").Value);
@@ -49,7 +52,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
                 _smtpClient.UseDefaultCredentials = false;
                 await _smtpClient.SendMailAsync(mail);
                 return true;
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -60,7 +64,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             DateTime createdDate = CustomDateTime.Now;
             string cartHtml = string.Empty;
             string dynamicRow = await ReadFileFromCloudStorage.ReadFileFromGoogleCloudStorage(CHECKOUTCARTPARTIAL_URL);
-            for(int i = 0; i < sendingEmailProductModels.Count; i++)
+            for (int i = 0; i < sendingEmailProductModels.Count; i++)
             {
                 var productModel = sendingEmailProductModels[i];
                 string eachRow = dynamicRow;
@@ -125,7 +129,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             alternateView = AlternateView.CreateAlternateViewFromString(body.ToString(), null, "text/html");
             LinkedResource linkedResourceLogo = AddImagesToEmail(BETTERHEALTH_LOGO_URL, "betterhealth-logo", webClient);
             alternateView.LinkedResources.Add(linkedResourceLogo);
-            for(int i = 0; i < sendingEmailProductModels.Count; i++)
+            alternateView.LinkedResources.Add(AddBarCodeToEmail(checkOutOrderModel.OrderId));
+            for (int i = 0; i < sendingEmailProductModels.Count; i++)
             {
                 var sendingEmailProductModel = sendingEmailProductModels[i];
                 LinkedResource linkedResource = AddImagesToEmail(sendingEmailProductModel.imageUrl, "productImage" + (i + 1), webClient);
@@ -142,15 +147,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 
         public static string GetEstimateDeliveryTime(DateTime createdOrderTime)
         {
-            if(createdOrderTime.Hour > 19)
+            if (createdOrderTime.Hour > 19)
             {
                 createdOrderTime = createdOrderTime.AddDays(1);
                 return "Giao trước 11:00 trưa " + GetVietnamDayOfWeek((int)createdOrderTime.DayOfWeek) + " (ngày mai) (" + String.Format("{0:dd/MM/yyyy}", createdOrderTime) + ")";
             }
-            else if(createdOrderTime.Minute > 30)
+            else if (createdOrderTime.Minute > 30)
             {
                 return "Dự kiến giao từ " + (createdOrderTime.Hour + 2) + ":00 " + "- " + (createdOrderTime.Hour + 3) + ":00 " + "trong ngày hôm nay";
-            } else
+            }
+            else
             {
                 return "Dự kiến giao từ " + (createdOrderTime.Hour + 1) + ":00 " + "- " + (createdOrderTime.Hour + 2) + ":00 " + "trong ngày hôm nay";
             }
@@ -215,6 +221,20 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             LinkedResource linkedResource = new LinkedResource(ms, MediaTypeNames.Image.Jpeg);
             linkedResource.ContentId = contentId;
             linkedResource.TransferEncoding = TransferEncoding.Base64;
+            return linkedResource;
+        }
+
+        public static LinkedResource AddBarCodeToEmail(string data)
+        {
+            Barcode barcode = new Barcode();
+            var image = barcode.Encode(TYPE.CODE128, data, Color.Black, Color.Transparent, 300, 100);
+
+            var memoryStream = new MemoryStream();
+
+            image.Save(memoryStream, ImageFormat.Png);
+            memoryStream.Position = 0;
+            var linkedResource = new LinkedResource(memoryStream, "image/png");
+            linkedResource.ContentId = "orderid-barcode";
             return linkedResource;
         }
     }

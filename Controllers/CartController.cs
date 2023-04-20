@@ -41,19 +41,11 @@ namespace BetterHealthManagementAPI.Controllers
         {
             try
             {
-                var check = await _cartService.UpdateCustomerCartPoint(cartPoint);
-                if (check)
-                {
-                    return Ok("Thêm điểm sử dụng của khách vào giỏ hàng thành công");
-                }
-                else
-                {
-                    return BadRequest("Lỗi thêm điểm");
-                }
+                return await _cartService.UpdateCustomerCartPoint(cartPoint);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(500, ex.StackTrace);
             }
         }
 
@@ -70,6 +62,7 @@ namespace BetterHealthManagementAPI.Controllers
                 //Kết nối database
                 if (listCart == null) return NotFound("Không tìm thấy giỏ hàng");
                 if (!listCart.Point.HasValue) listCart.Point = 0;
+
                 var SubTotalPrice = 0D;
                 if (listCart.Items != null)
                 {
@@ -103,6 +96,7 @@ namespace BetterHealthManagementAPI.Controllers
                     }
                 }
                 listCart.SubTotalPrice = SubTotalPrice;
+
                 listCart.DiscountPrice = listCart.Point.Value * 1000;
                 listCart.TotalCartPrice = SubTotalPrice - listCart.DiscountPrice;
 
@@ -110,7 +104,7 @@ namespace BetterHealthManagementAPI.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(500, ex.StackTrace);
             }
         }
 
