@@ -1,20 +1,17 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.InternalUserAuthRepos;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Web.Http;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UserWorkingSiteRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
-using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.DatabaseModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.InternalUserAuthRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.UserWorkingSiteRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ErrorModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Site;
+using System;
+using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUser
 {
@@ -212,6 +209,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InternalUs
 
             if (check) {
                 checkError.isError = false;
+                if (!string.IsNullOrEmpty(internalUser.SiteId))
+                {
+                    var siteDB = await _siteRepo.Get(internalUser.SiteId);
+
+                    internalUser.SiteName = siteDB.SiteName;
+                    internalUser.SiteAddress = await _dynamicAddressRepo.GetFullAddressFromAddressId(siteDB.AddressId);
+                }
                 _ = Task.Run(() => EmailService.SendWelcomeEmailAsync(internalUser, randomPassword.Trim(), $"Chào mừng {internalUser.Fullname} về đội của chúng tôi.", true)).ConfigureAwait(false);
                 //send account information via email for new internal user.
             }

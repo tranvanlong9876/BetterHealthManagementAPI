@@ -25,7 +25,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 
         private static string CHECKOUTCARTPARTIAL_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/CheckOutCartPartial.html?alt=media&token=3f56dec3-a0a6-4ffb-8be6-4dbfd10ff6c5";
         private static string CHECKOUTCARTTEMPLATE_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/CheckOutCartTemplate.html?alt=media&token=3ebbd290-eb8d-4d37-ba4c-f1a3559d143b";
-        private static string INTERNALUSER_REGISTER_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/InternalUserRegisteration.html?alt=media&token=a6d34bb8-ef8d-42ad-890f-048eebf40dd6";
+        private static string INTERNALUSER_REGISTER_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/InternalUserRegisteration.html?alt=media&token=a1114ea3-41af-4c4c-ba5a-2058d0952ff5";
         private static string BETTERHEALTH_LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/better-health-3e75a.appspot.com/o/BetterHealth-Logo.png?alt=media&token=d0832ae8-eabb-4642-afdf-ebdf93b587ae";
 
         public static void Initialize(IConfiguration configuration)
@@ -184,11 +184,11 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 
             if (registerEmployee.RoleId == Commons.MANAGER)
             {
-                roleName = "Quản Lý chi nhánh";
+                roleName = "Quản Lý Chi Nhánh";
             }
             else if (registerEmployee.RoleId == Commons.PHARMACIST)
             {
-                roleName = "Dược sĩ";
+                roleName = "Nhân Viên";
             }
             else if (registerEmployee.RoleId == Commons.OWNER)
             {
@@ -198,6 +198,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             {
                 roleName = "Quản lý tài khoản";
             }
+
+            string WORKING_SITE_INFORMATION_TEMPLATE = "<tr>\r\n" +
+                                                       "    <td class=\"attributes_item\">\r\n" +
+                                                       "        <span class=\"f-fallback\">\r\n" +
+                                                       "            <strong>{{head}}</strong> {{child}}\r\n" +
+                                                       "        </span>\r\n" +
+                                                       "    </td>\r\n" +
+                                                       "</tr>";
+
             body = await ReadFileFromCloudStorage.ReadFileFromGoogleCloudStorage(INTERNALUSER_REGISTER_URL);
             body = body.Replace("{{name}}", registerEmployee.Fullname);
             body = body.Replace("{{username}}", registerEmployee.Username);
@@ -205,12 +214,33 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             body = body.Replace("{{roleName}}", roleName);
             body = body.Replace("{{support_email}}", _configuration.GetSection("SendEmail:SupportEmail").Value);
             body = body.Replace("{{login_url}}", _configuration.GetSection("SendEmail:LoginURL").Value);
+            body = body.Replace("{{websiteUrl}}", _configuration.GetSection("SendEmail:LoginURL").Value);
+
+            if(registerEmployee.RoleId.Equals(Commons.PHARMACIST) || registerEmployee.RoleId.Equals(Commons.MANAGER))
+            {
+                var eachRow = WORKING_SITE_INFORMATION_TEMPLATE;
+                var fullInformation = string.Empty;
+
+                eachRow = eachRow.Replace("{{head}}", "Tên Chi Nhánh Làm Việc: ");
+                eachRow = eachRow.Replace("{{child}}", registerEmployee.SiteName);
+                fullInformation += eachRow;
+
+                eachRow = WORKING_SITE_INFORMATION_TEMPLATE;
+                eachRow = eachRow.Replace("{{head}}", "Địa Chỉ Chi Nhánh: ");
+                eachRow = eachRow.Replace("{{child}}", registerEmployee.SiteAddress);
+                fullInformation += eachRow;
+
+                body = body.Replace("{{employee_site_information}}", fullInformation);
+            } else
+            {
+                body = body.Replace("{{employee_site_information}}", "");
+            }
 
             var webClient = new WebClient();
             AlternateView alternateView = default(AlternateView);
             alternateView = AlternateView.CreateAlternateViewFromString(body.ToString(), null, "text/html");
-            LinkedResource linkedResource = AddImagesToEmail(imageURL, "image1", webClient);
-            alternateView.LinkedResources.Add(linkedResource);
+            alternateView.LinkedResources.Add(AddImagesToEmail(imageURL, "image1", webClient));
+            alternateView.LinkedResources.Add(AddImagesToEmail(BETTERHEALTH_LOGO_URL, "betterhealth-logo", webClient));
 
             await EmailService.SendEmailAsync(registerEmployee.Email, subject, isHtml, alternateView);
         }

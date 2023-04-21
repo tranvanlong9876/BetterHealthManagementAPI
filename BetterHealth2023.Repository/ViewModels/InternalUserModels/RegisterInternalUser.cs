@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.InternalUserModels
@@ -44,6 +45,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Inter
         public string RoleId { get; set; }
         [StringLength(50)]
         public string SiteId { get; set; }
+
+        [JsonIgnore]
+        public string SiteName { get; set; }
+
+        [JsonIgnore]
+        public string SiteAddress { get; set; }
 
         [Range(0, 1, ErrorMessage = "Dữ liệu Gender phải là 0 -> 1. 0 là Nữ, 1 là Nam.")]
         public int Gender { get; set; }
