@@ -18,6 +18,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Impleme
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.ProductRepos.ProductDetailRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteInventoryRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCancelModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderExecutionModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
@@ -309,7 +310,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             }
             //Insert Xong Header.
             List<SendingEmailProductModel> productSendingEmailModels = new List<SendingEmailProductModel>();
-            for(int i = 0; i < checkOutOrderModel.Products.Count; i++)
+            for (int i = 0; i < checkOutOrderModel.Products.Count; i++)
             {
                 var productModel = checkOutOrderModel.Products[i];
                 var productParentId = await _productDetailRepo.GetProductParentID(productModel.ProductId);
@@ -702,48 +703,99 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             }
 
             //Xử lý action nhận đơn
-            if (orderProductLastUnitLevels != null)
+            if (orderProductLastUnitLevels != null) //giao hàng và chưa tiếp nhận
             {
-                var siteDB = await _siteRepo.Get(userInformation.SiteId);
-                if (siteDB.IsDelivery)
+                if (Commons.COMPLETED_ORDERSTATUS_ID.Contains(order.OrderStatus))
                 {
-                    var missingProductList = await _siteInventoryRepo.CheckMissingProductOfSiteId(userInformation.SiteId, orderProductLastUnitLevels);
-                    if (missingProductList.Count > 0)
+                    order.actionStatus = new ViewSpecificActionStatus();
+                    order.actionStatus.CanAccept = false;
+                    order.actionStatus.CanCancel = false;
+                    order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
+                    order.actionStatus.StatusMessage = "Đơn hàng đã hoàn tất xử lý, bạn có thể tiếp tục thực hiện các đơn hàng khác tiếp theo.";
+                }
+                else
+                {
+                    var siteDB = await _siteRepo.Get(userInformation.SiteId);
+                    if (siteDB.IsDelivery)
                     {
-                        order.actionStatus = new ViewSpecificActionStatus();
-                        order.actionStatus.CanAccept = false;
-                        order.actionStatus.missingProducts = missingProductList;
-                        order.actionStatus.StatusMessage = "Chi nhánh đang bị thiếu hàng, không thể tiếp nhận đơn giao hàng này!";
+                        var missingProductList = await _siteInventoryRepo.CheckMissingProductOfSiteId(userInformation.SiteId, orderProductLastUnitLevels);
+                        if (missingProductList.Count > 0)
+                        {
+                            order.actionStatus = new ViewSpecificActionStatus();
+                            order.actionStatus.CanAccept = false;
+                            order.actionStatus.CanCancel = false;
+                            order.actionStatus.missingProducts = missingProductList;
+                            order.actionStatus.StatusMessage = "Chi nhánh đang bị thiếu hàng, không thể tiếp nhận đơn giao hàng này!";
+                        }
+                        else
+                        {
+                            order.actionStatus = new ViewSpecificActionStatus();
+                            order.actionStatus.CanAccept = true;
+                            order.actionStatus.CanCancel = false;
+                            order.actionStatus.missingProducts = missingProductList;
+                            order.actionStatus.StatusMessage = "Bạn có thể tiếp nhận đơn giao hàng này";
+                        }
                     }
                     else
                     {
                         order.actionStatus = new ViewSpecificActionStatus();
-                        order.actionStatus.CanAccept = true;
-                        order.actionStatus.missingProducts = missingProductList;
-                        order.actionStatus.StatusMessage = "Bạn có thể tiếp nhận đơn giao hàng này";
+                        order.actionStatus.CanAccept = false;
+                        order.actionStatus.CanCancel = false;
+                        order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
+                        order.actionStatus.StatusMessage = "Chi nhánh của bạn chưa được Owner cho phép hỗ trợ giao hàng";
+                    }
+                }
+            } //đơn chờ xử lý và xem bởi pharmacist
+            else if (order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
+            {
+                if (Commons.COMPLETED_ORDERSTATUS_ID.Contains(order.OrderStatus))
+                {
+                    order.actionStatus = new ViewSpecificActionStatus();
+                    order.actionStatus.CanAccept = false;
+                    order.actionStatus.CanCancel = false;
+                    order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
+                    order.actionStatus.StatusMessage = "Đơn hàng đã hoàn tất xử lý, bạn có thể tiếp tục thực hiện các đơn hàng khác tiếp theo.";
+                }
+                else
+                {
+                    order.actionStatus = new ViewSpecificActionStatus();
+                    order.actionStatus.CanAccept = true;
+                    order.actionStatus.CanCancel = false;
+                    order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
+                    order.actionStatus.StatusMessage = "Bạn có thể tiếp nhận đơn hàng này";
+                }
+            }
+            else if (!order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
+            {
+                //đơn đã duyệt
+                if (order.PharmacistId.Equals(userInformation.UserId) || order.OrderTypeId.Equals(Commons.ORDER_TYPE_PICKUP))
+                {
+                    //chưa hoàn thành
+                    if (!Commons.COMPLETED_ORDERSTATUS_ID.Contains(order.OrderStatus))
+                    {
+                        order.actionStatus = new ViewSpecificActionStatus();
+                        order.actionStatus.CanAccept = false;
+                        order.actionStatus.CanCancel = true;
+                        order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
+                        order.actionStatus.StatusMessage = "Đơn hàng đã được tiếp nhận, hãy thực thi và hoàn thành đơn hàng sớm cho khách hàng bạn nhé.";
+                    }
+                    else
+                    {
+                        order.actionStatus = new ViewSpecificActionStatus();
+                        order.actionStatus.CanAccept = false;
+                        order.actionStatus.CanCancel = false;
+                        order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
+                        order.actionStatus.StatusMessage = "Đơn hàng đã hoàn tất xử lý, bạn có thể tiếp tục thực hiện các đơn hàng khác tiếp theo.";
                     }
                 }
                 else
                 {
                     order.actionStatus = new ViewSpecificActionStatus();
                     order.actionStatus.CanAccept = false;
-                    order.actionStatus.missingProducts = null;
-                    order.actionStatus.StatusMessage = "Chi nhánh của bạn chưa được Owner cho phép hỗ trợ giao hàng";
+                    order.actionStatus.CanCancel = false;
+                    order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
+                    order.actionStatus.StatusMessage = "Đơn hàng này đã có người đại diện xử lý.";
                 }
-            }
-            else if (order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
-            {
-                order.actionStatus = new ViewSpecificActionStatus();
-                order.actionStatus.CanAccept = true;
-                order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
-                order.actionStatus.StatusMessage = "Bạn có thể tiếp nhận đơn hàng này";
-            }
-            else if (!order.NeedAcceptance && userInformation.RoleName.Equals(Commons.PHARMACIST_NAME))
-            {
-                order.actionStatus = new ViewSpecificActionStatus();
-                order.actionStatus.CanAccept = false;
-                order.actionStatus.missingProducts = Enumerable.Empty<ViewSpecificMissingProduct>().ToList();
-                order.actionStatus.StatusMessage = "Đơn hàng này đã có người đại diện xử lý.";
             }
             else
             {
@@ -839,7 +891,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 {
                     Id = Guid.NewGuid().ToString(),
                     DateOfCreate = CustomDateTime.Now,
-                    Description = string.IsNullOrEmpty(validateOrderModel.Description) ? "Trống." : validateOrderModel.Description,
+                    Description = string.IsNullOrEmpty(validateOrderModel.Description) ? (message + "Trống.") : (message + validateOrderModel.Description),
                     IsInternalUser = true,
                     OrderId = orderHeader.Id,
                     StatusChangeFrom = Commons.CHECKOUT_ORDER_PICKUP_ID,
@@ -871,8 +923,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 {
                     var productList = await _orderDetailRepo.GetListOfProductInsideOrderId(validateOrderModel.OrderId);
 
-                    for (int i = 0; i < productList.Count; i++) 
-                    { 
+                    for (int i = 0; i < productList.Count; i++)
+                    {
                         var productModel = productList[i];
                         var productParentId = await _productDetailRepo.GetProductParentID(productModel.ProductId);
                         var productDetailDB = await _productDetailRepo.Get(productModel.ProductId);
@@ -1013,7 +1065,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 {
                     Id = Guid.NewGuid().ToString(),
                     DateOfCreate = CustomDateTime.Now,
-                    Description = string.IsNullOrEmpty(validateOrderModel.Description) ? "Trống." : validateOrderModel.Description,
+                    Description = string.IsNullOrEmpty(validateOrderModel.Description) ? (message + "Trống.") : (message + validateOrderModel.Description),
                     IsInternalUser = true,
                     OrderId = orderHeader.Id,
                     StatusChangeFrom = Commons.CHECKOUT_ORDER_DELIVERY_ID,
@@ -1272,6 +1324,95 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
         private bool RequestARefundVNPay()
         {
             return true;
+        }
+
+        public async Task<IActionResult> CancelOrder(OrderCancelModel orderCancelModel, UserInformation userInformation)
+        {
+            var roleName = JwtUserToken.DecodeAPITokenToRole(userInformation.UserAccessToken);
+
+            var orderHeaderDB = await _orderHeaderRepo.Get(orderCancelModel.OrderId);
+
+            if (orderHeaderDB == null) return new NotFoundObjectResult("Không tìm thấy mã đơn hàng");
+
+            if (orderHeaderDB.OrderTypeId.Equals(Commons.ORDER_TYPE_DIRECTLY)) return new BadRequestObjectResult("Không thể hủy đơn bán hàng tại chỗ");
+
+            if (Commons.COMPLETED_ORDERSTATUS_ID.Contains(orderHeaderDB.OrderStatus)) return new BadRequestObjectResult("Đơn hàng này đã hoàn tất xử lý rồi, không thể thao tác thêm!");
+
+            var isInternal = false;
+            if (string.IsNullOrEmpty(roleName) || Commons.CUSTOMER_NAME.Equals(roleName))
+            {
+                //Nếu là khách hàng
+                if (orderHeaderDB.IsApproved.HasValue) return new BadRequestObjectResult("Đơn hàng đã duyệt hoặc hủy bởi nhân viên không thể thao tác thêm!");
+            }
+            else
+            {
+                //Nếu là nội bộ
+                isInternal = true;
+                if (!roleName.Equals(Commons.PHARMACIST_NAME)) return new ForbidResult("Không phải Employee không thể thao tác hủy đơn");
+
+                if (!orderHeaderDB.IsApproved.HasValue) return new BadRequestObjectResult("Đơn hàng này vẫn chưa duyệt, vui lòng dùng chức năng Từ Chối Đơn Hàng hoặc chờ nhân viên khác xử lý đơn!");
+
+                var pharmacistId = JwtUserToken.GetUserID(userInformation.UserAccessToken);
+
+                if (!orderHeaderDB.PharmacistId.Equals(pharmacistId)) return new BadRequestObjectResult("Đơn hàng này không phải do bạn quản lý, không thể thao tác");
+            }
+
+            //nếu đơn VNPay
+            bool isPickup = orderHeaderDB.OrderTypeId.Equals(Commons.ORDER_TYPE_PICKUP);
+
+            string statusChangeTo = isPickup ? "12" : "13";
+
+            if (orderHeaderDB.PayType.Equals(2))
+            {
+                var refundModel = await _orderVNPayRepo.GetRefundVNPayModel(orderCancelModel.OrderId);
+                var result = await _vnPayService.RequestARefundVNPay(userInformation.UserAccessToken, orderCancelModel.IpAddress, refundModel);
+                if (result is BadRequestObjectResult badRequest)
+                {
+                    return new BadRequestObjectResult($"Không thể yêu cầu hoàn tiền được, tin nhắn lỗi: {badRequest.Value}");
+                }
+
+                if (result is OkResult || result is OkObjectResult)
+                {
+                    var updateExecution = new OrderExecution()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        DateOfCreate = CustomDateTime.Now.AddSeconds(3),
+                        Description = "Đơn hàng đã được yêu cầu hoàn tiền thành công và sẽ được hoàn tiền trong vòng 48 giờ làm việc.",
+                        IsInternalUser = isInternal,
+                        OrderId = orderHeaderDB.Id,
+                        StatusChangeFrom = orderHeaderDB.OrderStatus,
+                        StatusChangeTo = statusChangeTo,
+                        UserId = string.IsNullOrEmpty(roleName) ? null : JwtUserToken.GetUserID(userInformation.UserAccessToken)
+                    };
+                    await _orderExecutionRepo.Insert(updateExecution);
+                }
+            }
+
+            if (!(!isInternal && !isPickup))
+            {
+                await AddSiteInventory(orderHeaderDB.Id, orderHeaderDB.SiteId);
+            }
+
+            var message = isInternal ? "Nhân viên đã yêu cầu hủy đơn hàng với lý do: " : "Khách hàng đã yêu cầu hủy đơn hàng với lý do: ";
+
+            var executeOrder = new OrderExecution()
+            {
+                DateOfCreate = CustomDateTime.Now,
+                Description = message + orderCancelModel.Reason,
+                Id = Guid.NewGuid().ToString(),
+                IsInternalUser = isInternal,
+                OrderId = orderCancelModel.OrderId,
+                StatusChangeFrom = orderHeaderDB.OrderStatus,
+                StatusChangeTo = statusChangeTo,
+                UserId = string.IsNullOrEmpty(roleName) ? null : JwtUserToken.GetUserID(userInformation.UserAccessToken)
+            };
+
+            await _orderExecutionRepo.Insert(executeOrder);
+
+            orderHeaderDB.OrderStatus = statusChangeTo;
+            await _orderHeaderRepo.Update();
+
+            return new OkObjectResult("Đơn hàng đã hủy thành công");
         }
     }
 

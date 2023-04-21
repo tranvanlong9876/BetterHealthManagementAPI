@@ -53,6 +53,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
     public class ViewSpecificActionStatus
     {
         public bool CanAccept { get; set; }
+
+        public bool CanCancel { get; set; }
         public string StatusMessage { get; set; }
         //hiển thị đối với đơn hàng Giao hàng
         public List<ViewSpecificMissingProduct> missingProducts { get; set; }

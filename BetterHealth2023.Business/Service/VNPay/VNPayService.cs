@@ -90,7 +90,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.VNPay
         public async Task<IActionResult> RequestARefundVNPay(string token, string idAddress, RefundVNPayModel refundVNPay)
         {
             string userName = JwtUserToken.DecodeAPITokenToFullname(token);
-
+            if (string.IsNullOrEmpty(userName)) userName = "Khách vãng lai";
             VNPayLibrary payLibrary = new VNPayLibrary();
             object jsonResponse = null;
             var requestId = Guid.NewGuid().ToString();

@@ -1,4 +1,5 @@
-﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
+﻿using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCancelModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderExecutionModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderValidateModels;
@@ -19,6 +20,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
         public Task<ViewSiteToPickUpStatus> GetViewSiteToPickUps(CartEntrance cartEntrance);
         public Task<IActionResult> CheckOutOrder(CheckOutOrderModel checkOutOrderModel, string token);
 
+        public Task<IActionResult> CancelOrder(OrderCancelModel orderCancelModel, UserInformation userInformation);
         public Task<string> GenerateOrderId();
 
         public Task<PagedResult<ViewOrderList>> GetAllOrders(GetOrderListPagingRequest pagingRequest, UserInformation userInformation);

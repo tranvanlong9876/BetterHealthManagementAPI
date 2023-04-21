@@ -2,6 +2,7 @@
 using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.DateTimeModels;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCancelModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderCheckOutModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderExecutionModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.OrderPickUpModels;
@@ -150,11 +151,28 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpPut("ExecuteOrder")]
         [Authorize(Roles = Commons.PHARMACIST_NAME)]
-        [SwaggerOperation(Description = "API xử lý quá trình đơn hàng")]
+        [SwaggerOperation(Summary = "API xử lý quá trình đơn hàng")]
         public async Task<IActionResult> ExecuteOrder(OrderExecutionModel orderExecutionModel)
         {
             var token = GetWholeToken();
             return await _orderService.ExecuteOrder(orderExecutionModel, token);
+        }
+
+        [HttpPut("CancelOrder")]
+        [AllowAnonymous]
+        [SwaggerOperation(Summary = "API hủy đơn hàng. Khách hàng hoặc Nhân Viên có thể dùng", Description = "Khách hàng chỉ có thể yêu cầu hủy khi nhân viên chưa duyệt đơn. Nhân viên chỉ có thể yêu cầu hủy khi đang là người chịu trách nhiệm đơn hàng và đồng thời đơn hàng chưa hoàn thành.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Hủy Đơn Thành Công")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Không đủ điều kiện hủy đơn hàng")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Không tìm thấy đơn hàng")]
+        [SwaggerResponse(StatusCodes.Status403Forbidden, "Role nội bộ nhưng lại không phải Nhân Viên")]
+        public async Task<IActionResult> CancelOrder(OrderCancelModel orderCancelModel)
+        {
+            var token = GetWholeToken();
+            var user = new UserInformation()
+            {
+                UserAccessToken = token
+            };
+            return await _orderService.CancelOrder(orderCancelModel, user);
         }
 
         [HttpPut("UpdateOrderProductNote")]
