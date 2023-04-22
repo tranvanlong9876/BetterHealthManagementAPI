@@ -490,7 +490,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 OrderId = checkOutOrderModel.OrderId,
                 StatusChangeFrom = OrderStatusIdCheckOut(checkOutOrderModel.OrderTypeId),
                 StatusChangeTo = OrderStatusIdCheckOut(checkOutOrderModel.OrderTypeId),
-                UserId = string.IsNullOrEmpty(userId) ? null : userId
+                UserId = checkOutOrderModel.OrderTypeId.Equals(Commons.ORDER_TYPE_DIRECTLY) ? pharmacistId : (string.IsNullOrEmpty(userId) ? null : userId)
             };
 
             await _orderExecutionRepo.Insert(orderExecution);
