@@ -102,8 +102,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Commons
             }
         }
 
-        public const string ORDER_DELIVERY_7 = "Đơn hàng đã được nhân viên chuẩn bị và đang tiến hành giao hàng đến bạn. Ghi chú của nhân viên: ";
-        public const string ORDER_PICKUP_9 = "Đơn giao đã được nhân viên chuẩn bị xong. Ghi chú của nhân viên: ";
+        public const string ORDER_DELIVERY_7 = "Đơn hàng đã được nhân viên chuẩn bị và đang tiến hành giao hàng đến bạn.";
+        public const string ORDER_PICKUP_9 = "Đơn hàng đã được nhân viên chuẩn bị xong, bạn đến chi nhánh cửa hàng đã chọn để nhận hàng nhé.";
 
         public static string RecommendDescription(string orderStatusId)
         {
@@ -142,17 +142,5 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Commons
                     return "Mọi đối tượng";
             }
         }
-
-        //Error Message
-
-        public static readonly string ERROR_403_FORBIDDEN_MSG = "Forbidden: You don't have permission to access this resource";
-
-        public static readonly string ERROR_404_INVALID_DATA_MSG = "Resource is not exist";
-
-        public static readonly string ERROR_401_LOGIN_FAILED_MSG = "Incorrect Email or Password";
-
-        public static readonly string ERROR_500_USER_NOT_FOUND_MSG = "User Not Found in DB";
-
-        public static readonly string DUMB_TEST = "https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=AIzaSyCopthNKjHMIgHQBGwqYJNxcbVux2tGcCk";
     }
 }

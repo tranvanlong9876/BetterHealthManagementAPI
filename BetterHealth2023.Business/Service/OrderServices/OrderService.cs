@@ -886,12 +886,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                 orderHeader.ApprovedDate = CustomDateTime.Now;
                 await _orderHeaderRepo.Update();
 
-                var message = validateOrderModel.IsAccept ? "Đơn hàng đã được nhân viên phê duyệt và đang tiến hành chuẩn bị sản phẩm cho quý khách. Ghi chú của nhân viên: " : "Đơn hàng đã bị từ chối bởi nhân viên với lý do: ";
+                var message = validateOrderModel.IsAccept ? "Đơn hàng đã được nhân viên phê duyệt và đang tiến hành chuẩn bị sản phẩm cho quý khách." : "Đơn hàng đã bị từ chối bởi nhân viên với lý do: ";
+
+                if (validateOrderModel.IsAccept && !string.IsNullOrEmpty(validateOrderModel.Description)) message += " Ghi chú của nhân viên: ";
+
                 var updateExecution = new OrderExecution()
                 {
                     Id = Guid.NewGuid().ToString(),
                     DateOfCreate = CustomDateTime.Now,
-                    Description = string.IsNullOrEmpty(validateOrderModel.Description) ? (message + "Trống.") : (message + validateOrderModel.Description),
+                    Description = string.IsNullOrEmpty(validateOrderModel.Description) ? message : (message + validateOrderModel.Description),
                     IsInternalUser = true,
                     OrderId = orderHeader.Id,
                     StatusChangeFrom = Commons.CHECKOUT_ORDER_PICKUP_ID,
@@ -1059,13 +1062,13 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                         }
                     }
                 }
-                var message = validateOrderModel.IsAccept ? "Đơn hàng đã được nhân viên phê duyệt và đang tiến hành chuẩn bị sản phẩm cho quý khách. Ghi chú của nhân viên: " : "Đơn hàng đã bị từ chối bởi nhân viên với lý do: ";
-
+                var message = validateOrderModel.IsAccept ? "Đơn hàng đã được nhân viên phê duyệt và đang tiến hành chuẩn bị sản phẩm cho quý khách." : "Đơn hàng đã bị từ chối bởi nhân viên với lý do: ";
+                if (validateOrderModel.IsAccept && !string.IsNullOrEmpty(validateOrderModel.Description)) message += " Ghi chú của nhân viên: ";
                 var updateExecution = new OrderExecution()
                 {
                     Id = Guid.NewGuid().ToString(),
                     DateOfCreate = CustomDateTime.Now,
-                    Description = string.IsNullOrEmpty(validateOrderModel.Description) ? (message + "Trống.") : (message + validateOrderModel.Description),
+                    Description = string.IsNullOrEmpty(validateOrderModel.Description) ? message : (message + validateOrderModel.Description),
                     IsInternalUser = true,
                     OrderId = orderHeader.Id,
                     StatusChangeFrom = Commons.CHECKOUT_ORDER_DELIVERY_ID,
@@ -1111,6 +1114,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
                     StatusChangeTo = orderExecutionModel.OrderStatusId,
                     UserId = pharmacistId
                 };
+                if (!string.IsNullOrEmpty(orderExecutionModel.Description)) doneExecution.Description += (" Ghi chú của nhân viên: " + orderExecutionModel.Description);
                 await _orderExecutionRepo.Insert(doneExecution);
 
                 orderHeader.IsPaid = true;
@@ -1138,11 +1142,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.OrderServi
             else
             {
                 string orderDescription = Commons.RecommendDescription(orderExecutionModel.OrderStatusId);
+                if (!string.IsNullOrEmpty(orderExecutionModel.Description)) orderDescription += " Ghi chú của nhân viên: ";
                 var updateExecution = new OrderExecution()
                 {
                     Id = Guid.NewGuid().ToString(),
                     DateOfCreate = CustomDateTime.Now,
-                    Description = orderDescription + (string.IsNullOrEmpty(orderExecutionModel.Description) ? "Trống" : orderExecutionModel.Description),
+                    Description = orderDescription + (string.IsNullOrEmpty(orderExecutionModel.Description) ? "" : orderExecutionModel.Description),
                     IsInternalUser = true,
                     OrderId = orderHeader.Id,
                     StatusChangeFrom = orderHeader.OrderStatus,

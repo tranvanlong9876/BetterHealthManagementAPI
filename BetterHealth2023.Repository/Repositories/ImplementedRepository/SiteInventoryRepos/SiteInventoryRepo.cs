@@ -170,7 +170,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         {
                             missingProducts.Add(missingProductModel);
                         }
-                        Console.WriteLine("Missing: " + missingProducts[0].missingQuantity);
                     }
 
                     var findExist = existProductModels.Find(x => x.productId == product.productId);
