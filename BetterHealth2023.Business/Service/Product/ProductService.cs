@@ -328,7 +328,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
                     {
                         UnitId = productLastUnit.UnitId,
                         UnitName = productLastUnit.UnitName,
-                        siteInventoryModel = await _siteInventoryRepo.GetInventoryOfProductOfSite(productLastUnit.Id, siteId, quantityConvert)
+                        siteInventoryModel = await _siteInventoryRepo.GetInventoryOfProductOfSite(productLastUnit.Id, siteId, quantityConvert),
+                        ProductIdLastUnit = productLastUnit.Id
                     };
 
                     productInventoryModel.Quantity = productInventoryModel.siteInventoryModel.TotalQuantity;

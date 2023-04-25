@@ -382,7 +382,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductImp
                                       $"Hiện tại bạn đang nhập hàng đơn vị thấp nhất. Hệ thống sẽ nhập kho với số lượng {messageEntrance.Quantity} {productLaterList[0].UnitName}.",
                     QuantityAfterConvert = messageEntrance.Quantity,
                     Calculation = $"{messageEntrance.Quantity} x 1 = {messageEntrance.Quantity}",
-                    UnitAfterConvert = $"{productLaterList[0].UnitName}"
+                    UnitAfterConvert = $"{productLaterList[0].UnitName}",
+                    ProductIdAfterConvert = productLaterList[0].Id
                 };
 
                 return new OkObjectResult(message);
@@ -403,7 +404,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductImp
                                       $"Hiện tại bạn đang nhập hàng với số lượng {messageEntrance.Quantity} {productLaterList[0].UnitName}. Hệ thống sẽ tự động chuyển đổi và nhập vào kho với số lượng {quantityAfterConvert} {productLastUnitDetail.UnitName}.",
                 QuantityAfterConvert = quantityAfterConvert,
                 Calculation = $"{messageEntrance.Quantity} x {calculation} = {quantityAfterConvert}",
-                UnitAfterConvert = $"{productLastUnitDetail.UnitName}"
+                UnitAfterConvert = $"{productLastUnitDetail.UnitName}",
+                ProductIdAfterConvert = productLastUnitDetail.Id
             };
 
             return new OkObjectResult(message1);

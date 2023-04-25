@@ -11,5 +11,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public string UnitAfterConvert { get; set; }
         public string Calculation { get; set; }
         public string TemplateMessage { get; set; }
+
+        public string ProductIdAfterConvert { get; set; }
     }
 }

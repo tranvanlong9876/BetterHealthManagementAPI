@@ -64,6 +64,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
         public SiteInventoryModel siteInventoryModel { get; set; }
         public string UnitId { get; set; }
         public string UnitName { get; set; }
+
+        public string ProductIdLastUnit { get; set; }
     }
 
 }
