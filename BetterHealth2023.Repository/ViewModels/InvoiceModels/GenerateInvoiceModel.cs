@@ -29,6 +29,8 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Invoi
     {
         public string SiteName { get; set; }
         public string SiteAddress { get; set; }
+
+        public string EmployeeName { get; set; }
     }
     public class ProductInvoiceModel
     {

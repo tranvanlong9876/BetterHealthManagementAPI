@@ -6,11 +6,16 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="color-scheme" content="light dark" />
     <meta name="supported-color-schemes" content="light dark" />
-    <title></title>
+    <title>Hoa Don Ban Hang</title>
     <style type="text/css" rel="stylesheet" media="all">
         /* Base ------------------------------ */
 
         @import url("https://fonts.googleapis.com/css?family=Nunito+Sans:400,700&display=swap");
+
+        @page {
+            margin: 0;
+            size: 215.9mm 279.4mm; /*or width then height 150mm 50mm*/
+        }
 
         body {
             width: 100% !important;
@@ -342,7 +347,7 @@
         }
 
         .email-body_inner {
-            width: 800px;
+            width: 100%;
             margin: 0 auto;
             padding: 0;
             -premailer-width: 570px;
@@ -445,14 +450,6 @@
         <tr>
             <td align="center">
                 <table class="email-content" width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                    <tr>
-                        <td class="email-masthead">
-
-                            <img style="display: block; margin-left: auto; margin-right: auto; " src='{{logoUrl}}' width="220" height="100" />
-                            <p>Cửa Hàng Dược Phẩm BetterHealth</p>
-
-                        </td>
-                    </tr>
                     <!-- Email Body -->
                     <tr>
                         <td class="email-body" width="570" cellpadding="0" cellspacing="0">
@@ -461,54 +458,69 @@
                                 <tr>
                                     <td class="content-cell">
                                         <div class="f-fallback">
-                                            <h1 style="text-align:center;">HÓA ĐƠN THANH TOÁN</h1>
-                                            <p>Cảm ơn khách hàng đã tin tưởng mua hàng tại cửa hàng của chúng tôi, đây là thông tin hóa đơn của quý khách!</p>
-                                            <p>Thời gian xuất hóa đơn: {{exportedDate}}</p>
+                                            <table style="margin: -60px 0px -10px 0px;" class="email-content" width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                                                <tr>
+                                                    <td class="email-masthead">
 
-                                            <h3 style="font-size:13px;font-weight:bold;color:#02acea;text-transform:uppercase;margin:20px 0 0 0;border-bottom:1px solid #ddd">
+                                                        <img style="display: block; margin-left: auto; margin-right: auto; " src='{{logoUrl}}' width="240" height="100" />
+                                                        <p>Cửa Hàng Dược Phẩm BetterHealth</p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            <h1 style="text-align:center;">HÓA ĐƠN THANH TOÁN</h1>
+                                            <p style="text-align: center; margin-bottom: -5px;">Cảm ơn khách hàng đã tin tưởng mua hàng tại cửa hàng của chúng tôi, đây là thông tin hóa đơn của quý khách!</p>
+                                            <p style="text-align: center; margin-bottom: -3px;">Thời gian xuất hóa đơn: {{exportedDate}}</p>
+                                            <table style="margin: -25px 0px -50px 0px;" class="email-content" width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                                                <tr>
+                                                    <td class="email-masthead">
+                                                        <img style="display: block; margin-left:auto; margin-right:auto;" height="70" width="250" src='{{barcode-img}}' />
+                                                        <p>{{orderId}}</p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            <h3 style="font-size:15px;font-weight:bold;color:#02acea;text-transform:uppercase;margin:20px 0 0 0;border-bottom:1px solid #ddd">
                                                 THONG TIN DON HANG #{{orderId}}
-                                                <span style="font-size:12px;color:#777;text-transform:none;font-weight:normal">{{createdDate}}</span>
+                                                <span style="font-size:15px;color:#777;text-transform:none;font-weight:normal">{{createdDate}}</span>
                                             </h3>
                                             <!-- Action -->
                                             <table align="center" width="100%" cellpadding="0" cellspacing="0" role="presentation">
                                                 <thead>
                                                     <tr>
-                                                        <th align="left" style="padding: 6px 9px 0px 9px; font-family: Arial,Helvetica,sans-serif; font-size: 12px; color: #444; font-weight: bold;" width="50%">
-                                                            <p>Thong tin cua hang</p>
+                                                        <th align="center" style="padding: 6px 9px 0px 9px; font-family: Arial,Helvetica,sans-serif; font-size: 12px; color: #444; font-weight: bold;" width="50%">
+                                                            <p style="font-size:20px;">Thong tin cua hang</p>
                                                         </th>
-                                                        <th align="left" style="padding: 6px 9px 0px 9px; font-family: Arial,Helvetica,sans-serif; font-size: 12px; color: #444; font-weight: bold;" width="50%">
-                                                            <p>Thong tin khach hang</p>
+                                                        <th align="center" style="padding: 6px 9px 0px 9px; font-family: Arial,Helvetica,sans-serif; font-size: 12px; color: #444; font-weight: bold;" width="50%">
+                                                            <p style="font-size:20px;">Thong tin khach hang</p>
                                                         </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <tr>
                                                         <td valign="top" align="left" style="padding: 3px 9px 9px 9px; border-top: 0; border-left: 0; font-family: Arial,Helvetica,sans-serif; font-size: 12px; color: #444; line-height: 18px; font-weight: normal">
-                                                            <span>{{siteName}}</span> <br />
-                                                            <span>{{siteAddress}}</span>
+                                                            <span style="font-size: 15px;">{{siteName}}</span> <br />
+                                                            <span style="font-size: 15px;"> <span style="font-weight: bold;">Địa Chỉ Cửa Hàng:</span> {{siteAddress}}</span> <br />
+                                                            <span style="font-size: 15px;"> <span style="font-weight: bold;">Nhân Viên Bán Hàng:</span> {{employeeName}}</span>
                                                         </td>
                                                         <td valign="top" align="left" style="padding: 3px 9px 9px 9px; border-top: 0; font-family: Arial,Helvetica,sans-serif; font-size: 12px; color: #444; line-height: 18px; font-weight: normal">
 
-                                                            <span>Tên khách hàng: {{name}}</span><br />
-                                                            <span style="display: {{showEmail}};"><a href="mailto:{{email}}" target="_blank">{{email}}</a><br /></span>
-                                                            <!--<span>{{address}}</span><br />
-                    <span>{{more_info}}</span><br />-->
-                                                            <span style="display: {{showPhone}};">Sđt: {{phone}}</span>
+                                                            <span style="font-size: 15px;">Tên khách hàng: {{name}}</span><br />
+                                                            {{email}}
+                                                            {{phone}}
                                                         </td>
                                                     </tr>
                                                 </tbody>
                                             </table>
-                                            <h3 style="font-size:13px;font-weight:bold;color:#02acea;text-transform:uppercase;margin:20px 0 0 0;border-bottom:1px solid #ddd">CHI TIẾT ĐƠN HÀNG</h3>
+                                            <h3 style="font-size:15px;font-weight:bold;color:#02acea;text-transform:uppercase;margin:20px 0 0 0;border-bottom:1px solid #ddd">CHI TIẾT ĐƠN HÀNG</h3>
 
                                             <table style="margin-top: 10px;" border="0" cellpadding="0" cellspacing="0" width="100%">
                                                 <thead>
                                                     <tr>
-                                                        <th align="left" bgcolor="#152238" style="white-space: nowrap; padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px";>STT</th>
-                                                        <th align="left" bgcolor="#152238" style="padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px">Sản phẩm</th>
-                                                        <th align="left" bgcolor="#152238" style="padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px">Đơn vị tính</th>
-                                                        <th align="left" bgcolor="#152238" style="padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px">Đơn giá</th>
-                                                        <th align="left" bgcolor="#152238" style="padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px">Số lượng</th>
-                                                        <th align="right" bgcolor="#152238" style="padding:6px 9px;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:14px">Tổng tạm</th>
+                                                        <th align="left" bgcolor="#152238" style="font-size: 16px; white-space: nowrap; padding: 6px 9px; color: #fff; font-family: Arial,Helvetica,sans-serif; font-size: 12px; line-height: 14px" ;=;>STT</th>
+                                                        <th align="left" bgcolor="#152238" style="font-size: 16px; padding: 6px 9px; color: #fff; font-family: Arial,Helvetica,sans-serif; font-size: 12px; line-height: 14px">Sản phẩm</th>
+                                                        <th align="left" bgcolor="#152238" style="font-size: 16px; padding:6px 9px; color: #fff; font-family: Arial,Helvetica,sans-serif; font-size: 12px; line-height: 14px; white-space: nowrap;">Đơn vị tính</th>
+                                                        <th align="left" bgcolor="#152238" style="font-size: 16px; padding: 6px 9px; color: #fff; font-family: Arial,Helvetica,sans-serif; font-size: 12px; line-height: 14px; white-space: nowrap;">Đơn giá</th>
+                                                        <th align="left" bgcolor="#152238" style="font-size: 16px; padding: 6px 9px; color: #fff; font-family: Arial,Helvetica,sans-serif; font-size: 12px; line-height: 14px; white-space: nowrap;">Số lượng</th>
+                                                        <th align="right" bgcolor="#152238" style="font-size: 16px; padding: 6px 9px; color: #fff; font-family: Arial,Helvetica,sans-serif; font-size: 12px; line-height: 14px; white-space: nowrap;">Tổng tạm</th>
                                                     </tr>
                                                 </thead>
 
@@ -523,40 +535,25 @@
                                                 </tbody>
                                                 <tfoot style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#444;line-height:18px">
                                                     <tr>
-                                                        <td align="right" colspan="5" style="padding:5px 9px"><span style="font-size:14px;">Giảm giá</span></td>
-                                                        <td align="right" style="padding:5px 9px"><span style="font-size:13px;">{{discount_total}}</span></td>
+                                                        <td align="right" colspan="5" style="padding:5px 9px"><span style="font-size:15px;">Giảm giá</span></td>
+                                                        <td align="right" style="padding:5px 9px"><span style="font-size:14px;">{{discount_total}}</span></td>
                                                     </tr>
                                                     <tr>
-                                                        <td align="right" colspan="5" style="padding:5px 9px"><span style="font-size:14px;">Thành tiền</span></td>
-                                                        <td align="right" style="padding:5px 9px; white-space: nowrap" ;=;><span style="font-size:13px;">{{total_order}}</span></td>
+                                                        <td align="right" colspan="5" style="padding:5px 9px"><span style="font-size:15px;">Thành tiền</span></td>
+                                                        <td align="right" style="padding:5px 9px; white-space: nowrap" ;=;><span style="font-size:14px;">{{total_order}}</span></td>
                                                     </tr>
 
 
                                                 </tfoot>
                                             </table>
                                             <p>
-                                                Mọi thắc mắc và góp ý, quý khách liên lạc và tư vấn thông qua số điện thoại tổng đài {{hotline_phone}}. Dược sĩ BetterHealth luôn sẵn sàng hỗ trợ bạn.
+                                                Hãy đảm bảo quý khách đã nhận được đủ hàng trước khi ra về. Mọi thắc mắc và góp ý, quý khách liên lạc và tư vấn thông qua số điện thoại tổng đài {{hotline_phone}}. Dược sĩ BetterHealth luôn sẵn sàng hỗ trợ bạn.
                                             </p>
                                             <p>
-                                                Trân trọng,
-                                                <br />Ban Quản Lý chuỗi cửa hàng BetterHealth.
+                                                Trân trọng, Ban Quản Lý chuỗi cửa hàng BetterHealth.
                                             </p>
-                                            <p></p>
                                             <!-- Sub copy -->
                                         </div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <table class="email-footer" align="center" width="570" cellpadding="0" cellspacing="0" role="presentation">
-                                <tr>
-                                    <td class="content-cell" align="center">
-                                        <p style="font-size: 20px;" class="f-fallback sub align-center">
-                                            [Công Ty Cửa Hàng Dược Phẩm, BetterHealth]
-                                        </p>
                                     </td>
                                 </tr>
                             </table>

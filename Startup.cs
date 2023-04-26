@@ -193,6 +193,8 @@ namespace BetterHealthManagementAPI
             services.AddScoped<IOrderVNPayRepo, OrderVNPayRepo>();
             services.AddScoped<IProductExportRepo, ProductExportRepo>();
             services.AddScoped<IProductUserTargetRepo, ProductUserTargetRepo>();
+
+            IronPdf.License.LicenseKey = "IRONPDF.TRANVANLONGPRO1.21370-945A7C7F05-F7QQ45H64IPORHVC-TNTNJTGPR5G6-Q34VMTFL7DMD-YPI47QOIZSOS-DNPBZCNVWAE3-CPAXXG-TEK3M4UT6M2JUA-DEPLOYMENT.TRIAL-Q2NNJL.TRIAL.EXPIRES.26.MAY.2023";
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

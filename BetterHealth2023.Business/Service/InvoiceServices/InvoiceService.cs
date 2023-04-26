@@ -1,6 +1,7 @@
 ﻿using BetterHealthManagementAPI.BetterHealth2023.Business.Utils;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Commons;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.AddressRepos;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.InternalUserAuthRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos.OrderDetailRepos;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.SiteRepos;
@@ -22,13 +23,15 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InvoiceSer
         private readonly IOrderDetailRepo _orderDetailRepo;
         private readonly ISiteRepo _siteRepo;
         private readonly IDynamicAddressRepo _dynamicAddressRepo;
+        private readonly IInternalUserAuthRepo _internalUserAuthRepo;
 
-        public InvoiceService(IOrderHeaderRepo orderHeaderRepo, IOrderDetailRepo orderDetailRepo, ISiteRepo siteRepo, IDynamicAddressRepo dynamicAddressRepo)
+        public InvoiceService(IOrderHeaderRepo orderHeaderRepo, IOrderDetailRepo orderDetailRepo, ISiteRepo siteRepo, IDynamicAddressRepo dynamicAddressRepo, IInternalUserAuthRepo internalUserAuthRepo)
         {
             _orderHeaderRepo = orderHeaderRepo;
             _orderDetailRepo = orderDetailRepo;
             _siteRepo = siteRepo;
             _dynamicAddressRepo = dynamicAddressRepo;
+            _internalUserAuthRepo = internalUserAuthRepo;
         }
 
         public async Task<IActionResult> PrintInvoicePdf(string orderId)
@@ -39,10 +42,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.InvoiceSer
 
             var invoiceModel = new GenerateInvoiceModel();
             var siteDB = await _siteRepo.Get(orderDB.SiteId);
+            var employeeDB = await _internalUserAuthRepo.Get(orderDB.PharmacistId);
             var siteInfo = new SiteInformationModel()
             {
                 SiteName = siteDB.SiteName,
-                SiteAddress = await _dynamicAddressRepo.GetFullAddressFromAddressId(siteDB.AddressId)
+                SiteAddress = await _dynamicAddressRepo.GetFullAddressFromAddressId(siteDB.AddressId),
+                EmployeeName = employeeDB.Fullname
             };
             invoiceModel.siteInformationModel = siteInfo;
             invoiceModel.CreatedDate = orderDB.CreatedDate;

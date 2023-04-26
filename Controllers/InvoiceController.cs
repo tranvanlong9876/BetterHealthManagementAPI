@@ -23,9 +23,9 @@ namespace BetterHealthManagementAPI.Controllers
         }
 
         [HttpGet("{OrderId}")]
-        //[AllowAnonymous]
-        [Authorize(Roles = "cc")]
-        [SwaggerOperation(Summary = "Đang thử nghiệm, cấm xài")]
+        [AllowAnonymous]
+        [SwaggerOperation(Summary = "Xuất hóa đơn PDF, chỉ dành cho đơn tại chỗ.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Trả về đường link file PDF.")]
 
         public async Task<IActionResult> GenerateInvoice(string OrderId)
         {
