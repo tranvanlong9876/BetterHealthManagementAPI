@@ -54,7 +54,6 @@ namespace BetterHealthManagementAPI.Controllers
         //update customer
         [HttpPut]
         [Authorize(Roles = "Customer")]
-        [AllowAnonymous]
         public async Task<IActionResult> UpdateCustomer(CustomerUpdateModel customerUpdateModel)
         {
             try

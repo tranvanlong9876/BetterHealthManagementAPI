@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Principal;
+using System.Text;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 {
@@ -21,7 +23,31 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
             _configuration = configuration;
         }
 
+        public static bool ValidateToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
 
+            var validateParam = new TokenValidationParameters()
+            {
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("JwtStorage:Token").Value))
+            };
+
+            try
+            {
+                SecurityToken validatedToken;
+                IPrincipal principal = tokenHandler.ValidateToken(token, validateParam, out validatedToken);
+                return true;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
         public static string CreateInternalUserToken(InternalUser internalUser, SiteViewModel workingSite)
         {
             var roleName = internalUser.Role.RoleName;
@@ -96,6 +122,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Utils
 
         public static dynamic GetPayLoadFromToken(string jwtToken)
         {
+            if (string.IsNullOrEmpty(jwtToken)) return null;
             return JObject.Parse(new JwtSecurityTokenHandler().ReadJwtToken(jwtToken).Payload.SerializeToJson());
         }
 

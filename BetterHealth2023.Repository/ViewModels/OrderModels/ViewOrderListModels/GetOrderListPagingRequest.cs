@@ -14,6 +14,10 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Order
     public class GetOrderListPagingRequest : PagingRequestBase
     {
         /// <summary>
+        /// Tra cứu mã đơn hàng, sđt khách hàng
+        /// </summary>
+        public string OrderIdOrPhoneNo { get; set; }
+        /// <summary>
         /// Filter theo loại đơn hàng
         /// </summary>
         public int? OrderTypeId { get; set; }

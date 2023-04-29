@@ -33,10 +33,22 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpGet]
         [SwaggerResponse(StatusCodes.Status200OK, "Danh Sách Đơn Hàng")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllOrders([FromQuery] GetOrderListPagingRequest pagingRequest)
         {
             var userInformation = new UserInformation();
             userInformation.UserAccessToken = GetWholeToken();
+            if (string.IsNullOrEmpty(userInformation.UserAccessToken))
+            {
+                if (string.IsNullOrEmpty(pagingRequest.OrderIdOrPhoneNo))
+                {
+                    return BadRequest("Khách hàng không đăng nhập phải nhập SĐT mới có thể tra cứu đơn hàng");
+                }
+            }
+            else
+            {
+                if (!JwtUserToken.ValidateToken(userInformation.UserAccessToken)) return BadRequest("Token không hợp lệ");
+            }
             var orderList = await _orderService.GetAllOrders(pagingRequest, userInformation);
 
             return Ok(orderList);
@@ -48,6 +60,7 @@ namespace BetterHealthManagementAPI.Controllers
         {
             var userInformation = new UserInformation();
             userInformation.UserAccessToken = GetWholeToken();
+            if (!string.IsNullOrEmpty(userInformation.UserAccessToken) && !JwtUserToken.ValidateToken(userInformation.UserAccessToken)) return BadRequest("Token không hợp lệ");
             var order = await _orderService.GetSpecificOrder(id, userInformation);
             if (order == null) return NotFound("Không tìm thấy đơn hàng, có thể là sai ID");
             return Ok(order);
@@ -132,6 +145,13 @@ namespace BetterHealthManagementAPI.Controllers
         {
             try
             {
+                if (!string.IsNullOrEmpty(GetWholeToken()))
+                {
+                    if (!JwtUserToken.ValidateToken(GetWholeToken()))
+                    {
+                        return BadRequest("Token không hợp lệ");
+                    }
+                }
                 return await _orderService.CheckOutOrder(checkOutOrderModel, GetWholeToken());
             }
             catch (Exception ex)
@@ -168,6 +188,13 @@ namespace BetterHealthManagementAPI.Controllers
         public async Task<IActionResult> CancelOrder(OrderCancelModel orderCancelModel)
         {
             var token = GetWholeToken();
+            if (!string.IsNullOrEmpty(token))
+            {
+                if (!JwtUserToken.ValidateToken(token))
+                {
+                    return BadRequest("Token không hợp lệ");
+                }
+            }
             var user = new UserInformation()
             {
                 UserAccessToken = token
@@ -192,12 +219,19 @@ namespace BetterHealthManagementAPI.Controllers
         }
         private string GetWholeToken()
         {
-            if (Request.Headers.ContainsKey("Authorization"))
+            try
             {
-                string token = (Request.Headers)["Authorization"].ToString().Split(" ")[1];
-                return token;
+                if (Request.Headers.ContainsKey("Authorization"))
+                {
+                    string token = (Request.Headers)["Authorization"].ToString().Split(" ")[1];
+                    return token;
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else
+            catch
             {
                 return null;
             }

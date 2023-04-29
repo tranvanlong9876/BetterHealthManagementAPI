@@ -29,6 +29,11 @@ namespace BetterHealthManagementAPI.Controllers
         [Authorize(Roles = Commons.MANAGER_NAME)]
         public async Task<IActionResult> ViewListProductImport([FromQuery] GetProductImportPagingRequest pagingRequest)
         {
+            var token = GetUserToken();
+            var siteId = JwtUserToken.GetWorkingSiteFromManagerAndPharmacist(token);
+            var managerId = JwtUserToken.GetUserID(token);
+            pagingRequest.SiteID = siteId;
+            pagingRequest.ManagerID = managerId;
             var pagedResult = await _productImportService.ViewListProductImportPaging(pagingRequest);
 
             return Ok(pagedResult);

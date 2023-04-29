@@ -27,9 +27,7 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpGet]
         [Authorize(Roles = Commons.ADMIN_NAME)]
-        [AllowAnonymous]
         [SwaggerOperation(Summary = "Xem danh sách nhân viên, chỉ Admin được xem.")]
-
         public async Task<IActionResult> GetAllUserPaging([FromQuery] GetInternalUserPagingRequest request)
         {
             var userList = await _employeeAuthService.GetAllUserPaging(request);

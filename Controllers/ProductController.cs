@@ -36,6 +36,13 @@ namespace BetterHealthManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetAllProducts([FromQuery] ProductPagingRequest pagingRequest)
         {
+            if (!string.IsNullOrEmpty(GetWholeToken()))
+            {
+                if (!JwtUserToken.ValidateToken(GetWholeToken()))
+                {
+                    return BadRequest("Token không hợp lệ");
+                }
+            }
             bool isInternal = CheckInternalUser();
             if (!isInternal)
             {
@@ -59,6 +66,13 @@ namespace BetterHealthManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetViewProducts(string id)
         {
+            if (!string.IsNullOrEmpty(GetWholeToken()))
+            {
+                if (!JwtUserToken.ValidateToken(GetWholeToken()))
+                {
+                    return BadRequest("Token không hợp lệ");
+                }
+            }
             bool isInternal = CheckInternalUser();
             var productView = await _productService.GetViewProduct(id, isInternal);
             if (productView == null) return NotFound("Không tìm thấy sản phẩm hoặc sản phẩm không được bày bán.");
@@ -126,15 +140,23 @@ namespace BetterHealthManagementAPI.Controllers
 
         private string GetWholeToken()
         {
-            if (Request.Headers.ContainsKey("Authorization"))
+            try
             {
-                string token = (Request.Headers)["Authorization"].ToString().Split(" ")[1];
-                return token;
+                if (Request.Headers.ContainsKey("Authorization"))
+                {
+                    string token = (Request.Headers)["Authorization"].ToString().Split(" ")[1];
+                    return token;
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else
+            catch
             {
                 return null;
             }
+
         }
     }
 }

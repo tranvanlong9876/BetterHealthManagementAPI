@@ -10,6 +10,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderMode
 using System;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.OrderModels.ViewSpecificOrderModels;
 using static System.Linq.Enumerable;
+using BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.CustomerRepos;
 
 namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.ImplementedRepository.OrderHeaderRepos
 {
@@ -36,11 +37,16 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             switch (userInformation.RoleName)
             {
+                case null:
+                case "":
+                    query = query.Where(x => x.info.PhoneNo.Equals(pagingRequest.OrderIdOrPhoneNo));
+                    break;
                 case Commons.Commons.CUSTOMER_NAME:
                     query = query.Where(x => x.info.CustomerId.Equals(userInformation.UserId)).OrderByDescending(o => o.header.CreatedDate);
                     break;
                 case Commons.Commons.PHARMACIST_NAME:
                 case Commons.Commons.MANAGER_NAME:
+
                     query = query.Where(x => (x.header.SiteId.Equals(userInformation.SiteId) || (x.header.OrderTypeId.Equals(Commons.Commons.ORDER_TYPE_DELIVERY) && x.header.SiteId == null && x.address.CityId.Equals(userInformation.SiteCityId))));
 
                     bool hasOrderTypeId = false;
@@ -56,12 +62,17 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                         hasBoolAccepable = true;
                         if (pagingRequest.NotAcceptable.Value)
                         {
-                            query = query.Where(x => x.header.IsApproved == null);
+                            query = query.Where(x => x.header.IsApproved == null && !Commons.Commons.COMPLETED_ORDERSTATUS_ID.Contains(x.header.OrderStatus));
                         }
                         else
                         {
                             query = query.Where(x => x.header.IsApproved != null);
                         }
+                    }
+
+                    if (!string.IsNullOrEmpty(pagingRequest.OrderIdOrPhoneNo))
+                    {
+                        query = query.Where(x => x.header.Id.Contains(pagingRequest.OrderIdOrPhoneNo) || x.info.PhoneNo.Equals(pagingRequest.OrderIdOrPhoneNo));
                     }
 
                     if (pagingRequest.isCompleted.HasValue)
@@ -132,7 +143,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
                                       CreatedDate = selector.header.CreatedDate,
                                       TotalPrice = selector.header.TotalPrice,
                                       OrderStatus = selector.header.OrderStatus,
-                                      NeedAcceptance = !selector.header.IsApproved.HasValue,
+                                      NeedAcceptance = !selector.header.IsApproved.HasValue && !Commons.Commons.COMPLETED_ORDERSTATUS_ID.Contains(selector.header.OrderStatus),
                                       PharmacistId = selector.header.PharmacistId,
                                       SiteId = selector.header.SiteId,
                                       OrderStatusName = selector.orderStatus.OrderStatusName
