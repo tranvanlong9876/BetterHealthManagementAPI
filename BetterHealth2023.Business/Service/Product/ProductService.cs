@@ -99,8 +99,19 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.Product
 
             foreach (var product_ingredient in List_Product_Ingredient)
             {
+                if (string.IsNullOrEmpty(product_ingredient.IngredientId)) continue;
                 var product_ingre_desc_id = Guid.NewGuid().ToString();
-                var product_ingre_db = _productIngredientDescriptionRepo.TransferBetweenTwoModels<CreateProductIngredientModel, ProductIngredientDescription>(product_ingredient);
+                ProductIngredientDescription product_ingre_db = new();
+                if(!product_ingredient.Content.HasValue || string.IsNullOrEmpty(product_ingredient.UnitId))
+                {
+                    product_ingre_db.IngredientId = product_ingredient.IngredientId;
+                    product_ingre_db.Content = null;
+                    product_ingre_db.UnitId = null;
+                }
+                else
+                {
+                    product_ingre_db = _productIngredientDescriptionRepo.TransferBetweenTwoModels<CreateProductIngredientModel, ProductIngredientDescription>(product_ingredient);
+                }
                 product_ingre_db.Id = product_ingre_desc_id;
                 product_ingre_db.ProductDescriptionId = desc_id;
                 check = await _productIngredientDescriptionRepo.Insert(product_ingre_db);

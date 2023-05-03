@@ -11,7 +11,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 {
     public interface IProductEventDiscountRepo : IRepository<EventProductDiscount>
     {
-        public Task<bool> CheckAlreadyExistProductDiscount(string productID);
+        public Task<bool> CheckAlreadyExistProductDiscount(string productID, string discountId);
 
         public Task<int> GetTotalProductDiscountId(string discountId);
         public Task<List<ProductDiscountView>> GetAllProductDiscountId(string discountId);

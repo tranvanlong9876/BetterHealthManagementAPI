@@ -7,6 +7,7 @@ using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.PagingMod
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductDiscountModels;
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductModels.ViewProductModels;
 using BetterHealthManagementAPI.Controllers;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,14 +30,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDis
             _productDetailRepo = productDetailRepo;
         }
 
-        public async Task<bool> AddProductToExistingDiscount(string discountId, ProductModel product)
+        public async Task<IActionResult> AddProductToExistingDiscount(string discountId, ProductModel product)
         {
             var discountModel = await _productDiscountRepo.Get(discountId);
-            if (discountModel == null) return false;
-            if (discountModel.IsDelete) return false;
-            if (discountModel.EndDate < CustomDateTime.Now) return false;
+            if (discountModel == null) return new NotFoundObjectResult("Không tìm thấy chương trình giảm giá này!");
+            if (discountModel.IsDelete) return new NotFoundObjectResult("Không tìm thấy chương trình giảm giá hoặc đã bị xóa!");
+            if (discountModel.EndDate < CustomDateTime.Now) return new BadRequestObjectResult("Chương trình giảm giá đã kết thúc, vui lòng tạo một chương trình khác!");
 
-            if (await _productEventDiscountRepo.CheckAlreadyExistProductDiscount(discountId)) return false;
+            if (await _productEventDiscountRepo.CheckAlreadyExistProductDiscount(product.productId, discountId)) return new BadRequestObjectResult("Sản phẩm này đang được giảm giá ở chương trình khác, không thể thêm!");
 
             var eventDiscount = new EventProductDiscount()
             {
@@ -47,42 +48,31 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDis
 
             await _productEventDiscountRepo.Insert(eventDiscount);
 
-            return true;
+            return new OkObjectResult("Thêm sản phẩm mới vào chương trình khuyến mãi thành công!");
 
         }
 
-        public async Task<CreateProductDiscountStatus> CreateProductDiscount(CreateProductDiscountModel discountModel)
+        public async Task<IActionResult> CreateProductDiscount(CreateProductDiscountModel discountModel)
         {
-            var checkError = new CreateProductDiscountStatus();
-
             if (!discountModel.DiscountMoney.HasValue && !discountModel.DiscountPercent.HasValue)
             {
-                checkError.isError = true;
-                checkError.VariablesError = "Phải có tối thiểu 1 trường dữ liệu DiscountMoney hoặc DiscountPercent.";
-                return checkError;
+                return new BadRequestObjectResult("Phải có tối thiểu 1 trường dữ liệu DiscountMoney hoặc DiscountPercent.");
             }
             if (discountModel.DiscountMoney.HasValue && discountModel.DiscountPercent.HasValue)
             {
-                checkError.isError = true;
-                checkError.VariablesError = "Chỉ 1 trong 2 dữ liệu DiscountMoney hoặc DiscountPercent được phép có.";
-                return checkError;
+                return new BadRequestObjectResult("Chỉ 1 trong 2 dữ liệu DiscountMoney hoặc DiscountPercent được phép có.");
             }
             if (discountModel.StartDate >= discountModel.EndDate)
             {
-                checkError.isError = true;
-                checkError.VariablesError = "Ngày kết thúc phải sau ngày bắt đầu.";
-                return checkError;
+                return new BadRequestObjectResult("Ngày kết thúc phải sau ngày bắt đầu.");
             }
 
             for (int i = 0; i < discountModel.Products.Count; i++)
             {
                 var productID = discountModel.Products[i].ProductId;
-                if(await CheckAlreadyExistDiscount(productID))
+                if(await CheckAlreadyExistDiscount(productID, ""))
                 {
-                    checkError.isError = true;
-                    checkError.alreadyExistDiscount = "Sản phẩm đã tồn tại sự kiện giảm giá, không thể thêm nữa";
-                    checkError.productError = productID;
-                    return checkError;
+                    return new BadRequestObjectResult("Sản phẩm đã tồn tại sự kiện giảm giá, không thể thêm nữa");
                 }
             }
 
@@ -105,8 +95,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDis
             await _productDiscountRepo.Insert(productDiscountHeaderDB);
             await _productEventDiscountRepo.InsertRange(ProductList);
 
-            checkError.isError = false;
-            return checkError;
+            return new CreatedResult("", "Thêm Chương Trình Giảm Giá Thành Công!");
         }
 
         public async Task<PagedResult<ViewProductDiscountList>> GetAllProductDiscountPaging(GetProductDiscountPagingRequest pagingRequest)
@@ -211,9 +200,9 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDis
 
             return null;
         }
-        private Task<bool> CheckAlreadyExistDiscount(string productID)
+        private Task<bool> CheckAlreadyExistDiscount(string productID, string discountId)
         {
-            return _productEventDiscountRepo.CheckAlreadyExistProductDiscount(productID);
+            return _productEventDiscountRepo.CheckAlreadyExistProductDiscount(productID, discountId);
         }
 
         public async Task<ViewProductDiscountSpecific> GetProductDiscount(string discountId)
@@ -271,6 +260,14 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Business.Service.ProductDis
                 }
             }
             return namewithUnit;
+        }
+
+        public async Task<IActionResult> CheckExistProductDiscount(string discountId, string productId)
+        {
+            var isExist = await CheckAlreadyExistDiscount(productId, discountId);
+
+            if (isExist) return new BadRequestObjectResult("Sản phẩm đã tồn tại ở chương trình giảm giá khác");
+            return new OkResult();
         }
     }
 }

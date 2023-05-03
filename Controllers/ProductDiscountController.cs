@@ -2,6 +2,7 @@
 using BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.ProductDiscountModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,30 +43,32 @@ namespace BetterHealthManagementAPI.Controllers
             return Ok(productDiscount);
         }
 
+        [HttpPost("CheckExistDiscountProduct")]
+        [AllowAnonymous]
+        [SwaggerOperation(Summary = "Kiểm tra xem sản phẩm đã có chương trình khuyến mãi hay chưa.")]
+        public async Task<IActionResult> CheckExistProductDiscountId([FromBody] CheckExistDiscountProduct checkExistDiscountProduct)
+        {
+            return await _productDiscountService.CheckExistProductDiscount(checkExistDiscountProduct.discountId, checkExistDiscountProduct.productId);
+        }
+
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> CreateProductDiscount(CreateProductDiscountModel discountModel)
         {
-            var check = await _productDiscountService.CreateProductDiscount(discountModel);
-            if (check.isError)
-            {
-                return BadRequest(check);
-            }
-            return Created("", "Tạo giảm giá sản phẩm thành công.");
+            return await _productDiscountService.CreateProductDiscount(discountModel);
         }
 
         [HttpPost("{DiscountId}/Product")]
         [AllowAnonymous]
+        [SwaggerOperation(Summary = "Thêm sản phẩm mới vào trong chương trình khuyến mãi hiện có")]
         public async Task<IActionResult> AddProductToExistingDiscount([FromRoute] string DiscountId, [FromBody] ProductModel product)
         {
-            var check = await _productDiscountService.AddProductToExistingDiscount(DiscountId, product);
-
-            if (!check) return BadRequest("Thông tin khuyến mãi không tồn tại hoặc đã kết thúc sự kiện.");
-            return Ok("Thêm sản phẩm mới vào thông tin khuyến mãi thành công.");
+            return await _productDiscountService.AddProductToExistingDiscount(DiscountId, product);
         }
 
         [HttpPut]
         [AllowAnonymous]
+        [SwaggerOperation(Summary = "Thay đổi sản phẩm khác trong chương trình khuyến mãi hiện có")]
         public async Task<IActionResult> UpdateProductDiscount(UpdateProductDiscountModel discountModel)
         {
             var check = await _productDiscountService.UpdateGeneralInformation(discountModel);
@@ -78,6 +81,7 @@ namespace BetterHealthManagementAPI.Controllers
 
         [HttpDelete("{ProductId}")]
         [AllowAnonymous]
+        [SwaggerOperation(Summary = "Xóa sản phẩm khỏi chương trình khuyến mãi hiện có")]
         public async Task<IActionResult> RemoveProductFromDiscount(string ProductId)
         {
             var check = await _productDiscountService.RemoveProductFromExistingDiscount(ProductId);
@@ -89,6 +93,12 @@ namespace BetterHealthManagementAPI.Controllers
 
     public class ProductModel
     {
+        public string productId { get; set; }
+    }
+
+    public class CheckExistDiscountProduct
+    {
+        public string discountId { get; set; }
         public string productId { get; set; }
     }
 }

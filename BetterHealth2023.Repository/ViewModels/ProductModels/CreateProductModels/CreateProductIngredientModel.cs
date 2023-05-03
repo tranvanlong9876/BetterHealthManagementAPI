@@ -8,7 +8,6 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.ViewModels.Produ
 {
     public class CreateProductIngredientModel
     {
-        [Required]
         [StringLength(50)]
         public string IngredientId { get; set; }
         public double? Content { get; set; }

@@ -48,7 +48,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             if (!string.IsNullOrEmpty(pagingRequest.NameOrPhone))
             {
-                query = query.Where(x => x.Fullname.Contains(pagingRequest.NameOrPhone) || x.PhoneNo.Contains(pagingRequest.NameOrPhone));
+                query = query.Where(x => x.Fullname.Contains(pagingRequest.NameOrPhone) || x.PhoneNo.Equals(pagingRequest.NameOrPhone));
             }
 
             int totalRow = await query.CountAsync();

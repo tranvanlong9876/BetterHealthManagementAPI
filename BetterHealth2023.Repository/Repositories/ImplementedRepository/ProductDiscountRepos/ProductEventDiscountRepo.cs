@@ -19,7 +19,7 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
         {
         }
 
-        public async Task<bool> CheckAlreadyExistProductDiscount(string productID)
+        public async Task<bool> CheckAlreadyExistProductDiscount(string productID, string discountId)
         {
             var query = from discountevent in context.EventProductDiscounts
                         from discount in context.ProductDiscounts.Where(x => x.Id == discountevent.DiscountId).DefaultIfEmpty()
@@ -27,7 +27,12 @@ namespace BetterHealthManagementAPI.BetterHealth2023.Repository.Repositories.Imp
 
             var currentTime = CustomDateTime.Now;
 
-            query = query.Where(x => currentTime > x.discount.StartDate && currentTime < x.discount.EndDate && x.discountevent.ProductId.Equals(productID) && !x.discount.IsDelete);
+            query = query.Where(x => currentTime < x.discount.EndDate && x.discountevent.ProductId.Equals(productID) && !x.discount.IsDelete);
+
+            if (!string.IsNullOrEmpty(discountId))
+            {
+                query = query.Where(x => x.discount.Id != discountId);
+            }
 
             return await query.CountAsync() > 0;
         }
